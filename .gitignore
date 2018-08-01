@@ -1,0 +1,5 @@
+.idea/
+cmake-*/
+CMakeLists.txt
+*.iml
+target/
