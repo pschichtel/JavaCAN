@@ -25,21 +25,21 @@ public class CanSocket implements Closeable {
         SocketCAN.closeSocket(fileDescriptor);
     }
 
-    public static Optional<CanSocket> create(String interfaceName) {
+    public static CanSocket create(String interfaceName) {
         int interfaceId = SocketCAN.resolveInterfaceName(interfaceName);
         int fd = SocketCAN.createSocket();
         if (fd == -1) {
-            return Optional.empty();
+            throw new JavaCANException("Unable to create socket!", getLastError());
         }
         if (SocketCAN.bindSocket(fd, interfaceId)) {
-            System.err.println(getLastError());
+            final NativeError lastError = getLastError();
             SocketCAN.closeSocket(fd);
-            return Optional.empty();
+            throw new JavaCANException("Unable to bind the socket!", lastError);
         }
-        return Optional.of(new CanSocket(fd));
+        return new CanSocket(fd);
     }
 
-    static NativeError getLastError() {
+    private static NativeError getLastError() {
         int lastErrno = SocketCAN.errno();
         if (lastErrno == 0) {
             return null;

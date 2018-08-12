@@ -1,4 +1,4 @@
-#include <javacan_socketcan.h>
+#include <tel_schich_javacan_SocketCAN.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <linux/can.h>
@@ -64,7 +64,7 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNI
     return fcntl(fd, new_fl) != -1;
 }
 
-inline void micros_to_timeval(struct timeval *t, jlong micros) {
+void micros_to_timeval(struct timeval *t, jlong micros) {
     t->tv_sec = micros / MICROS_PER_SECOND;
     t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
 }
@@ -87,7 +87,7 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, j
     struct pollfd pfd;
     pfd.fd = fd;
     pfd.events = POLLIN;
-    errno = 0
+    errno = 0;
     int result = poll(&pfd, 1, timeout);
 
     if (pfd.revents & POLLERR != 0) {
@@ -99,4 +99,5 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, j
     }
 
     return true;
+return true;
 }

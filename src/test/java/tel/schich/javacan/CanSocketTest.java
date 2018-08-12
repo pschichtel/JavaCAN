@@ -8,6 +8,9 @@ class CanSocketTest {
 
     @Test
     void create() {
-        assertNotNull(CanSocket.create("can0"), "Should return a socket");
+        SocketCAN.initialize();
+
+        final CanSocket socket = CanSocket.create("vcan0");
+        assertNotNull(socket, "Should return a socket");
     }
 }

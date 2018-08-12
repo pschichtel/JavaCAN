@@ -5,48 +5,41 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>tel.schich</groupId>
-    <artifactId>JavaCAN</artifactId>
+    <artifactId>javacan</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>JavaCAN</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <includedir>${java.home}/../include</includedir>
-        <libdir>${java.home}/lib</libdir>
-        <includedir.linux>${includedir}/linux</includedir.linux>
         <headers.target>${project.build.directory}/jni</headers.target>
-        <os>linux</os>
-        <jdkversion>1.8</jdkversion>
+        <junit.minor>2</junit.minor>
+        <junit.version>5.${junit.minor}.0</junit.version>
+        <junit.runner.version>1.${junit.minor}.0</junit.runner.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.2.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>5.2.0</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.2.0</version>
+            <version>${junit.runner.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
-            <version>1.2.0</version>
+            <version>${junit.runner.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -58,72 +51,81 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>${jdkversion}</source>
-                    <target>${jdkversion}</target>
+                    <release>10</release>
+                    <compilerArguments>
+                        <h>${headers.target}</h>
+                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <version>1.0-alpha-9</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <compilerProvider>generic-classic</compilerProvider>
-                    <compilerExecutable>gcc</compilerExecutable>
-                    <linkerExecutable>gcc</linkerExecutable>
-                    <javahOutputDirectory>${headers.target}</javahOutputDirectory>
-                    <javahIncludes>
-                        <javahInclude>
-                            <className>tel.schich.javacan.SocketCAN</className>
-                            <headerName>javacan_socketcan.h</headerName>
-                        </javahInclude>
-                    </javahIncludes>
-                    <sources>
-                        <source>
-                            <directory>${basedir}/src/main/c</directory>
-                            <fileNames>
-                                <fileName>javacan_socketcan.c</fileName>
-                            </fileNames>
-                        </source>
-                        <source>
-                            <directory>${basedir}/src/main/c/include</directory>
-                        </source>
-                    </sources>
-                    <javahOS>${os}</javahOS>
-                    <compilerEndOptions>
-                        <compilerEndOption>-fPIC</compilerEndOption>
-                        <compilerEndOption>-std=c99</compilerEndOption>
-                    </compilerEndOptions>
-                    <linkerStartOptions>
-                        <linkerStartOption>-I ${libdir}</linkerStartOption>
-                    </linkerStartOptions>
-                    <linkerEndOptions>
-                        <linkerEndOption>-shared</linkerEndOption>
-                        <linkerEndOption>-fPIC</linkerEndOption>
-                    </linkerEndOptions>
-                    <linkerOutputDirectory>${project.build.directory}</linkerOutputDirectory>
-                    <linkerFinalName>libSocketCAN</linkerFinalName>
-                    <linkerFinalNameExt>so</linkerFinalNameExt>
-                </configuration>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
                 <executions>
                     <execution>
                         <id>compile-native</id>
-                        <phase>process-classes</phase>
+                        <phase>compile</phase>
                         <goals>
-                            <goal>javah</goal>
-                            <goal>compile</goal>
+                            <goal>exec</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>link-native</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>link</goal>
-                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>./compile-native.sh</executable>
+                            <arguments>
+                                <argument>${java.home}</argument>
+                                <argument>${project.name}</argument>
+                                <argument>${project.build.outputDirectory}/native</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>${junit.runner.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>${junit.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>fast-build</id>
+            <activation>
+                <property>
+                    <name>javacan.build.arch</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>compile-native</id>
+                                <configuration>
+                                    <environmentVariables>
+                                        <BUILD_ARCH>${javacan.build.arch}</BUILD_ARCH>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
