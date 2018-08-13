@@ -20,6 +20,12 @@ class CanSocketTest {
         assertNotNull(frame);
         System.out.println(frame);
 
+        assertFalse(socket.getLoopback(), "Loopback is off by default");
+        socket.setLoopback(true);
+        assertTrue(socket.getLoopback(), "Loopback is on after setting it on");
+        socket.setLoopback(false);
+        assertFalse(socket.getLoopback(), "Loopback is off after setting it off again");
+
         socket.setBlockingMode(true);
         socket.write(CanFrame.create(0x7EB, new byte[] {0x35, 0x35, 0x35}));
 

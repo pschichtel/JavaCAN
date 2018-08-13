@@ -41,6 +41,28 @@ public class CanSocket implements Closeable {
         return NativeInterface.setTimeouts(fileDescriptor, read, write);
     }
 
+    public void setLoopback(boolean loopback) {
+        final int result = NativeInterface.setLoopback(fileDescriptor, loopback);
+        if (result == -1) {
+            throw new JavaCANException("Unable to set loopback state!", getLastError());
+        }
+    }
+
+    public boolean getLoopback() {
+        final int result = NativeInterface.getLoopback(fileDescriptor);
+        if (result == -1) {
+            throw new JavaCANException("Unable to get loopback state!", getLastError());
+        }
+        return result == 1;
+    }
+
+    public void setFilters(CanFilter... filters) {
+        int[] ids = new int[filters.length];
+        int[] masks = new int[filters.length];
+
+        NativeInterface.setFilter(fileDescriptor, ids, masks);
+    }
+
     public CanFrame read() {
         CanFrame frame = NativeInterface.read(fileDescriptor);
         if (frame == null) {

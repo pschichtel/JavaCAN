@@ -132,3 +132,53 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIE
     clear_error();
     return (jboolean) (shutdown(fd, shut) != -1);
 }
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint fd, jintArray ids, jintArray masks) {
+
+    jsize idCount = (*env)->GetArrayLength(env, ids);
+    jsize maskCount = (*env)->GetArrayLength(env, masks);
+
+    if (idCount != maskCount) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    jsize count = (jsize) idCount;
+
+    jint *filterIds = malloc(count * sizeof(jint));
+    jint *filterMasks = malloc(count * sizeof(jint));
+    struct can_filter *filters = malloc(idCount * sizeof(struct can_filter));
+
+    (*env)->GetIntArrayRegion(env, ids, 0, count, filterIds);
+    (*env)->GetIntArrayRegion(env, masks, 0, count, filterMasks);
+
+    for (jsize i = 0; i < count; ++i) {
+        filters[i].can_id = (canid_t) filterIds[i];
+        filters[i].can_mask = (canid_t) filterMasks[i];
+    }
+
+    int result = setsockopt(fd, SOL_CAN_RAW, CAN_RAW_FILTER, filters, (socklen_t) count);
+    free(filters);
+    free(filterIds);
+    free(filterMasks);
+
+    return result;
+}
+
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint fd, jboolean looback) {
+    int state = looback ? 1 : 0;
+    clear_error();
+    return setsockopt(fd, SOL_CAN_RAW, CAN_RAW_LOOPBACK, &state, sizeof(int));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getLoopback(JNIEnv *env, jclass class, jint fd) {
+    int state = 0;
+    socklen_t len = 0;
+    clear_error();
+    int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_LOOPBACK, &state, &len);
+    if (result == -1) {
+        return -1;
+    }
+    return state;
+}

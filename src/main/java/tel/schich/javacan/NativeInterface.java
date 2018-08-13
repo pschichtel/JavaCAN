@@ -21,6 +21,9 @@ public class NativeInterface {
     public static native CanFrame read(int fd);
     public static native boolean write(int fd, CanFrame frame);
     public static native boolean shutdown(int fd, boolean read, boolean write);
+    public static native int setFilter(int fd, int[] id, int[] mask);
+    public static native int setLoopback(int fd, boolean loopback);
+    public static native int getLoopback(int fd);
 
     private static boolean initialized = false;
 
