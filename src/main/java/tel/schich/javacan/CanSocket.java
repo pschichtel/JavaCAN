@@ -8,8 +8,8 @@ public class CanSocket extends HasFileDescriptor {
 
     private final int sockFD;
 
-    private CanSocket(int fd) {
-        sockFD = fd;
+    private CanSocket(int sock) {
+        sockFD = sock;
     }
 
     public void bind(@NonNull String interfaceName) throws NativeException {
@@ -56,10 +56,7 @@ public class CanSocket extends HasFileDescriptor {
         if (result == -1) {
             throw new NativeException("Unable to get loopback state!");
         }
-        if (result == -2) {
-            throw new IOException("Failed to read the socket option");
-        }
-        return result == 1;
+        return result > 1;
     }
 
     public void setReceiveOwnMessages(boolean receiveOwnMessages) throws NativeException {
@@ -69,7 +66,7 @@ public class CanSocket extends HasFileDescriptor {
         }
     }
 
-    public boolean getReceiveOwnMessages() throws NativeException {
+    public boolean isReceivingOwnMessages() throws NativeException {
         final int result = NativeInterface.getReceiveOwnMessages(sockFD);
         if (result == -1) {
             throw new NativeException("Unable to get receive own messages state!");
@@ -107,23 +104,7 @@ public class CanSocket extends HasFileDescriptor {
         }
     }
 
-    public void shutdown() throws NativeException {
-        shutdown(true, true);
-    }
-
-    public void shutdown(boolean read, boolean write) throws NativeException {
-        if (NativeInterface.shutdown(sockFD, read, write) == -1) {
-            throw new NativeException("Unable to shutdown the socket!");
-        }
-    }
-
     public void close() throws NativeException {
-        try {
-            shutdown();
-        } catch (NativeException e) {
-            NativeInterface.close(sockFD);
-            throw e;
-        }
         if (NativeInterface.close(sockFD) == -1) {
             throw new NativeException("Unable to close the socket!");
         }

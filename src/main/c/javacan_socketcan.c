@@ -57,12 +57,12 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEn
     static const size_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
 
-    micros_to_timeval(&timeout, read);
+    micros_to_timeval(&timeout, (uint64_t) read);
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, timeout_len) != 0) {
         return false;
     }
 
-    micros_to_timeval(&timeout, write);
+    micros_to_timeval(&timeout, (uint64_t) write);
     return setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len);
 }
 
@@ -107,22 +107,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env
     return CAN_MTU - written_bytes;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIEnv *env, jclass class, jint sock, jboolean read, jboolean write) {
-    int shut = 0;
-    if (read && write) {
-        shut = SHUT_RDWR;
-    } else if (read) {
-        shut = SHUT_RD;
-    } else if (write) {
-        shut = SHUT_WR;
-    } else {
-        return true;
-    }
-    return shutdown(sock, shut);
-}
-
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint sock, jintArray ids, jintArray masks) {
-
     jsize idCount = (*env)->GetArrayLength(env, ids);
     jsize maskCount = (*env)->GetArrayLength(env, masks);
 
@@ -199,7 +184,8 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getAllowsockFrame
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setErrorFilter(JNIEnv *env, jclass class, jint sock, jint mask) {
-    return setsockopt(sock, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &mask, sizeof(mask));
+    can_err_mask_t err_mask = (can_err_mask_t) mask;
+    return setsockopt(sock, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &err_mask, sizeof(err_mask));
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JNIEnv *env, jclass class, jint sock) {

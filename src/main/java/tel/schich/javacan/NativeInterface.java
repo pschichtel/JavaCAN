@@ -12,31 +12,34 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class NativeInterface {
 
+    static class Errno {
+        public static final int EAGAIN = 11;
+    }
+
     public static native long resolveInterfaceName(@NonNull String interfaceName);
     public static native int createSocket();
-    public static native int bindSocket(int fd, long interfaceId);
-    public static native int close(int fd);
+    public static native int bindSocket(int sock, long interfaceId);
+    public static native int close(int sock);
     public static native int errno();
     @NonNull
     public static native String errstr(int errno);
-    public static native int setBlockingMode(int fd, boolean block);
-    public static native int getBlockingMode(int fd);
-    public static native int setTimeouts(int fd, long read, long write);
+    public static native int setBlockingMode(int sock, boolean block);
+    public static native int getBlockingMode(int sock);
+    public static native int setTimeouts(int sock, long read, long write);
     @Nullable
-    public static native CanFrame read(int fd);
-    public static native int write(int fd, @NonNull CanFrame frame);
-    public static native int shutdown(int fd, boolean read, boolean write);
-    public static native int setFilter(int fd, int[] id, int[] mask);
-    public static native int setLoopback(int fd, boolean loopback);
-    public static native int getLoopback(int fd);
-    public static native int setReceiveOwnMessages(int fd, boolean receiveOwnMessages);
-    public static native int getReceiveOwnMessages(int fd);
-    public static native int setJoinFilters(int fd, boolean join);
-    public static native int getJoinFilters(int fd);
-    public static native int setAllowFdFrames(int fd, boolean allow);
-    public static native int getAllowFdFrames(int fd);
-    public static native int setErrorFilter(int fd, int mask);
-    public static native int getErrorFilter(int fd);
+    public static native CanFrame read(int sock);
+    public static native int write(int sock, @NonNull CanFrame frame);
+    public static native int setFilter(int sock, int[] id, int[] mask);
+    public static native int setLoopback(int sock, boolean enable);
+    public static native int getLoopback(int sock);
+    public static native int setReceiveOwnMessages(int sock, boolean enable);
+    public static native int getReceiveOwnMessages(int sock);
+    public static native int setJoinFilters(int sock, boolean enable);
+    public static native int getJoinFilters(int sock);
+    public static native int setAllowFdFrames(int sock, boolean enable);
+    public static native int getAllowFdFrames(int sock);
+    public static native int setErrorFilter(int sock, int mask);
+    public static native int getErrorFilter(int sock);
 
     private static boolean initialized = false;
 

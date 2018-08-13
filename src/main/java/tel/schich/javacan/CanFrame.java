@@ -1,5 +1,8 @@
 package tel.schich.javacan;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class CanFrame {
     public static final int EFF_FLAG = 0x80000000;
     public static final int RTR_FLAG = 0x40000000;
@@ -77,5 +80,21 @@ public class CanFrame {
             }
         }
         return sb.append("])").toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CanFrame)) return false;
+        CanFrame canFrame = (CanFrame) o;
+        return id == canFrame.id &&
+                Arrays.equals(payload, canFrame.payload);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(id);
+        result = 31 * result + Arrays.hashCode(payload);
+        return result;
     }
 }

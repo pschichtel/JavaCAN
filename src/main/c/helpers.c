@@ -55,19 +55,17 @@ int is_blocking(int sock) {
 }
 
 int set_boolean_opt(int sock, int opt, bool enable) {
-    int state = enable ? 1 : 0;
+    int enabled = enable ? 1 : 0;
 
-    return setsockopt(sock, SOL_CAN_RAW, opt, &state, sizeof(state));
+    return setsockopt(sock, SOL_CAN_RAW, opt, (void*)&enabled, sizeof(enabled));
 }
 
 int get_boolean_opt(int sock, int opt) {
-    int enabled = -2;
-    socklen_t len = 0;
+    int enabled;
+    socklen_t len;
 
-    int result = getsockopt(sock, SOL_CAN_RAW, opt, &enabled, &len);
-    printf("after getsockopt: %d, %d\n", enabled, len);
-    fflush(stdout);
-    if (result == -1) {
+    int result = getsockopt(sock, SOL_CAN_RAW, opt, (void*)&enabled, &len);
+        if (result == -1) {
         return -1;
     }
     return enabled;

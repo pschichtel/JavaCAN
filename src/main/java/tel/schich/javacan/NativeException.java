@@ -20,6 +20,18 @@ public class NativeException extends Exception {
         }
     }
 
+    public boolean mayTryAgain() {
+        if (error == null) {
+            return false;
+        }
+        switch (error.errorNumber) {
+            case NativeInterface.Errno.EAGAIN:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public OSError getError() {
         return error;
     }
