@@ -64,6 +64,21 @@ public class CanSocket implements Closeable {
         return result == 1;
     }
 
+    public void setReceiveOwnMessages(boolean receiveOwnMessages) {
+        final int result = NativeInterface.setReceiveOwnMessages(fileDescriptor, receiveOwnMessages);
+        if (result == -1) {
+            throw new JavaCANException("Unable to set receive own messages state!", getLastError());
+        }
+    }
+
+    public boolean getReceiveOwnMessages() {
+        final int result = NativeInterface.getReceiveOwnMessages(fileDescriptor);
+        if (result == -1) {
+            throw new JavaCANException("Unable to get receive own messages state!", getLastError());
+        }
+        return result == 1;
+    }
+
     public void setFilters(CanFilter... filters) {
         int[] ids = new int[filters.length];
         int[] masks = new int[filters.length];

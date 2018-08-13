@@ -187,3 +187,20 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getLoopback(JNIEn
     }
     return state;
 }
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveOwnMessages(JNIEnv *env, jclass class, jint fd, jboolean receive_own) {
+    int state = receive_own ? 1 : 0;
+    clear_error();
+    return setsockopt(fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &state, sizeof(int));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveOwnMessages(JNIEnv *env, jclass class, jint fd) {
+    int state = 0;
+    socklen_t len = 0;
+    clear_error();
+    int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &state, &len);
+    if (result == -1) {
+        return -1;
+    }
+    return state;
+}

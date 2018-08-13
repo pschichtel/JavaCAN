@@ -28,6 +28,12 @@ class CanSocketTest {
         socket.setLoopback(false);
         assertFalse(socket.getLoopback(), "Loopback is off after setting it off again");
 
+        assertFalse(socket.getReceiveOwnMessages(), "Receive own messages is off by default");
+        socket.setReceiveOwnMessages(true);
+        assertTrue(socket.getReceiveOwnMessages(), "Receive own messages is on after setting it on");
+        socket.setReceiveOwnMessages(false);
+        assertFalse(socket.getReceiveOwnMessages(), "Receive own messages is off after setting it off again");
+
         socket.setBlockingMode(true);
         socket.write(CanFrame.create(0x7EB, new byte[] {0x35, 0x35, 0x35}));
 

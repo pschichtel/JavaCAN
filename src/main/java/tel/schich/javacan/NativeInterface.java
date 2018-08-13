@@ -25,6 +25,8 @@ public class NativeInterface {
     public static native int setFilter(int fd, int[] id, int[] mask);
     public static native int setLoopback(int fd, boolean loopback);
     public static native int getLoopback(int fd);
+    public static native int setReceiveOwnMessages(int fd, boolean receiveOwnMessages);
+    public static native int getReceiveOwnMessages(int fd);
 
     private static boolean initialized = false;
 
