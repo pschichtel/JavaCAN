@@ -52,7 +52,14 @@ do
     chmod +x "$proxy"
 
     lib_output="$base/lib$libname-${translated_arch}.so"
-    "$proxy" gcc -I"$src" -I"$base/jni" -I"$jni_headers" -I"$jni_headers/linux" -o"$compiler_dir/javacan_socketcan.o" -c "$src/javacan_socketcan.c" -shared -fPIC -std=c99 || exit 1
-    "$proxy" gcc -I "$jni_libs" -o"$lib_output" "$compiler_dir/javacan_socketcan.o" -fPIC -std=c99 -shared || exit 1
+    c_files=(helpers javacan_socketcan)
+    out_files=()
+    for c_file in "${c_files[@]}"
+    do
+        out_file="$compiler_dir/$c_file.o"
+        "$proxy" gcc -I"$src" -I"$base/jni" -I"$jni_headers" -I"$jni_headers/linux" -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
+        out_files+=("$out_file")
+    done
+    "$proxy" gcc -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -fPIC -std=c99 -shared || exit 1
     mv "$lib_output" "$output_dir"
 done

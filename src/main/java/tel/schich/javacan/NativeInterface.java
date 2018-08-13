@@ -7,17 +7,20 @@ import java.nio.file.Path;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class SocketCAN {
+public class NativeInterface {
 
-    public static native int resolveInterfaceName(String interfaceName);
+    public static native long resolveInterfaceName(String interfaceName);
     public static native int createSocket();
-    public static native boolean bindSocket(int fd, int interfaceId);
+    public static native int bindSocket(int fd, long interfaceId);
     public static native int closeSocket(int fd);
     public static native int errno();
     public static native String errstr(int errno);
     public static native boolean setBlockingMode(int fd, boolean block);
     public static native boolean setTimeouts(int fd, long read, long write);
-    public static native boolean poll(int fd, long timeoutMillis);
+    public static native boolean poll(int fd, int timeoutMillis);
+    public static native CanFrame read(int fd);
+    public static native boolean write(int fd, CanFrame frame);
+    public static native boolean shutdown(int fd, boolean read, boolean write);
 
     private static boolean initialized = false;
 
@@ -42,7 +45,7 @@ public class SocketCAN {
             }
 
             final String sourceLibPath = "/native/lib" + libName + "-" + archSuffix + ".so";
-            try (InputStream libStream = SocketCAN.class.getResourceAsStream(sourceLibPath)) {
+            try (InputStream libStream = NativeInterface.class.getResourceAsStream(sourceLibPath)) {
                 if (libStream == null) {
                     throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
                 }

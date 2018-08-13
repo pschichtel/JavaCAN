@@ -9,7 +9,7 @@ public class CanFrame {
     private static final int ERR_MASK = 0x1fffffff;
 
     private final int id;
-    public final byte[] payload;
+    private final byte[] payload;
 
     private CanFrame(int id, byte[] payload) {
         this.id = id;
@@ -18,6 +18,12 @@ public class CanFrame {
 
     public int getId() {
         return (isExtended() ? (id & EFF_MASK) : (id & SFF_MASK));
+    }
+
+    public byte[] getPayload() {
+        byte[] copy = new byte[payload.length];
+        System.arraycopy(payload, 0, copy, 0, payload.length);
+        return copy;
     }
 
     public boolean isExtended() {
@@ -49,5 +55,21 @@ public class CanFrame {
 
     public static CanFrame create(int id, int d0, int d1, int d2, int d3, int d4, int d5, int d6, int d7) {
         return create(id, d0, d1, d2, d3, d4, d5, d6, d7);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("CanFrame(")
+                .append(String.format("%02X", getId()))
+                .append(", ")
+                .append(payload.length)
+                .append(", [");
+        if (payload.length > 0) {
+            sb.append(String.format("%02X", payload[0]));
+            for (int i = 1; i < payload.length; i++) {
+                sb.append(", ").append(String.format("%02X", payload[0]));
+            }
+        }
+        return sb.append("])").toString();
     }
 }

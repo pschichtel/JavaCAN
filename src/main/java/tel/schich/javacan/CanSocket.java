@@ -2,49 +2,76 @@ package tel.schich.javacan;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.DatagramChannel;
-import java.util.Optional;
 
 public class CanSocket implements Closeable {
 
     private final int fileDescriptor;
 
-    private CanSocket(int fileDescriptor) {
-        this.fileDescriptor = fileDescriptor;
+    public CanSocket() {
+        fileDescriptor = makeFD();
     }
 
-    public boolean setBlockingMode(boolean block) {
-        return SocketCAN.setBlockingMode(fileDescriptor, block);
-    }
-
-    public boolean setTimeouts(long read, long write) {
-        return SocketCAN.setTimeouts(fileDescriptor, read, write);
-    }
-
-    public void close() throws IOException {
-        SocketCAN.closeSocket(fileDescriptor);
-    }
-
-    public static CanSocket create(String interfaceName) {
-        int interfaceId = SocketCAN.resolveInterfaceName(interfaceName);
-        int fd = SocketCAN.createSocket();
+    private static int makeFD() {
+        int fd = NativeInterface.createSocket();
         if (fd == -1) {
             throw new JavaCANException("Unable to create socket!", getLastError());
         }
-        if (SocketCAN.bindSocket(fd, interfaceId)) {
-            final NativeError lastError = getLastError();
-            SocketCAN.closeSocket(fd);
-            throw new JavaCANException("Unable to bind the socket!", lastError);
+        return fd;
+    }
+
+    public void bind(String interfaceName) {
+        final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
+        if (ifindex == 0) {
+            throw new JavaCANException("Unknown interface: " + interfaceName, getLastError());
         }
-        return new CanSocket(fd);
+
+        final int result = NativeInterface.bindSocket(fileDescriptor, ifindex);
+        if (result == -1) {
+            throw new JavaCANException("Unable to bind!", getLastError());
+        }
+    }
+
+    public void setBlockingMode(boolean block) {
+        if (!NativeInterface.setBlockingMode(fileDescriptor, block)) {
+            throw new JavaCANException("Unable to set the blocking mode!", getLastError());
+        }
+    }
+
+    public boolean setTimeouts(long read, long write) {
+        return NativeInterface.setTimeouts(fileDescriptor, read, write);
+    }
+
+    public CanFrame read() {
+        CanFrame frame = NativeInterface.read(fileDescriptor);
+        if (frame == null) {
+            throw new JavaCANException("Unable to read a frame!", getLastError());
+        }
+        return frame;
+    }
+
+    public boolean write(CanFrame frame) {
+        return NativeInterface.write(fileDescriptor, frame);
+    }
+
+    public boolean shutdown() {
+        return shutdown(true, true);
+    }
+
+    public boolean shutdown(boolean read, boolean write) {
+        return NativeInterface.shutdown(fileDescriptor, read, write);
+    }
+
+    public void close() throws IOException {
+        shutdown();
+        NativeInterface.closeSocket(fileDescriptor);
     }
 
     private static NativeError getLastError() {
-        int lastErrno = SocketCAN.errno();
+        int lastErrno = NativeInterface.errno();
         if (lastErrno == 0) {
             return null;
         }
-        String lastErrstr = SocketCAN.errstr(lastErrno);
+        String lastErrstr = NativeInterface.errstr(lastErrno);
 
         return new NativeError(lastErrno, lastErrstr);
     }

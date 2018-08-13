@@ -1,4 +1,5 @@
-#include <tel_schich_javacan_SocketCAN.h>
+#include "helpers.h"
+#include <tel_schich_javacan_NativeInterface.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <linux/can.h>
@@ -9,67 +10,44 @@
 #include <stdint.h>
 #include <errno.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/time.h>
 #include <poll.h>
+#include <jni.h>
 
-#define MICROS_PER_SECOND 1000000
-
-
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
-    unsigned int ifindex = if_nametoindex(ifname);
+    unsigned int ifindex = interface_name_to_index(ifname);
     (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
     return ifindex;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createSocket(JNIEnv *env, jclass class) {
-    return socket(AF_CAN, SOCK_RAW, CAN_RAW);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createSocket(JNIEnv *env, jclass class) {
+    return create_can_raw_socket();
 }
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_bindSocket(JNIEnv *env, jclass class, jint fd, jint interfaceId) {
-    struct sockaddr_can addr;
-    addr.can_family = AF_CAN;
-    addr.can_ifindex = interfaceId;
-    return bind(fd, (const struct sockaddr *) &addr, sizeof(struct sockaddr_can)) == 0;
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_bindSocket(JNIEnv *env, jclass class, jint fd, jlong iface) {
+    return bind_can_socket(fd, (unsigned int) (iface & 0xFFFFFFFF));
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_closeSocket(JNIEnv *env, jclass class, jint fd) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_closeSocket(JNIEnv *env, jclass class, jint fd) {
     return close(fd);
 }
 
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_errno(JNIEnv *env, jclass class) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_errno(JNIEnv *env, jclass class) {
     return errno;
 }
 
-JNIEXPORT jstring JNICALL Java_tel_schich_javacan_SocketCAN_errstr(JNIEnv *env, jclass class, jint err) {
+JNIEXPORT jstring JNICALL Java_tel_schich_javacan_NativeInterface_errstr(JNIEnv *env, jclass class, jint err) {
     char *errstr = strerror(err);
     return (*env)->NewStringUTF(env, errstr);
 }
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv *env, jclass class, jint fd, jboolean block) {
-    int old_fl = fcntl(fd, F_GETFL);
-    if (old_fl == -1) {
-        return false;
-    }
 
-    int new_fl;
-    if (block) {
-        new_fl = old_fl & ~O_NONBLOCK;
-    } else {
-        new_fl = old_fl | O_NONBLOCK;
-    }
-
-    return fcntl(fd, new_fl) != -1;
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setBlockingMode(JNIEnv *env, jclass class, jint fd, jboolean block) {
+    return (jboolean) (set_blocking_mode(fd, block) != -1);
 }
 
-void micros_to_timeval(struct timeval *t, jlong micros) {
-    t->tv_sec = micros / MICROS_PER_SECOND;
-    t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
-}
-
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_setTimeouts(JNIEnv *env, jclass class, jint fd, jlong read, jlong write) {
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint fd, jlong read, jlong write) {
     static const size_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
 
@@ -79,11 +57,11 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_setTimeouts(JNIEnv 
     }
 
     micros_to_timeval(&timeout, write);
-    return setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len) == 0;
+    return (jboolean) (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len) == 0);
 }
 
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, jclass clas, jint fd, jlong timeout) {
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_poll(JNIEnv *env, jclass clas, jint fd, jint timeout) {
     struct pollfd pfd;
     pfd.fd = fd;
     pfd.events = POLLIN;
@@ -99,5 +77,58 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, j
     }
 
     return true;
-return true;
+}
+
+
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint fd) {
+    jclass frameClass = (*env)->FindClass(env, "tel/schich/javacan/CanFrame");
+    jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(I[B)V");
+
+    struct can_frame frame;
+    frame.can_id = 0;
+    frame.can_dlc = 0;
+    clear_error();
+    ssize_t bytes_read = read(fd, &frame, CAN_MTU);
+    if (bytes_read != CAN_MTU) {
+        return NULL;
+    }
+
+    jbyteArray jBuf = (*env)->NewByteArray(env, frame.can_dlc);
+    (*env)->SetByteArrayRegion(env, jBuf, 0, frame.can_dlc, (const jbyte *) frame.data);
+    jobject object = (*env)->NewObject(env, frameClass, ctor, frame.can_id, jBuf);
+    return object;
+}
+
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint fd, jobject frameObj) {
+
+    struct can_frame frame;
+    jclass frameClass = (*env)->GetObjectClass(env, frameObj);
+
+    jmethodID getIdMethod = (*env)->GetMethodID(env, frameClass, "getId", "()I");
+    jint id = (*env)->CallIntMethod(env, frameObj, getIdMethod);
+    frame.can_id = (canid_t) id;
+
+    jmethodID getPayloadMethod = (*env)->GetMethodID(env, frameClass, "getPayload", "()[B");
+    jbyteArray payload = (*env)->CallObjectMethod(env, frameObj, getPayloadMethod);
+    jsize length = (*env)->GetArrayLength(env, payload);
+    frame.can_dlc = (__u8) length;
+    (*env)->GetByteArrayRegion(env, payload, 0, length, (jbyte *) frame.data);
+
+    clear_error();
+    return (jboolean) (write(fd, &frame, CAN_MTU) == CAN_MTU);
+}
+
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIEnv *env, jclass class, jint fd, jboolean read, jboolean write) {
+    int shut = 0;
+    if (read && write) {
+        shut = SHUT_RDWR;
+    } else if (read) {
+        shut = SHUT_RD;
+    } else if (write) {
+        shut = SHUT_WR;
+    } else {
+        return true;
+    }
+    clear_error();
+    return (jboolean) (shutdown(fd, shut) != -1);
 }
