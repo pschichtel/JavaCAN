@@ -17,4 +17,14 @@ public class OSError {
     public String toString() {
         return "OSError{" + "errorNumber=" + errorNumber + ", errorMessage='" + errorMessage + '\'' + '}';
     }
+
+    @Nullable
+    public static OSError getLast() {
+        int lastErrno = NativeInterface.errno();
+        if (lastErrno == 0) {
+            return null;
+        }
+
+        return new OSError(lastErrno, NativeInterface.errstr(lastErrno));
+    }
 }

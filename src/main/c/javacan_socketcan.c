@@ -54,7 +54,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getBlockingMode(J
     return get_blocking_mode(fd);
 }
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint fd, jlong read, jlong write) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint fd, jlong read, jlong write) {
     static const size_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
 
@@ -87,7 +87,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *e
     return object;
 }
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint fd, jobject frameObj) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint fd, jobject frameObj) {
 
     struct can_frame frame;
     jclass frameClass = (*env)->GetObjectClass(env, frameObj);
@@ -105,7 +105,7 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv 
     return (jboolean) (write(fd, &frame, CAN_MTU) == CAN_MTU);
 }
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIEnv *env, jclass class, jint fd, jboolean read, jboolean write) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIEnv *env, jclass class, jint fd, jboolean read, jboolean write) {
     int shut = 0;
     if (read && write) {
         shut = SHUT_RDWR;
@@ -116,7 +116,7 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIE
     } else {
         return true;
     }
-    return (jboolean) (shutdown(fd, shut) != -1);
+    return shutdown(fd, shut);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint fd, jintArray ids, jintArray masks) {

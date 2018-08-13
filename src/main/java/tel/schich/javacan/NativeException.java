@@ -3,6 +3,10 @@ package tel.schich.javacan;
 public class NativeException extends Exception {
     private final OSError error;
 
+    public NativeException(String message) {
+        this(message, OSError.getLast());
+    }
+
     public NativeException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;

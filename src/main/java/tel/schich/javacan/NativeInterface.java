@@ -21,11 +21,11 @@ public class NativeInterface {
     public static native String errstr(int errno);
     public static native int setBlockingMode(int fd, boolean block);
     public static native int getBlockingMode(int fd);
-    public static native boolean setTimeouts(int fd, long read, long write);
+    public static native int setTimeouts(int fd, long read, long write);
     @Nullable
     public static native CanFrame read(int fd);
-    public static native boolean write(int fd, @NonNull CanFrame frame);
-    public static native boolean shutdown(int fd, boolean read, boolean write);
+    public static native int write(int fd, @NonNull CanFrame frame);
+    public static native int shutdown(int fd, boolean read, boolean write);
     public static native int setFilter(int fd, int[] id, int[] mask);
     public static native int setLoopback(int fd, boolean loopback);
     public static native int getLoopback(int fd);
