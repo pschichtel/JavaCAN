@@ -2,6 +2,8 @@ package tel.schich.javacan;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.io.IOException;
+
 public class CanSocket extends HasFileDescriptor {
 
     private final int sockFD;
@@ -28,7 +30,7 @@ public class CanSocket extends HasFileDescriptor {
         }
     }
 
-    public boolean getBlockingMode() throws NativeException {
+    public boolean isBlocking() throws NativeException {
         final int result = NativeInterface.getBlockingMode(sockFD);
         if (result == -1) {
             throw new NativeException("Unable to get blocking mode!");
@@ -49,10 +51,13 @@ public class CanSocket extends HasFileDescriptor {
         }
     }
 
-    public boolean getLoopback() throws NativeException {
+    public boolean isLoopback() throws NativeException, IOException {
         final int result = NativeInterface.getLoopback(sockFD);
         if (result == -1) {
             throw new NativeException("Unable to get loopback state!");
+        }
+        if (result == -2) {
+            throw new IOException("Failed to read the socket option");
         }
         return result == 1;
     }
@@ -88,14 +93,18 @@ public class CanSocket extends HasFileDescriptor {
         return frame;
     }
 
-    public boolean write(CanFrame frame) throws NativeException {
+    public void write(CanFrame frame) throws NativeException, IOException {
         if (frame == null) {
-            return false;
+            throw new NullPointerException("The frame may not be null!");
         }
-        if (NativeInterface.write(sockFD, frame) == -1) {
+
+        final int writtenBytes = NativeInterface.write(sockFD, frame);
+        if (writtenBytes == -1) {
             throw new NativeException("Unable to write the frame!");
         }
-        return true;
+        if (writtenBytes > 0) {
+            throw new IOException("Unable to write the entire frame!");
+        }
     }
 
     public void shutdown() throws NativeException {

@@ -8,12 +8,12 @@
 #define MICROS_PER_SECOND 1000000
 
 int set_blocking_mode(int, bool);
-int get_blocking_mode(int);
+int is_blocking(int);
 void micros_to_timeval(struct timeval *, uint64_t);
 unsigned int interface_name_to_index(const char *);
 int bind_can_socket(int, unsigned int);
 int create_can_raw_socket();
 int set_boolean_opt(int fd, int opt, bool enable);
-int get_boolean_opt(int fd, int opt);
+int get_boolean_opt(int sock, int opt);
 
 #endif

@@ -23,7 +23,7 @@ int set_blocking_mode(int fd, bool block) {
     return fcntl(fd, F_SETFL, new_flags);
 }
 
-int get_blocking_mode(int fd) {
+int is_blocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags == -1) {
         return -1;
@@ -60,11 +60,13 @@ int set_boolean_opt(int fd, int opt, bool enable) {
     return setsockopt(fd, SOL_CAN_RAW, opt, &state, sizeof(state));
 }
 
-int get_boolean_opt(int fd, int opt) {
-    int state = 0;
+int get_boolean_opt(int sock, int opt) {
+    int state = -2;
     socklen_t len = 0;
 
-    int result = getsockopt(fd, SOL_CAN_RAW, opt, &state, &len);
+    int result = getsockopt(sock, SOL_CAN_RAW, opt, &state, &len);
+    printf("after getsockopt: %d, %d\n", state, len);
+    fflush(stdout);
     if (result == -1) {
         return -1;
     }

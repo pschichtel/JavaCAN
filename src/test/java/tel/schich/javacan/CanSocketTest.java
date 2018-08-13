@@ -14,19 +14,19 @@ class CanSocketTest {
 
         final CanSocket socket = CanSocket.create();
         socket.bind("vcan0");
-        assertTrue(socket.getBlockingMode(), "Socket is blocking by default");
+        assertTrue(socket.isBlocking(), "Socket is blocking by default");
         socket.setBlockingMode(false);
-        assertFalse(socket.getBlockingMode(), "Socket is non blocking after setting it so");
+        assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
         Runtime.getRuntime().exec("cansend vcan0 7EA#345234");
         final CanFrame frame = socket.read();
         assertNotNull(frame);
         System.out.println(frame);
 
-        assertFalse(socket.getLoopback(), "Loopback is off by default");
+        assertFalse(socket.isLoopback(), "Loopback is off by default");
         socket.setLoopback(true);
-        assertTrue(socket.getLoopback(), "Loopback is on after setting it on");
+        assertTrue(socket.isLoopback(), "Loopback is on after setting it on");
         socket.setLoopback(false);
-        assertFalse(socket.getLoopback(), "Loopback is off after setting it off again");
+        assertFalse(socket.isLoopback(), "Loopback is off after setting it off again");
 
         assertFalse(socket.getReceiveOwnMessages(), "Receive own messages is off by default");
         socket.setReceiveOwnMessages(true);
