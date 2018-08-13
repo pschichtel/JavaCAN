@@ -14,7 +14,9 @@ class CanSocketTest {
 
         final CanSocket socket = new CanSocket();
         socket.bind("vcan0");
+        assertTrue(socket.getBlockingMode(), "Socket is blocking by default");
         socket.setBlockingMode(false);
+        assertFalse(socket.getBlockingMode(), "Socket is non blocking after setting it so");
         Runtime.getRuntime().exec("cansend vcan0 7EA#345234");
         final CanFrame frame = socket.read();
         assertNotNull(frame);

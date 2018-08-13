@@ -32,9 +32,17 @@ public class CanSocket implements Closeable {
     }
 
     public void setBlockingMode(boolean block) {
-        if (!NativeInterface.setBlockingMode(fileDescriptor, block)) {
+        if (NativeInterface.setBlockingMode(fileDescriptor, block) == -1) {
             throw new JavaCANException("Unable to set the blocking mode!", getLastError());
         }
+    }
+
+    public boolean getBlockingMode() {
+        final int result = NativeInterface.getBlockingMode(fileDescriptor);
+        if (result == -1) {
+            throw new JavaCANException("Unable to get blocking mode!", getLastError());
+        }
+        return result == 1;
     }
 
     public boolean setTimeouts(long read, long write) {

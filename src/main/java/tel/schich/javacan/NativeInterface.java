@@ -15,7 +15,8 @@ public class NativeInterface {
     public static native int closeSocket(int fd);
     public static native int errno();
     public static native String errstr(int errno);
-    public static native boolean setBlockingMode(int fd, boolean block);
+    public static native int setBlockingMode(int fd, boolean block);
+    public static native int getBlockingMode(int fd);
     public static native boolean setTimeouts(int fd, long read, long write);
     public static native boolean poll(int fd, int timeoutMillis);
     public static native CanFrame read(int fd);

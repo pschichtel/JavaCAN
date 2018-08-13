@@ -9,6 +9,7 @@
 
 void clear_error();
 int set_blocking_mode(int, bool);
+int get_blocking_mode(int);
 void micros_to_timeval(struct timeval *, uint64_t);
 unsigned int interface_name_to_index(const char *);
 int bind_can_socket(int, unsigned int);

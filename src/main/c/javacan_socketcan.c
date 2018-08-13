@@ -43,8 +43,13 @@ JNIEXPORT jstring JNICALL Java_tel_schich_javacan_NativeInterface_errstr(JNIEnv 
 }
 
 
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setBlockingMode(JNIEnv *env, jclass class, jint fd, jboolean block) {
-    return (jboolean) (set_blocking_mode(fd, block) != -1);
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setBlockingMode(JNIEnv *env, jclass class, jint fd, jboolean block) {
+    return set_blocking_mode(fd, block);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getBlockingMode(JNIEnv *env, jclass class, jint fd) {
+    return get_blocking_mode(fd);
 }
 
 JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint fd, jlong read, jlong write) {

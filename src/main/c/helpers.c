@@ -29,6 +29,15 @@ int set_blocking_mode(int fd, bool block) {
     return fcntl(fd, F_SETFL, new_flags);
 }
 
+int get_blocking_mode(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        return -1;
+    }
+
+    return (flags & O_NONBLOCK) == 0 ? 1 : 0;
+}
+
 void micros_to_timeval(struct timeval *t, uint64_t micros) {
     t->tv_sec = micros / MICROS_PER_SECOND;
     t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
