@@ -166,32 +166,32 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv 
 }
 
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean looback) {
-    return set_boolean_opt(sock, CAN_RAW_LOOPBACK, looback);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+    return set_boolean_opt(sock, CAN_RAW_LOOPBACK, enable);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getLoopback(JNIEnv *env, jclass class, jint sock) {
     return get_boolean_opt(sock, CAN_RAW_LOOPBACK);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveOwnMessages(JNIEnv *env, jclass class, jint sock, jboolean receive_own) {
-    return set_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS, receive_own);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveOwnMessages(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+    return set_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS, enable);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveOwnMessages(JNIEnv *env, jclass class, jint sock) {
     return get_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setJoinFilters(JNIEnv *env, jclass class, jint sock, jboolean join) {
-    return set_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS, join);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setJoinFilters(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+    return set_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS, enable);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getJoinFilters(JNIEnv *env, jclass class, jint sock) {
     return get_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowsockFrames(JNIEnv *env, jclass class, jint sock, jboolean allow) {
-    return set_boolean_opt(sock, CAN_RAW_FD_FRAMES, allow);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowsockFrames(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+    return set_boolean_opt(sock, CAN_RAW_FD_FRAMES, enable);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getAllowsockFrames(JNIEnv *env, jclass class, jint sock) {

@@ -7,38 +7,12 @@
 #include <errno.h>
 #include <stdio.h>
 
-int set_blocking_mode(int fd, bool block) {
-    int old_flags = fcntl(fd, F_GETFL, 0);
-    if (old_flags == -1) {
-        return -1;
-    }
-
-    int new_flags;
-    if (block) {
-        new_flags = old_flags & ~O_NONBLOCK;
-    } else {
-        new_flags = old_flags | O_NONBLOCK;
-    }
-
-    return fcntl(fd, F_SETFL, new_flags);
-}
-
-int is_blocking(int fd) {
-    int flags = fcntl(fd, F_GETFL, 0);
-    if (flags == -1) {
-        return -1;
-    }
-
-    return (flags & O_NONBLOCK) == 0 ? 1 : 0;
-}
-
-void micros_to_timeval(struct timeval *t, uint64_t micros) {
-    t->tv_sec = micros / MICROS_PER_SECOND;
-    t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
-}
-
 unsigned int interface_name_to_index(const char *name) {
     return if_nametoindex(name);
+}
+
+int create_can_raw_socket() {
+    return socket(PF_CAN, SOCK_RAW, CAN_RAW);
 }
 
 int bind_can_socket(int sock, unsigned int interface) {
@@ -50,25 +24,51 @@ int bind_can_socket(int sock, unsigned int interface) {
     return bind(sock, (const struct sockaddr *) &addr, length);
 }
 
-int create_can_raw_socket() {
-    return socket(PF_CAN, SOCK_RAW, CAN_RAW);
+void micros_to_timeval(struct timeval *t, uint64_t micros) {
+    t->tv_sec = micros / MICROS_PER_SECOND;
+    t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
 }
 
-int set_boolean_opt(int fd, int opt, bool enable) {
+int set_blocking_mode(int sock, bool block) {
+    int old_flags = fcntl(sock, F_GETFL, 0);
+    if (old_flags == -1) {
+        return -1;
+    }
+
+    int new_flags;
+    if (block) {
+        new_flags = old_flags & ~O_NONBLOCK;
+    } else {
+        new_flags = old_flags | O_NONBLOCK;
+    }
+
+    return fcntl(sock, F_SETFL, new_flags);
+}
+
+int is_blocking(int sock) {
+    int flags = fcntl(sock, F_GETFL, 0);
+    if (flags == -1) {
+        return -1;
+    }
+
+    return (flags & O_NONBLOCK) == 0 ? 1 : 0;
+}
+
+int set_boolean_opt(int sock, int opt, bool enable) {
     int state = enable ? 1 : 0;
 
-    return setsockopt(fd, SOL_CAN_RAW, opt, &state, sizeof(state));
+    return setsockopt(sock, SOL_CAN_RAW, opt, &state, sizeof(state));
 }
 
 int get_boolean_opt(int sock, int opt) {
-    int state = -2;
+    int enabled = -2;
     socklen_t len = 0;
 
-    int result = getsockopt(sock, SOL_CAN_RAW, opt, &state, &len);
-    printf("after getsockopt: %d, %d\n", state, len);
+    int result = getsockopt(sock, SOL_CAN_RAW, opt, &enabled, &len);
+    printf("after getsockopt: %d, %d\n", enabled, len);
     fflush(stdout);
     if (result == -1) {
         return -1;
     }
-    return state;
+    return enabled;
 }
