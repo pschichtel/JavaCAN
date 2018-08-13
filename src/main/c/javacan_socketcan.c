@@ -13,6 +13,9 @@
 #include <poll.h>
 #include <jni.h>
 
+// TODO remove this once dockcross has moved on to a new kernel
+#define _CAN_RAW_JOIN_FILTERS (CAN_RAW_FD_FRAMES + 1)
+
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
     unsigned int ifindex = interface_name_to_index(ifname);
@@ -172,35 +175,48 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv 
 
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint fd, jboolean looback) {
-    int state = looback ? 1 : 0;
-    clear_error();
-    return setsockopt(fd, SOL_CAN_RAW, CAN_RAW_LOOPBACK, &state, sizeof(int));
+    return set_boolean_opt(fd, CAN_RAW_LOOPBACK, looback);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getLoopback(JNIEnv *env, jclass class, jint fd) {
-    int state = 0;
-    socklen_t len = 0;
-    clear_error();
-    int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_LOOPBACK, &state, &len);
-    if (result == -1) {
-        return -1;
-    }
-    return state;
+    return get_boolean_opt(fd, CAN_RAW_LOOPBACK);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveOwnMessages(JNIEnv *env, jclass class, jint fd, jboolean receive_own) {
-    int state = receive_own ? 1 : 0;
-    clear_error();
-    return setsockopt(fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &state, sizeof(int));
+    return set_boolean_opt(fd, CAN_RAW_RECV_OWN_MSGS, receive_own);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveOwnMessages(JNIEnv *env, jclass class, jint fd) {
-    int state = 0;
+    return get_boolean_opt(fd, CAN_RAW_RECV_OWN_MSGS);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setJoinFilters(JNIEnv *env, jclass class, jint fd, jboolean join) {
+    return set_boolean_opt(fd, _CAN_RAW_JOIN_FILTERS, join);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getJoinFilters(JNIEnv *env, jclass class, jint fd) {
+    return get_boolean_opt(fd, _CAN_RAW_JOIN_FILTERS);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowFdFrames(JNIEnv *env, jclass class, jint fd, jboolean allow) {
+    return set_boolean_opt(fd, CAN_RAW_FD_FRAMES, allow);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getAllowFdFrames(JNIEnv *env, jclass class, jint fd) {
+    return get_boolean_opt(fd, CAN_RAW_FD_FRAMES);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setErrorFilter(JNIEnv *env, jclass class, jint fd, jint mask) {
+    return setsockopt(fd, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &mask, sizeof(mask));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JNIEnv *env, jclass class, jint fd) {
+    int mask = 0;
     socklen_t len = 0;
     clear_error();
-    int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &state, &len);
+    int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &mask, &len);
     if (result == -1) {
         return -1;
     }
-    return state;
+    return mask;
 }

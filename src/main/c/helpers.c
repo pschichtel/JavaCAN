@@ -62,3 +62,20 @@ int create_can_raw_socket() {
     clear_error();
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
 }
+
+int set_boolean_opt(int fd, int opt, bool enable) {
+    int state = enable ? 1 : 0;
+    clear_error();
+    return setsockopt(fd, SOL_CAN_RAW, opt, &state, sizeof(int));
+}
+
+int get_boolean_opt(int fd, int opt) {
+    int state = 0;
+    socklen_t len = 0;
+    clear_error();
+    int result = getsockopt(fd, SOL_CAN_RAW, opt, &state, &len);
+    if (result == -1) {
+        return -1;
+    }
+    return state;
+}

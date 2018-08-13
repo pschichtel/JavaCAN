@@ -27,6 +27,12 @@ public class NativeInterface {
     public static native int getLoopback(int fd);
     public static native int setReceiveOwnMessages(int fd, boolean receiveOwnMessages);
     public static native int getReceiveOwnMessages(int fd);
+    public static native int setJoinFilters(int fd, boolean join);
+    public static native int getJoinFilters(int fd);
+    public static native int setAllowFdFrames(int fd, boolean allow);
+    public static native int getAllowFdFrames(int fd);
+    public static native int setErrorFilter(int fd, int mask);
+    public static native int getErrorFilter(int fd);
 
     private static boolean initialized = false;
 
