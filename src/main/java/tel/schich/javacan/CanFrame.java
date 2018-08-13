@@ -50,10 +50,16 @@ public class CanFrame {
     }
 
     public static CanFrame create(int id, byte d0, byte d1, byte d2, byte d3, byte d4, byte d5, byte d6, byte d7) {
+        if (id > EFF_MASK) {
+            throw new IllegalArgumentException("id too large!");
+        }
         return new CanFrame(id, new byte[] {d0, d1, d2, d3, d4, d5, d6, d7});
     }
 
     public static CanFrame create(int id, int d0, int d1, int d2, int d3, int d4, int d5, int d6, int d7) {
+        if (id > EFF_MASK) {
+            throw new IllegalArgumentException("id too large!");
+        }
         return create(id, d0, d1, d2, d3, d4, d5, d6, d7);
     }
 
