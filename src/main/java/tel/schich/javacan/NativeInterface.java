@@ -1,5 +1,8 @@
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -9,18 +12,19 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class NativeInterface {
 
-    public static native long resolveInterfaceName(String interfaceName);
+    public static native long resolveInterfaceName(@NonNull String interfaceName);
     public static native int createSocket();
     public static native int bindSocket(int fd, long interfaceId);
-    public static native int closeSocket(int fd);
+    public static native int close(int fd);
     public static native int errno();
+    @NonNull
     public static native String errstr(int errno);
     public static native int setBlockingMode(int fd, boolean block);
     public static native int getBlockingMode(int fd);
     public static native boolean setTimeouts(int fd, long read, long write);
-    public static native boolean poll(int fd, int timeoutMillis);
+    @Nullable
     public static native CanFrame read(int fd);
-    public static native boolean write(int fd, CanFrame frame);
+    public static native boolean write(int fd, @NonNull CanFrame frame);
     public static native boolean shutdown(int fd, boolean read, boolean write);
     public static native int setFilter(int fd, int[] id, int[] mask);
     public static native int setLoopback(int fd, boolean loopback);

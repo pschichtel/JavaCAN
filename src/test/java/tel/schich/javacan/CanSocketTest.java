@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class CanSocketTest {
 
     @Test
-    void create() throws IOException {
+    void create() throws IOException, NativeException {
         NativeInterface.initialize();
 
-        final CanSocket socket = new CanSocket();
+        final CanSocket socket = CanSocket.create();
         socket.bind("vcan0");
         assertTrue(socket.getBlockingMode(), "Socket is blocking by default");
         socket.setBlockingMode(false);

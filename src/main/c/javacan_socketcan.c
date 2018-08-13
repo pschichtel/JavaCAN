@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <errno.h>
 #include <string.h>
-#include <poll.h>
 #include <jni.h>
 
 // TODO remove this once dockcross has moved on to a new kernel
@@ -31,7 +30,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_bindSocket(JNIEnv
     return bind_can_socket(fd, (unsigned int) (iface & 0xFFFFFFFF));
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_closeSocket(JNIEnv *env, jclass class, jint fd) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_close(JNIEnv *env, jclass class, jint fd) {
     return close(fd);
 }
 
@@ -68,26 +67,6 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(J
     return (jboolean) (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len) == 0);
 }
 
-
-JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_poll(JNIEnv *env, jclass clas, jint fd, jint timeout) {
-    struct pollfd pfd;
-    pfd.fd = fd;
-    pfd.events = POLLIN;
-    errno = 0;
-    int result = poll(&pfd, 1, timeout);
-
-    if (pfd.revents & POLLERR != 0) {
-        return false;
-    }
-
-    if (pfd.revents & POLLHUP != 0) {
-        return false;
-    }
-
-    return true;
-}
-
-
 JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint fd) {
     jclass frameClass = (*env)->FindClass(env, "tel/schich/javacan/CanFrame");
     jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(I[B)V");
@@ -95,7 +74,8 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *e
     struct can_frame frame;
     frame.can_id = 0;
     frame.can_dlc = 0;
-    clear_error();
+
+    // TODO CAN FD support would be nice
     ssize_t bytes_read = read(fd, &frame, CAN_MTU);
     if (bytes_read != CAN_MTU) {
         return NULL;
@@ -122,7 +102,6 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv 
     frame.can_dlc = (__u8) length;
     (*env)->GetByteArrayRegion(env, payload, 0, length, (jbyte *) frame.data);
 
-    clear_error();
     return (jboolean) (write(fd, &frame, CAN_MTU) == CAN_MTU);
 }
 
@@ -137,7 +116,6 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_NativeInterface_shutdown(JNIE
     } else {
         return true;
     }
-    clear_error();
     return (jboolean) (shutdown(fd, shut) != -1);
 }
 
@@ -154,8 +132,20 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv 
     jsize count = (jsize) idCount;
 
     jint *filterIds = malloc(count * sizeof(jint));
+    if (!filterIds) {
+        return -1;
+    }
     jint *filterMasks = malloc(count * sizeof(jint));
+    if (!filterMasks) {
+        free(filterIds);
+        return -1;
+    }
     struct can_filter *filters = malloc(idCount * sizeof(struct can_filter));
+    if (!filters) {
+        free(filterIds);
+        free(filterMasks);
+        return -1;
+    }
 
     (*env)->GetIntArrayRegion(env, ids, 0, count, filterIds);
     (*env)->GetIntArrayRegion(env, masks, 0, count, filterMasks);
@@ -213,7 +203,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setErrorFilter(JN
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JNIEnv *env, jclass class, jint fd) {
     int mask = 0;
     socklen_t len = 0;
-    clear_error();
+
     int result = getsockopt(fd, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &mask, &len);
     if (result == -1) {
         return -1;

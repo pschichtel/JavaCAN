@@ -1,80 +1,75 @@
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.Closeable;
 import java.io.IOException;
 
-public class CanSocket implements Closeable {
+public class CanSocket extends HasFileDescriptor implements Closeable {
 
-    private final int fileDescriptor;
+    private final int sockFD;
 
-    public CanSocket() {
-        fileDescriptor = makeFD();
+    private CanSocket(int fd) {
+        sockFD = fd;
     }
 
-    private static int makeFD() {
-        int fd = NativeInterface.createSocket();
-        if (fd == -1) {
-            throw new JavaCANException("Unable to create socket!", getLastError());
-        }
-        return fd;
-    }
-
-    public void bind(String interfaceName) {
+    public void bind(@NonNull String interfaceName) throws NativeException {
         final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
         if (ifindex == 0) {
-            throw new JavaCANException("Unknown interface: " + interfaceName, getLastError());
+            throw new NativeException("Unknown interface: " + interfaceName, getLastError());
         }
 
-        final int result = NativeInterface.bindSocket(fileDescriptor, ifindex);
+        final int result = NativeInterface.bindSocket(sockFD, ifindex);
         if (result == -1) {
-            throw new JavaCANException("Unable to bind!", getLastError());
+            throw new NativeException("Unable to bind!", getLastError());
         }
     }
 
-    public void setBlockingMode(boolean block) {
-        if (NativeInterface.setBlockingMode(fileDescriptor, block) == -1) {
-            throw new JavaCANException("Unable to set the blocking mode!", getLastError());
+    public void setBlockingMode(boolean block) throws NativeException {
+        if (NativeInterface.setBlockingMode(sockFD, block) == -1) {
+            throw new NativeException("Unable to set the blocking mode!", getLastError());
         }
     }
 
-    public boolean getBlockingMode() {
-        final int result = NativeInterface.getBlockingMode(fileDescriptor);
+    public boolean getBlockingMode() throws NativeException {
+        final int result = NativeInterface.getBlockingMode(sockFD);
         if (result == -1) {
-            throw new JavaCANException("Unable to get blocking mode!", getLastError());
+            throw new NativeException("Unable to get blocking mode!", getLastError());
         }
         return result == 1;
     }
 
     public boolean setTimeouts(long read, long write) {
-        return NativeInterface.setTimeouts(fileDescriptor, read, write);
+        return NativeInterface.setTimeouts(sockFD, read, write);
     }
 
-    public void setLoopback(boolean loopback) {
-        final int result = NativeInterface.setLoopback(fileDescriptor, loopback);
+    public void setLoopback(boolean loopback) throws NativeException {
+        final int result = NativeInterface.setLoopback(sockFD, loopback);
         if (result == -1) {
-            throw new JavaCANException("Unable to set loopback state!", getLastError());
+            throw new NativeException("Unable to set loopback state!", getLastError());
         }
     }
 
-    public boolean getLoopback() {
-        final int result = NativeInterface.getLoopback(fileDescriptor);
+    public boolean getLoopback() throws NativeException {
+        final int result = NativeInterface.getLoopback(sockFD);
         if (result == -1) {
-            throw new JavaCANException("Unable to get loopback state!", getLastError());
+            throw new NativeException("Unable to get loopback state!", getLastError());
         }
         return result == 1;
     }
 
-    public void setReceiveOwnMessages(boolean receiveOwnMessages) {
-        final int result = NativeInterface.setReceiveOwnMessages(fileDescriptor, receiveOwnMessages);
+    public void setReceiveOwnMessages(boolean receiveOwnMessages) throws NativeException {
+        final int result = NativeInterface.setReceiveOwnMessages(sockFD, receiveOwnMessages);
         if (result == -1) {
-            throw new JavaCANException("Unable to set receive own messages state!", getLastError());
+            throw new NativeException("Unable to set receive own messages state!", getLastError());
         }
     }
 
-    public boolean getReceiveOwnMessages() {
-        final int result = NativeInterface.getReceiveOwnMessages(fileDescriptor);
+    public boolean getReceiveOwnMessages() throws NativeException {
+        final int result = NativeInterface.getReceiveOwnMessages(sockFD);
         if (result == -1) {
-            throw new JavaCANException("Unable to get receive own messages state!", getLastError());
+            throw new NativeException("Unable to get receive own messages state!", getLastError());
         }
         return result == 1;
     }
@@ -83,19 +78,23 @@ public class CanSocket implements Closeable {
         int[] ids = new int[filters.length];
         int[] masks = new int[filters.length];
 
-        NativeInterface.setFilter(fileDescriptor, ids, masks);
+        NativeInterface.setFilter(sockFD, ids, masks);
     }
 
-    public CanFrame read() {
-        CanFrame frame = NativeInterface.read(fileDescriptor);
+    @NonNull
+    public CanFrame read() throws NativeException {
+        CanFrame frame = NativeInterface.read(sockFD);
         if (frame == null) {
-            throw new JavaCANException("Unable to read a frame!", getLastError());
+            throw new NativeException("Unable to read a frame!", getLastError());
         }
         return frame;
     }
 
     public boolean write(CanFrame frame) {
-        return NativeInterface.write(fileDescriptor, frame);
+        if (frame == null) {
+            return false;
+        }
+        return NativeInterface.write(sockFD, frame);
     }
 
     public boolean shutdown() {
@@ -103,36 +102,36 @@ public class CanSocket implements Closeable {
     }
 
     public boolean shutdown(boolean read, boolean write) {
-        return NativeInterface.shutdown(fileDescriptor, read, write);
+        return NativeInterface.shutdown(sockFD, read, write);
     }
 
     public void close() throws IOException {
         shutdown();
-        NativeInterface.closeSocket(fileDescriptor);
+        NativeInterface.close(sockFD);
     }
 
-    private static NativeError getLastError() {
+    @Nullable
+    private static OSError getLastError() {
         int lastErrno = NativeInterface.errno();
         if (lastErrno == 0) {
             return null;
         }
-        String lastErrstr = NativeInterface.errstr(lastErrno);
 
-        return new NativeError(lastErrno, lastErrstr);
+        return new OSError(lastErrno, NativeInterface.errstr(lastErrno));
     }
 
-    public static class NativeError {
-        public final int errorNumber;
-        public final String errorMessage;
-
-        public NativeError(int errorNumber, String errorMessage) {
-            this.errorNumber = errorNumber;
-            this.errorMessage = errorMessage;
-        }
-
-        @Override
-        public String toString() {
-            return "NativeError{" + "errorNumber=" + errorNumber + ", errorMessage='" + errorMessage + '\'' + '}';
-        }
+    @Override
+    int getFileDescriptor() {
+        return sockFD;
     }
+
+    @NonNull
+    public static CanSocket create() throws NativeException {
+        int fd = NativeInterface.createSocket();
+        if (fd == -1) {
+            throw new NativeException("Unable to create socket!", getLastError());
+        }
+        return new CanSocket(fd);
+    }
+
 }

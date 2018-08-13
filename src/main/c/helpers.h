@@ -7,7 +7,6 @@
 
 #define MICROS_PER_SECOND 1000000
 
-void clear_error();
 int set_blocking_mode(int, bool);
 int get_blocking_mode(int);
 void micros_to_timeval(struct timeval *, uint64_t);
