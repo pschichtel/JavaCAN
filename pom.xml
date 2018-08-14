@@ -62,7 +62,7 @@
         <junit.minor>2</junit.minor>
         <junit.version>5.${junit.minor}.0</junit.version>
         <junit.runner.version>1.${junit.minor}.0</junit.runner.version>
-        <releaseProfile>release</releaseProfile>
+        <releaseProfile>release-javacan</releaseProfile>
     </properties>
 
     <dependencies>
@@ -225,7 +225,7 @@
 
     <profiles>
         <profile>
-            <id>release</id>
+            <id>release-javacan</id>
             <build>
                 <plugins>
                     <plugin>
