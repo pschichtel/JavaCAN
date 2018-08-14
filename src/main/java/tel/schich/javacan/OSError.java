@@ -52,7 +52,7 @@ public class OSError {
 
     public boolean mayTryAgain() {
         switch (errorNumber) {
-            case NativeInterface.Errno.EAGAIN:
+            case LinuxErrno.EAGAIN:
                 return true;
             default:
                 return false;

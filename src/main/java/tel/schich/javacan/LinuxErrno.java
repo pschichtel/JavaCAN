@@ -22,9 +22,7 @@
  */
 package tel.schich.javacan;
 
-/**
- * Marks an object that can expose a file descriptor. Used in conjunction with {@link CanUnsafe}.
- */
-public abstract class HasFileDescriptor {
-    abstract int getFileDescriptor();
+public class LinuxErrno {
+    public static final int EIO    = 5;
+    public static final int EAGAIN = 11;
 }

@@ -20,9 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
+import tel.schich.javacan.*;
 
 import java.io.IOException;
 
@@ -34,7 +35,7 @@ class CanSocketTest {
 
     @Test
     void testOptions() throws NativeException {
-        NativeInterface.initialize();
+        JavaCAN.initialize();
 
         final CanSocket socket = CanSocket.create();
         socket.bind(CAN_INTERFACE);
@@ -73,7 +74,7 @@ class CanSocketTest {
 
     @Test
     void testNonBlockingRead() throws IOException, NativeException, InterruptedException {
-        NativeInterface.initialize();
+        JavaCAN.initialize();
 
         final CanSocket socket = CanSocket.create();
         socket.bind(CAN_INTERFACE);
@@ -92,7 +93,7 @@ class CanSocketTest {
 
     @Test
     void testBlockingRead() throws NativeException {
-        NativeInterface.initialize();
+        JavaCAN.initialize();
 
         final CanSocket socket = CanSocket.create();
         socket.bind("vcan0");
@@ -104,7 +105,7 @@ class CanSocketTest {
             final NativeException err = assertThrows(NativeException.class, socket::read);
             final long delta = (System.currentTimeMillis() - start) / 1000;
             assertEquals(5L, delta);
-            assertEquals(NativeInterface.Errno.EAGAIN, err.getError().errorNumber);
+            assertEquals(LinuxErrno.EAGAIN, err.getError().errorNumber);
             assertTrue(err.mayTryAgain());
         }
 
@@ -114,14 +115,14 @@ class CanSocketTest {
             final NativeException err = assertThrows(NativeException.class, socket::read);
             final long delta = (System.currentTimeMillis() - start) / 1000;
             assertEquals(2L, delta);
-            assertEquals(NativeInterface.Errno.EAGAIN, err.getError().errorNumber);
+            assertEquals(LinuxErrno.EAGAIN, err.getError().errorNumber);
             assertTrue(err.mayTryAgain());
         }
     }
 
     @Test
     void testLoopback() throws NativeException, IOException {
-        NativeInterface.initialize();
+        JavaCAN.initialize();
 
         final CanSocket a = CanSocket.create();
         a.bind("vcan0");
@@ -143,7 +144,7 @@ class CanSocketTest {
 
     @Test
     void testOwnMessage() throws NativeException, IOException {
-        NativeInterface.initialize();
+        JavaCAN.initialize();
 
         final CanSocket a = CanSocket.create();
         a.bind("vcan0");
