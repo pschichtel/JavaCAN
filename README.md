@@ -34,6 +34,7 @@ Currently the full build process includes the following architectures:
 
 For compilation:
 
+* Maven 3 or newer
 * A locally running docker daemon and permissions to run containers
 * Java 10 or newer installed
 * Bash
