@@ -42,7 +42,7 @@ For compilation:
 For tests:
 
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
-* A read or virtual CAN interface named "vcan0"
+* A real or virtual CAN interface named "vcan0"
 
 ### Building
 
