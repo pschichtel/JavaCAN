@@ -1,6 +1,6 @@
 # JavaCAN
 
-A simple JNI wrapper for the socketcan API provided by the Linux kernel. As it is wrapping a Linux Kernel API, it intended for use on Linux only.
+A simple JNI wrapper for the socketcan API provided by the Linux kernel. As it is wrapping a Linux Kernel API, it is intended for use on Linux only.
 
 The implementation is loosely based on the [socketcan-rs](https://github.com/mbr/socketcan-rs) project.
 
