@@ -58,6 +58,16 @@ class CanSocketTest {
         socket.setAllowFDFrames(false);
         assertFalse(socket.isAllowFDFrames(), "FD frames not supported after setting them off again");
 
+        assertFalse(socket.isJoiningFilters(), "Filters are not joined by default");
+        socket.setJoinFilters(true);
+        assertTrue(socket.isJoiningFilters(), "Filters are joined after enabling it");
+        socket.setJoinFilters(false);
+        assertFalse(socket.isJoiningFilters(), "Filters are not joined after disabling it");
+
+        assertEquals(0, socket.getErrorFilter(), "No error filters by default");
+        socket.setErrorFilter(0xFF);
+        assertEquals(0xFF, socket.getErrorFilter(), "Newly set error filter should be available");
+
         socket.close();
     }
 

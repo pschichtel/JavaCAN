@@ -111,6 +111,36 @@ public class CanSocket extends HasFileDescriptor {
         return result != 0;
     }
 
+    public void setJoinFilters(boolean joinFilters) throws NativeException {
+        final int result = NativeInterface.setJoinFilters(sockFD, joinFilters);
+        if (result == -1) {
+            throw new NativeException("Unable to set the filter joining mode!");
+        }
+    }
+
+    public boolean isJoiningFilters() throws NativeException {
+        final int result = NativeInterface.getJoinFilters(sockFD);
+        if (result == -1) {
+            throw new NativeException("Unable to get the filter joining mode!");
+        }
+        return result != 0;
+    }
+
+    public void setErrorFilter(int mask) throws NativeException {
+        final int result = NativeInterface.setErrorFilter(sockFD, mask);
+        if (result == -1) {
+            throw new NativeException("Unable to set the error filter!");
+        }
+    }
+
+    public int getErrorFilter() throws NativeException {
+        final int mask = NativeInterface.getErrorFilter(sockFD);
+        if (mask == -1) {
+            throw new NativeException("Unable to get the error filter!");
+        }
+        return mask;
+    }
+
     public void setFilters(CanFilter... filters) {
         int[] ids = new int[filters.length];
         int[] masks = new int[filters.length];

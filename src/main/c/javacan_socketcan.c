@@ -224,7 +224,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setErrorFilter(JN
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JNIEnv *env, jclass class, jint sock) {
     int mask = 0;
-    socklen_t len = 0;
+    socklen_t len = sizeof(mask);
 
     int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &mask, &len);
     if (result == -1) {
