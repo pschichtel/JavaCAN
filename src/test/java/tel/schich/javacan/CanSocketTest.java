@@ -52,7 +52,7 @@ class CanSocketTest {
     }
 
     @Test
-    void testBlockingReceive() throws NativeException {
+    void testBlockingRead() throws NativeException {
         NativeInterface.initialize();
 
         final CanSocket socket = CanSocket.create();
