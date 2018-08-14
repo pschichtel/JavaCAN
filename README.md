@@ -7,14 +7,13 @@ The implementation is loosely based on the [socketcan-rs](https://github.com/mbr
 ## What works?
 
 * Creating and binding CAN_RAW sockets
-* Sending and receiving standard CAN frames with and without EFF
+* Sending and receiving standard CAN and CAN-FD frames with and without EFF
 * Setting filters
 * Getting and setting all supported socket options
 * Rough test coverage
 
 ## What is missing?
 
-* CAN-FD support is missing, but would be simple to add
 * Support for other CAN protocols (e.g. BCM)
 
 ## Supported platforms
