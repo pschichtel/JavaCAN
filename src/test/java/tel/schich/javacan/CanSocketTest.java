@@ -8,23 +8,45 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CanSocketTest {
 
+    private static final String CAN_INTERFACE = "vcan0";
+
     @Test
-    void create() throws IOException, NativeException {
+    void testOptions() throws NativeException {
         NativeInterface.initialize();
 
         final CanSocket socket = CanSocket.create();
-        socket.bind("vcan0");
+        socket.bind(CAN_INTERFACE);
+
+        assertTrue(socket.isLoopback(), "loopback defaults to true");
+        socket.setLoopback(false);
+        assertFalse(socket.isLoopback(), "loopback is off after setting it so");
+        socket.setLoopback(true);
+        assertTrue(socket.isLoopback(), "loopback is on after setting on again");
+
+        socket.setLoopback(true);
+        assertFalse(socket.isReceivingOwnMessages(), "not receiving own messages by default");
+        socket.setReceiveOwnMessages(true);
+        assertTrue(socket.isReceivingOwnMessages(), "receiving own messages after enabling");
+        socket.setReceiveOwnMessages(false);
+        assertFalse(socket.isReceivingOwnMessages(), "not receiving own messages after setting it off again");
+
+        socket.close();
+    }
+
+    @Test
+    void testNonblockingRead() throws IOException, NativeException {
+        NativeInterface.initialize();
+
+        final CanSocket socket = CanSocket.create();
+        socket.bind(CAN_INTERFACE);
         assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
+        final CanFrame input = CanFrame.create(0x7EA, new byte[] {0x34, 0x52, 0x34});
         socket.setBlockingMode(false);
         assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
-        Runtime.getRuntime().exec("cansend vcan0 7EA#345234");
-        final CanFrame frame = socket.read();
-        assertNotNull(frame);
-        System.out.println(frame);
-
-        socket.setBlockingMode(true);
-        socket.write(CanFrame.create(0x7EB, new byte[] {0x35, 0x35, 0x35}));
+        CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+        final CanFrame output = socket.read();
+        assertEquals(input, output, "What comes in should come out");
 
         socket.close();
     }

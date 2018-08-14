@@ -51,12 +51,12 @@ public class CanSocket extends HasFileDescriptor {
         }
     }
 
-    public boolean isLoopback() throws NativeException, IOException {
+    public boolean isLoopback() throws NativeException {
         final int result = NativeInterface.getLoopback(sockFD);
         if (result == -1) {
             throw new NativeException("Unable to get loopback state!");
         }
-        return result > 1;
+        return result != 0;
     }
 
     public void setReceiveOwnMessages(boolean receiveOwnMessages) throws NativeException {
@@ -71,7 +71,7 @@ public class CanSocket extends HasFileDescriptor {
         if (result == -1) {
             throw new NativeException("Unable to get receive own messages state!");
         }
-        return result == 1;
+        return result != 0;
     }
 
     public void setFilters(CanFilter... filters) {
