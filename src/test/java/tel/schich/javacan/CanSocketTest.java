@@ -52,6 +52,12 @@ class CanSocketTest {
         socket.setReceiveOwnMessages(false);
         assertFalse(socket.isReceivingOwnMessages(), "not receiving own messages after setting it off again");
 
+        assertFalse(socket.isAllowFDFrames(), "FD frames not supported by default");
+        socket.setAllowFDFrames(true);
+        assertTrue(socket.isAllowFDFrames(), "FD frames supported after enabling");
+        socket.setAllowFDFrames(false);
+        assertFalse(socket.isAllowFDFrames(), "FD frames not supported after setting them off again");
+
         socket.close();
     }
 
@@ -145,5 +151,21 @@ class CanSocketTest {
         assertThrows(NativeException.class, a::read);
 
         a.close();
+    }
+
+    @Test
+    void testFDFrame() throws NativeException, IOException, InterruptedException {
+        final CanSocket sock = CanSocket.create();
+        sock.bind(CAN_INTERFACE);
+        sock.setAllowFDFrames(true);
+        sock.setBlockingMode(false);
+
+        // more than 8 data bytes
+        final CanFrame input = CanFrame.create(0x7ED, new byte[] {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22});
+        CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+        Thread.sleep(50);
+        final CanFrame output = sock.read();
+
+        assertEquals(input, output, "what comes in should come out");
     }
 }

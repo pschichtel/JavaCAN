@@ -49,4 +49,13 @@ public class OSError {
 
         return new OSError(lastErrno, NativeInterface.errstr(lastErrno));
     }
+
+    public boolean mayTryAgain() {
+        switch (errorNumber) {
+            case NativeInterface.Errno.EAGAIN:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

@@ -96,6 +96,21 @@ public class CanSocket extends HasFileDescriptor {
         return result != 0;
     }
 
+    public void setAllowFDFrames(boolean allowFDFrames) throws NativeException {
+        final int result = NativeInterface.setAllowFDFrames(sockFD, allowFDFrames);
+        if (result == -1) {
+            throw new NativeException("Unable to set FD frame support!");
+        }
+    }
+
+    public boolean isAllowFDFrames() throws NativeException {
+        final int result = NativeInterface.getAllowFDFrames(sockFD);
+        if (result == -1) {
+            throw new NativeException("Unable to get FD frame support!");
+        }
+        return result != 0;
+    }
+
     public void setFilters(CanFilter... filters) {
         int[] ids = new int[filters.length];
         int[] masks = new int[filters.length];
@@ -113,6 +128,24 @@ public class CanSocket extends HasFileDescriptor {
             throw new IOException("Frame is incomplete!");
         }
         return frame;
+    }
+
+    public CanFrame readRetrying() throws NativeException, IOException {
+        while (true) {
+            CanFrame frame = NativeInterface.read(sockFD);
+            if (frame == null) {
+                final OSError err = OSError.getLast();
+                if (err != null && err.mayTryAgain()) {
+                    continue;
+                } else {
+                    throw new NativeException("Unable to read a frame and retry is not possible!", err);
+                }
+            }
+            if (frame.isIncomplete()) {
+                throw new IOException("Frame is incomplete, no retrying!");
+            }
+            return frame;
+        }
     }
 
     public void write(CanFrame frame) throws NativeException, IOException {

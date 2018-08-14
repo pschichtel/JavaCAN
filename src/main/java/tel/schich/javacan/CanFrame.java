@@ -65,7 +65,7 @@ public class CanFrame {
     }
 
     public boolean isFDFrame() {
-        return this.flags != 0 || this.payload.length > MAX_FD_DATA_LENGTH;
+        return this.flags != 0 || this.payload.length > MAX_DATA_LENGTH;
     }
 
     boolean isIncomplete() {
@@ -90,15 +90,24 @@ public class CanFrame {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("CanFrame(")
+        StringBuilder sb = new StringBuilder("Can");
+        if (isFDFrame()) {
+            sb.append("FD");
+        }
+        sb.append("Frame(")
+                .append("ID=")
                 .append(String.format("%02X", getId()))
                 .append(", ")
+                .append("FLAGS=")
+                .append(String.format("%X", getFlags()))
+                .append(", ")
+                .append("LEN=")
                 .append(payload.length)
-                .append(", [");
+                .append(", DATA=[");
         if (payload.length > 0) {
             sb.append(String.format("%02X", payload[0]));
             for (int i = 1; i < payload.length; i++) {
-                sb.append(", ").append(String.format("%02X", payload[0]));
+                sb.append(", ").append(String.format("%02X", payload[i]));
             }
         }
         return sb.append("])").toString();

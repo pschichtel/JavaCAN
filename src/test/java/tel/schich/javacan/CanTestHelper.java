@@ -25,12 +25,26 @@ package tel.schich.javacan;
 import java.io.IOException;
 
 public class CanTestHelper {
-    public static void sendFrameViaUtils(String iface, CanFrame frame) throws IOException {
+    public static void sendFrameViaUtils(String iface, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();
         for (byte b : frame.getPayload()) {
-            data.append(String.format("%X", b));
+            data.append(String.format("%02X", b));
         }
-        String textframe = String.format("%X#%s", frame.getId(), data);
-        Runtime.getRuntime().exec(new String[] {"cansend", iface, textframe});
+
+        String textFrame;
+        if (frame.isFDFrame()) {
+            textFrame = String.format("%X##%X%s", frame.getId(), frame.getFlags(), data);
+        } else {
+            textFrame = String.format("%X#%s", frame.getId(), data);
+        }
+        final ProcessBuilder cansend = new ProcessBuilder("cansend", iface, textFrame);
+        cansend.redirectError(ProcessBuilder.Redirect.INHERIT);
+        cansend.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        cansend.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        final Process proc = cansend.start();
+        int result = proc.waitFor();
+        if (result != 0) {
+            throw new IllegalStateException("Failed to use cansend to send a CAN frame!");
+        }
     }
 }

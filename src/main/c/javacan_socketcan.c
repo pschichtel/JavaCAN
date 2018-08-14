@@ -209,11 +209,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getJoinFilters(JN
     return get_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowsockFrames(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowFDFrames(JNIEnv *env, jclass class, jint sock, jboolean enable) {
     return set_boolean_opt(sock, CAN_RAW_FD_FRAMES, enable);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getAllowsockFrames(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getAllowFDFrames(JNIEnv *env, jclass class, jint sock) {
     return get_boolean_opt(sock, CAN_RAW_FD_FRAMES);
 }
 

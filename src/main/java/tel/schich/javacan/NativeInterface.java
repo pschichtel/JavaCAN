@@ -32,7 +32,7 @@ import java.nio.file.Path;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class NativeInterface {
+class NativeInterface {
 
     static class Errno {
         public static final int EIO    = 5;
@@ -59,8 +59,8 @@ public class NativeInterface {
     public static native int getReceiveOwnMessages(int sock);
     public static native int setJoinFilters(int sock, boolean enable);
     public static native int getJoinFilters(int sock);
-    public static native int setAllowFdFrames(int sock, boolean enable);
-    public static native int getAllowFdFrames(int sock);
+    public static native int setAllowFDFrames(int sock, boolean enable);
+    public static native int getAllowFDFrames(int sock);
     public static native int setErrorFilter(int sock, int mask);
     public static native int getErrorFilter(int sock);
 

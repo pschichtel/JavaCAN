@@ -46,12 +46,7 @@ public class NativeException extends Exception {
         if (error == null) {
             return false;
         }
-        switch (error.errorNumber) {
-            case NativeInterface.Errno.EAGAIN:
-                return true;
-            default:
-                return false;
-        }
+        return error.mayTryAgain();
     }
 
     public OSError getError() {
