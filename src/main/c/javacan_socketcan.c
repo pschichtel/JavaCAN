@@ -1,3 +1,25 @@
+/**
+ * The MIT License
+ * Copyright © 2018 Phillip Schichtel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include "helpers.h"
 #include <tel_schich_javacan_NativeInterface.h>
 #include <unistd.h>
@@ -68,39 +90,46 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEn
 
 JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint sock) {
     jclass frameClass = (*env)->FindClass(env, "tel/schich/javacan/CanFrame");
-    jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(I[B)V");
+    jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(IB[B)V");
 
-    struct can_frame frame;
+    struct canfd_frame frame;
     frame.can_id = 0;
-    frame.can_dlc = 0;
+    frame.flags = 0;
+    frame.len = 0;
 
-    // TODO CAN sock support would be nice
-    ssize_t bytes_read = read(sock, &frame, CAN_MTU);
-    if (bytes_read != CAN_MTU) {
+    ssize_t bytes_read = read(sock, &frame, CANFD_MTU);
+    if (bytes_read != CAN_MTU && bytes_read != CANFD_MTU) {
+        if (bytes_read != -1) {
+            errno = EIO;
+        }
         return NULL;
     }
 
-    jbyteArray jBuf = (*env)->NewByteArray(env, frame.can_dlc);
-    (*env)->SetByteArrayRegion(env, jBuf, 0, frame.can_dlc, (const jbyte *) frame.data);
-    jobject object = (*env)->NewObject(env, frameClass, ctor, frame.can_id, jBuf);
+    jbyteArray jBuf = (*env)->NewByteArray(env, frame.len);
+    (*env)->SetByteArrayRegion(env, jBuf, 0, frame.len, (const jbyte *) frame.data);
+    jobject object = (*env)->NewObject(env, frameClass, ctor, frame.can_id, frame.flags, jBuf);
     return object;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jobject frameObj) {
-    struct can_frame frame;
+    struct canfd_frame frame;
     jclass frameClass = (*env)->GetObjectClass(env, frameObj);
 
     jmethodID getIdMethod = (*env)->GetMethodID(env, frameClass, "getId", "()I");
     jint id = (*env)->CallIntMethod(env, frameObj, getIdMethod);
     frame.can_id = (canid_t) id;
 
+    jmethodID getFlagsMethod = (*env)->GetMethodID(env, frameClass, "getFlags", "()B");
+    jbyte flags = (*env)->CallByteMethod(env, frameObj, getFlagsMethod);
+    frame.flags = (unsigned char) flags;
+
     jmethodID getPayloadMethod = (*env)->GetMethodID(env, frameClass, "getPayload", "()[B");
     jbyteArray payload = (*env)->CallObjectMethod(env, frameObj, getPayloadMethod);
     jsize length = (*env)->GetArrayLength(env, payload);
-    frame.can_dlc = (__u8) length;
+    frame.len = (unsigned char) length;
     (*env)->GetByteArrayRegion(env, payload, 0, length, (jbyte *) frame.data);
 
-    ssize_t written_bytes = write(sock, &frame, CAN_MTU);
+    ssize_t written_bytes = write(sock, &frame, length > 8 ? CANFD_MTU : CAN_MTU);
     if (written_bytes == -1) {
         return -1;
     }

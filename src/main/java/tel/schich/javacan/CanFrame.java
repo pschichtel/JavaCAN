@@ -1,3 +1,25 @@
+/*
+ * The MIT License
+ * Copyright © 2018 Phillip Schichtel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package tel.schich.javacan;
 
 import java.util.Arrays;
@@ -11,11 +33,20 @@ public class CanFrame {
     private static final int EFF_MASK = 0x1fffffff;
     private static final int ERR_MASK = 0x1fffffff;
 
+    public static final byte FD_NO_FLAGS = 0;
+    public static final byte FD_FLAG_BRS = 0x01;
+    public static final byte FD_FLAG_ESI = 0x02;
+
+    public static final int MAX_DATA_LENGTH = 8;
+    public static final int MAX_FD_DATA_LENGTH = 64;
+
     private final int id;
+    private final byte flags;
     private final byte[] payload;
 
-    private CanFrame(int id, byte[] payload) {
+    private CanFrame(int id, byte flags, byte[] payload) {
         this.id = id;
+        this.flags = 0;
         this.payload = payload;
     }
 
@@ -23,10 +54,18 @@ public class CanFrame {
         return (isExtended() ? (id & EFF_MASK) : (id & SFF_MASK));
     }
 
+    public byte getFlags() {
+        return flags;
+    }
+
     public byte[] getPayload() {
         byte[] copy = new byte[payload.length];
         System.arraycopy(payload, 0, copy, 0, payload.length);
         return copy;
+    }
+
+    public boolean isFDFrame() {
+        return this.flags != 0 || this.payload.length > MAX_FD_DATA_LENGTH;
     }
 
     public boolean isExtended() {
@@ -43,27 +82,6 @@ public class CanFrame {
 
     public boolean isRemoveTransmissionRequest() {
         return (id & RTR_FLAG) != 0;
-    }
-
-    public static CanFrame create(int id, byte[] payload) {
-        if (payload.length > 8) {
-            throw new IllegalArgumentException("payload must fit in 8 bytes!");
-        }
-        return new CanFrame(id, payload);
-    }
-
-    public static CanFrame create(int id, byte d0, byte d1, byte d2, byte d3, byte d4, byte d5, byte d6, byte d7) {
-        if (id > EFF_MASK) {
-            throw new IllegalArgumentException("id too large!");
-        }
-        return new CanFrame(id, new byte[] {d0, d1, d2, d3, d4, d5, d6, d7});
-    }
-
-    public static CanFrame create(int id, int d0, int d1, int d2, int d3, int d4, int d5, int d6, int d7) {
-        if (id > EFF_MASK) {
-            throw new IllegalArgumentException("id too large!");
-        }
-        return create(id, d0, d1, d2, d3, d4, d5, d6, d7);
     }
 
     @Override
@@ -96,5 +114,16 @@ public class CanFrame {
         int result = Objects.hash(id);
         result = 31 * result + Arrays.hashCode(payload);
         return result;
+    }
+
+    public static CanFrame create(int id, byte[] payload) {
+        return create(id, FD_NO_FLAGS, payload);
+    }
+
+    public static CanFrame create(int id, byte flags, byte[] payload) {
+        if (payload.length > MAX_FD_DATA_LENGTH) {
+            throw new IllegalArgumentException("payload must fit in " + MAX_FD_DATA_LENGTH + " bytes!");
+        }
+        return new CanFrame(id, flags, payload);
     }
 }
