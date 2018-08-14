@@ -104,10 +104,13 @@ public class CanSocket extends HasFileDescriptor {
     }
 
     @NonNull
-    public CanFrame read() throws NativeException {
+    public CanFrame read() throws NativeException, IOException {
         CanFrame frame = NativeInterface.read(sockFD);
         if (frame == null) {
             throw new NativeException("Unable to read a frame!");
+        }
+        if (frame.isIncomplete()) {
+            throw new IOException("Frame is incomplete!");
         }
         return frame;
     }

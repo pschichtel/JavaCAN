@@ -68,6 +68,10 @@ public class CanFrame {
         return this.flags != 0 || this.payload.length > MAX_FD_DATA_LENGTH;
     }
 
+    boolean isIncomplete() {
+        return this.payload == null;
+    }
+
     public boolean isExtended() {
         return (id & EFF_FLAG) != 0;
     }

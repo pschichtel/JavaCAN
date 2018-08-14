@@ -56,7 +56,7 @@ class CanSocketTest {
     }
 
     @Test
-    void testNonBlockingRead() throws IOException, NativeException {
+    void testNonBlockingRead() throws IOException, NativeException, InterruptedException {
         NativeInterface.initialize();
 
         final CanSocket socket = CanSocket.create();
@@ -67,6 +67,7 @@ class CanSocketTest {
         socket.setBlockingMode(false);
         assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
         CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+        Thread.sleep(50);
         final CanFrame output = socket.read();
         assertEquals(input, output, "What comes in should come out");
 

@@ -96,17 +96,22 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *e
     frame.can_id = 0;
     frame.flags = 0;
     frame.len = 0;
+    bool complete = true;
 
     ssize_t bytes_read = read(sock, &frame, CANFD_MTU);
     if (bytes_read != CAN_MTU && bytes_read != CANFD_MTU) {
-        if (bytes_read != -1) {
-            errno = EIO;
+        if (bytes_read == -1) {
+            return NULL;
+        } else {
+            complete = false;
         }
-        return NULL;
     }
 
-    jbyteArray jBuf = (*env)->NewByteArray(env, frame.len);
-    (*env)->SetByteArrayRegion(env, jBuf, 0, frame.len, (const jbyte *) frame.data);
+    jbyteArray jBuf = NULL;
+    if (complete) {
+        jBuf = (*env)->NewByteArray(env, frame.len);
+        (*env)->SetByteArrayRegion(env, jBuf, 0, frame.len, (const jbyte *) frame.data);
+    }
     jobject object = (*env)->NewObject(env, frameClass, ctor, frame.can_id, frame.flags, jBuf);
     return object;
 }
