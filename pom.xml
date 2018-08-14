@@ -10,7 +10,7 @@
 
     <groupId>tel.schich</groupId>
     <artifactId>javacan</artifactId>
-    <version>1.1.2</version>
+    <version>1.2-SNAPSHOT</version>
     <name>JavaCAN</name>
     <url>https://github.com/pschichtel/JavaCAN</url>
     <inceptionYear>2018</inceptionYear>
@@ -26,7 +26,7 @@
         <url>https://github.com/pschichtel/JavaCAN</url>
         <connection>scm:git:https://github.com/pschichtel/JavaCAN</connection>
         <developerConnection>scm:git:git@github.com:pschichtel/JavaCAN</developerConnection>
-        <tag>javacan-1.1.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <developers>
