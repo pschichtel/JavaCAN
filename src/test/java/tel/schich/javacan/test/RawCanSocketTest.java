@@ -29,7 +29,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CanSocketTest {
+class RawCanSocketTest {
 
     private static final String CAN_INTERFACE = "vcan0";
 
@@ -37,7 +37,7 @@ class CanSocketTest {
     void testOptions() throws NativeException {
         JavaCAN.initialize();
 
-        final CanSocket socket = CanSocket.create();
+        final RawCanSocket socket = RawCanSocket.create();
         socket.bind(CAN_INTERFACE);
 
         assertTrue(socket.isLoopback(), "loopback defaults to true");
@@ -76,7 +76,7 @@ class CanSocketTest {
     void testNonBlockingRead() throws IOException, NativeException, InterruptedException {
         JavaCAN.initialize();
 
-        final CanSocket socket = CanSocket.create();
+        final RawCanSocket socket = RawCanSocket.create();
         socket.bind(CAN_INTERFACE);
         assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
@@ -95,7 +95,7 @@ class CanSocketTest {
     void testBlockingRead() throws NativeException {
         JavaCAN.initialize();
 
-        final CanSocket socket = CanSocket.create();
+        final RawCanSocket socket = RawCanSocket.create();
         socket.bind("vcan0");
         socket.setBlockingMode(true);
 
@@ -124,10 +124,10 @@ class CanSocketTest {
     void testLoopback() throws NativeException, IOException {
         JavaCAN.initialize();
 
-        final CanSocket a = CanSocket.create();
+        final RawCanSocket a = RawCanSocket.create();
         a.bind("vcan0");
 
-        final CanSocket b = CanSocket.create();
+        final RawCanSocket b = RawCanSocket.create();
         b.bind("vcan0");
         b.setBlockingMode(false);
 
@@ -146,7 +146,7 @@ class CanSocketTest {
     void testOwnMessage() throws NativeException, IOException {
         JavaCAN.initialize();
 
-        final CanSocket a = CanSocket.create();
+        final RawCanSocket a = RawCanSocket.create();
         a.bind("vcan0");
 
         a.setBlockingMode(false);
@@ -166,7 +166,7 @@ class CanSocketTest {
 
     @Test
     void testFDFrame() throws NativeException, IOException, InterruptedException {
-        final CanSocket sock = CanSocket.create();
+        final RawCanSocket sock = RawCanSocket.create();
         sock.bind(CAN_INTERFACE);
         sock.setAllowFDFrames(true);
         sock.setBlockingMode(false);

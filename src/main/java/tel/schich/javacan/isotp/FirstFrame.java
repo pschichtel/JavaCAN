@@ -20,10 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+public class FirstFrame implements ISOTPFrame {
 
-public interface CanSocket {
-    void bind(@NonNull String interfaceName) throws NativeException;
+    private final byte[] payload;
+
+    public FirstFrame(byte[] payload) {
+        this.payload = payload;
+    }
+
+    @Override
+    public byte getType() {
+        return FrameType.FIRST.getCode();
+    }
+
+    public byte[] getPayload() {
+        byte[] out = new byte[payload.length];
+        System.arraycopy(payload, 0, out, 0, payload.length);
+        return out;
+    }
 }

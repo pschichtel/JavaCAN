@@ -24,6 +24,36 @@ package tel.schich.javacan;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public interface CanSocket {
-    void bind(@NonNull String interfaceName) throws NativeException;
+public class ISOTPSocket extends HasFileDescriptor implements CanSocket {
+
+    private final RawCanSocket socket;
+
+    private final boolean extendedAddressing;
+
+    private ISOTPSocket(RawCanSocket socket, boolean extendedAddressing) {
+        this.socket = socket;
+        this.extendedAddressing = extendedAddressing;
+    }
+
+    @Override
+    public void bind(@NonNull String interfaceName) throws NativeException {
+        socket.bind(interfaceName);
+    }
+
+    public boolean isExtendedAddressing() {
+        return extendedAddressing;
+    }
+
+    @Override
+    int getFileDescriptor() {
+        return 0;
+    }
+
+    public static ISOTPSocket create() throws NativeException {
+        return create(false);
+    }
+
+    public static ISOTPSocket create(boolean extendedAddressing) throws NativeException {
+        return new ISOTPSocket(RawCanSocket.create(), extendedAddressing);
+    }
 }

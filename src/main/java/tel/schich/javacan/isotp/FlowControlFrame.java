@@ -20,10 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-public interface CanSocket {
-    void bind(@NonNull String interfaceName) throws NativeException;
+public class FlowControlFrame implements ISOTPFrame {
+    @Override
+    public byte getType() {
+        return FrameType.FLOW_CONTROL.getCode();
+    }
 }
