@@ -39,7 +39,7 @@ class NativeInterface {
     public static native int setTimeouts(int sock, long read, long write);
     @Nullable
     public static native CanFrame read(int sock);
-    public static native int write(int sock, @NonNull CanFrame frame);
+    public static native int write(int sock, int id, byte flags, byte[] payload);
     public static native int setFilter(int sock, int[] id, int[] mask);
     public static native int setLoopback(int sock, boolean enable);
     public static native int getLoopback(int sock);

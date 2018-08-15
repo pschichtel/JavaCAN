@@ -183,7 +183,11 @@ public class CanSocket extends HasFileDescriptor {
             throw new NullPointerException("The frame may not be null!");
         }
 
-        final int writtenBytes = NativeInterface.write(sockFD, frame);
+        writeRaw(frame.getId(), frame.getFlags(), frame.getPayload());
+    }
+
+    public void writeRaw(int id, byte flags, byte[] payload) throws NativeException, IOException {
+        final int writtenBytes = NativeInterface.write(sockFD, id, flags, payload);
         if (writtenBytes == -1) {
             throw new NativeException("Unable to write the frame!");
         }

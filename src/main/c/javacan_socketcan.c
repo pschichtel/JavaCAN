@@ -116,21 +116,15 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *e
     return object;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jobject frameObj) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jint id, jbyte flags, jbyteArray payload) {
     struct canfd_frame frame;
-    jclass frameClass = (*env)->GetObjectClass(env, frameObj);
-
-    jmethodID getIdMethod = (*env)->GetMethodID(env, frameClass, "getId", "()I");
-    jint id = (*env)->CallIntMethod(env, frameObj, getIdMethod);
     frame.can_id = (canid_t) id;
-
-    jmethodID getFlagsMethod = (*env)->GetMethodID(env, frameClass, "getFlags", "()B");
-    jbyte flags = (*env)->CallByteMethod(env, frameObj, getFlagsMethod);
     frame.flags = (unsigned char) flags;
 
-    jmethodID getPayloadMethod = (*env)->GetMethodID(env, frameClass, "getPayload", "()[B");
-    jbyteArray payload = (*env)->CallObjectMethod(env, frameObj, getPayloadMethod);
     jsize length = (*env)->GetArrayLength(env, payload);
+    if (length > CANFD_MAX_DLEN) {
+        length = CANFD_MAX_DLEN;
+    }
     frame.len = (unsigned char) length;
     (*env)->GetByteArrayRegion(env, payload, 0, length, (jbyte *) frame.data);
 
