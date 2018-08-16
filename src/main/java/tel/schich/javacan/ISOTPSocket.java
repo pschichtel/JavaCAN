@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan;
 
+import java.io.ByteArrayOutputStream;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class ISOTPSocket extends NativeSocket {
@@ -43,11 +44,22 @@ public class ISOTPSocket extends NativeSocket {
     }
 
     public long write(byte[] buffer, int offset, int length) throws NativeException {
+        if (length + offset > buffer.length) {
+            throw new ArrayIndexOutOfBoundsException("Tge given offset and length would go beyond the buffer!");
+        }
         long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
         if (bytesWritten == -1) {
             throw new NativeException("Unable to write to ISOTP socket!");
         }
         return bytesWritten;
+    }
+
+    public void writeAll(byte[] buffer) throws NativeException {
+        int offset = 0;
+
+        while (offset < buffer.length) {
+            offset += write(buffer, offset, buffer.length - offset);
+        }
     }
 
     public long read(byte[] buffer, int offset, int length) throws NativeException {
@@ -56,6 +68,18 @@ public class ISOTPSocket extends NativeSocket {
             throw new NativeException("Unable to read from ISOTP socket!");
         }
         return bytesRead;
+    }
+
+    public byte[] readEntirely() throws NativeException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[64];
+        long read;
+        while ((read = read(buf, 0, buf.length)) > 0) {
+            System.out.println("Read: " + read);
+            System.out.flush();
+            out.write(buf, 0, (int) read);
+        }
+        return out.toByteArray();
     }
 
     public static ISOTPSocket create() throws NativeException {

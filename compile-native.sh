@@ -53,11 +53,18 @@ do
 
     lib_output="$base/lib$libname-${translated_arch}.so"
     c_files=(helpers javacan_socketcan)
+    includes=(
+        -I"$src"
+        -I"$base/jni"
+        -I"src/include"
+        -I"$jni_headers"
+        -I"$jni_headers/linux"
+    )
     out_files=()
     for c_file in "${c_files[@]}"
     do
         out_file="$compiler_dir/$c_file.o"
-        "$proxy" gcc -I"$src" -I"$base/jni" -I"$jni_headers" -I"$jni_headers/linux" -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
+        "$proxy" gcc "${includes[@]}" -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
         out_files+=("$out_file")
     done
     "$proxy" gcc -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -fPIC -std=c99 -shared || exit 1

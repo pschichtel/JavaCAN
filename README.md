@@ -41,7 +41,16 @@ For compilation:
 For tests:
 
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
+* [can-isotp](https://github.com/hartkopp/can-isotp) kernel module installed and loaded
 * A real or virtual CAN interface named "vcan0"
+
+For usage:
+
+* A recent Linux kernel with CAN support
+* [can-isotp](https://github.com/hartkopp/can-isotp) kernel module installed and loaded
+* Java 8 or newer installed
+* A few kilobytes of disk space to extract the native library
+
 
 ### Building
 

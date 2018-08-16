@@ -34,9 +34,6 @@
 #include <string.h>
 #include <jni.h>
 
-// TODO remove this once dockcross has moved on to a new kernel
-#define _CAN_RAW_JOIN_FILTERS (CAN_RAW_FD_FRAMES + 1)
-
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
     unsigned int ifindex = interface_name_to_index(ifname);
@@ -153,7 +150,6 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env
     ssize_t bytes_read = read(sock, data_start, (size_t) length);
     (*env)->ReleasePrimitiveArrayCritical(env, buf, raw_buf, 0);
     return bytes_read;
-
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint sock, jintArray ids, jintArray masks) {
@@ -217,11 +213,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveOwnMess
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setJoinFilters(JNIEnv *env, jclass class, jint sock, jboolean enable) {
-    return set_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS, enable);
+    return set_boolean_opt(sock, CAN_RAW_JOIN_FILTERS, enable);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getJoinFilters(JNIEnv *env, jclass class, jint sock) {
-    return get_boolean_opt(sock, _CAN_RAW_JOIN_FILTERS);
+    return get_boolean_opt(sock, CAN_RAW_JOIN_FILTERS);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setAllowFDFrames(JNIEnv *env, jclass class, jint sock, jboolean enable) {

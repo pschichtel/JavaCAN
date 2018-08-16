@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <linux/can/isotp.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>

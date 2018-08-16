@@ -55,13 +55,16 @@ public class ISOTPSocketTest {
         final ISOTPSocket b = ISOTPSocket.create();
         b.bind(CAN_INTERFACE, 0x22, 0x11);
 
-        byte[] input = {0x11, 0x22, 0x33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        byte[] output = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] input = {0x11, 0x22, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x22, 0x11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] output = new byte[input.length];
 
-        a.write(input, 0, 3);
-        b.read(output, 0, 3);
+        //assertEquals(input.length, output.length);
 
-        assertArrayEquals(input, output);
+        a.writeAll(input);
+        //byte[] output = b.readEntirely();
+        b.read(output, 0, output.length);
+
+        assertArrayEquals(input, output, "what comes in should come out");
 
         a.close();
         b.close();

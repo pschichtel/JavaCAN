@@ -136,9 +136,9 @@
                     <strictCheck>true</strictCheck>
                     <header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
                     <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.c</include>
-                        <include>**/*.h</include>
+                        <include>src/**/*.java</include>
+                        <include>src/main/c/**/*.c</include>
+                        <include>src/main/c/**/*.h</include>
                     </includes>
                     <excludes>
                         <exclude>${project.build.outputDirectory}</exclude>
