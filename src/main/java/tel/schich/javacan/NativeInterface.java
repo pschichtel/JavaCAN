@@ -54,4 +54,5 @@ class NativeInterface {
     public static native int getAllowFDFrames(int sock);
     public static native int setErrorFilter(int sock, int mask);
     public static native int getErrorFilter(int sock);
+    public static native int readableBytes(int sockFD);
 }

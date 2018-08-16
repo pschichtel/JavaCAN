@@ -74,9 +74,11 @@ public class ISOTPSocket extends NativeSocket {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[64];
         long read;
-        while ((read = read(buf, 0, buf.length)) > 0) {
-            System.out.println("Read: " + read);
-            System.out.flush();
+        while (true) {
+            read = read(buf, 0, buf.length);
+            if (read == 0) {
+                break;
+            }
             out.write(buf, 0, (int) read);
         }
         return out.toByteArray();

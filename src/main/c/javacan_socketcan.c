@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <string.h>
 #include <jni.h>
+#include <sys/ioctl.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
@@ -242,4 +243,13 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JN
         return -1;
     }
     return mask;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_readableBytes(JNIEnv *env, jclass class, jint sock) {
+    int bytes_available = 0;
+    int result = ioctl(sock, FIONREAD, &bytes_available);
+    if (result == -1) {
+        return -1;
+    }
+    return bytes_available;
 }
