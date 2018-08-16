@@ -20,25 +20,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.isotp;
+package tel.schich.javacan;
 
-public enum FrameType {
-    SINGLE(0),
-    FIRST(1),
-    CONSECUTIVE(2),
-    FLOW_CONTROL(3);
+abstract class NativeSocket implements CanSocket {
+    final int sockFD;
 
-    private final byte code;
-
-    FrameType(int code) {
-        this((byte)code);
+    protected NativeSocket(int sock) {
+        sockFD = sock;
     }
 
-    FrameType(byte code) {
-        this.code = code;
+    public final void setBlockingMode(boolean block) throws NativeException {
+        if (NativeInterface.setBlockingMode(sockFD, block) == -1) {
+            throw new NativeException("Unable to set the blocking mode!");
+        }
     }
 
-    public byte getCode() {
-        return code;
+    public final boolean isBlocking() throws NativeException {
+        final int result = NativeInterface.getBlockingMode(sockFD);
+        if (result == -1) {
+            throw new NativeException("Unable to get blocking mode!");
+        }
+        return result == 1;
+    }
+
+    @Override
+    public final void close() throws NativeException {
+        NativeInterface.close(sockFD);
     }
 }

@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 public interface CanSocket {
-    void bind(@NonNull String interfaceName) throws NativeException;
+    void close() throws NativeException;
 }

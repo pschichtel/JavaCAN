@@ -26,7 +26,7 @@ package tel.schich.javacan;
  * Make unsafe operations very explicit!
  */
 public class CanUnsafe {
-    public static int getRawFileDescriptor(HasFileDescriptor obj) {
-        return obj.getFileDescriptor();
+    public static int getRawFileDescriptor(NativeSocket sock) {
+        return sock.sockFD;
     }
 }

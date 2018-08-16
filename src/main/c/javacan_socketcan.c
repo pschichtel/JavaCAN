@@ -44,12 +44,16 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterface
     return ifindex;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createSocket(JNIEnv *env, jclass class) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createRawSocket(JNIEnv *env, jclass class) {
     return create_can_raw_socket();
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_bindSocket(JNIEnv *env, jclass class, jint sock, jlong iface) {
-    return bind_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF));
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createIsotpSocket(JNIEnv *env, jclass class) {
+    return create_can_isotp_socket();
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_bindSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+    return bind_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_close(JNIEnv *env, jclass class, jint sock) {
@@ -88,7 +92,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEn
     return setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len);
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_readRawFrame(JNIEnv *env, jclass class, jint sock) {
     jclass frameClass = (*env)->FindClass(env, "tel/schich/javacan/CanFrame");
     jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(IB[B)V");
 
@@ -116,7 +120,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *e
     return object;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jint id, jbyte flags, jbyteArray payload) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_writeRawFrame(JNIEnv *env, jclass class, jint sock, jint id, jbyte flags, jbyteArray payload) {
     struct canfd_frame frame;
     frame.can_id = (canid_t) id;
     frame.flags = (unsigned char) flags;
@@ -133,6 +137,23 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env
         return -1;
     }
     return CAN_MTU - written_bytes;
+}
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
+    void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
+    void *data_start = raw_buf + offset;
+    ssize_t bytes_written = write(sock, data_start, (size_t) length);
+    (*env)->ReleasePrimitiveArrayCritical(env, buf, raw_buf, 0);
+    return bytes_written;
+}
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
+    void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
+    void *data_start = raw_buf + offset;
+    ssize_t bytes_read = read(sock, data_start, (size_t) length);
+    (*env)->ReleasePrimitiveArrayCritical(env, buf, raw_buf, 0);
+    return bytes_read;
+
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint sock, jintArray ids, jintArray masks) {

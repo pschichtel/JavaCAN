@@ -28,8 +28,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 class NativeInterface {
 
     public static native long resolveInterfaceName(@NonNull String interfaceName);
-    public static native int createSocket();
-    public static native int bindSocket(int sock, long interfaceId);
+    public static native int createRawSocket();
+    public static native int createIsotpSocket();
+    public static native int bindSocket(int sock, long interfaceId, int rx, int tx);
     public static native int close(int sock);
     public static native int errno();
     @NonNull
@@ -38,8 +39,10 @@ class NativeInterface {
     public static native int getBlockingMode(int sock);
     public static native int setTimeouts(int sock, long read, long write);
     @Nullable
-    public static native CanFrame read(int sock);
-    public static native int write(int sock, int id, byte flags, byte[] payload);
+    public static native CanFrame readRawFrame(int sock);
+    public static native int writeRawFrame(int sock, int id, byte flags, byte[] payload);
+    public static native long write(int sock, byte[] buf, int offset, int len);
+    public static native long read(int sock, byte[] buf, int offset, int len);
     public static native int setFilter(int sock, int[] id, int[] mask);
     public static native int setLoopback(int sock, boolean enable);
     public static native int getLoopback(int sock);

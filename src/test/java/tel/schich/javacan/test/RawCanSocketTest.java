@@ -28,10 +28,9 @@ import tel.schich.javacan.*;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
-
-    private static final String CAN_INTERFACE = "vcan0";
 
     @Test
     void testOptions() throws NativeException {
@@ -125,10 +124,10 @@ class RawCanSocketTest {
         JavaCAN.initialize();
 
         final RawCanSocket a = RawCanSocket.create();
-        a.bind("vcan0");
+        a.bind(CAN_INTERFACE);
 
         final RawCanSocket b = RawCanSocket.create();
-        b.bind("vcan0");
+        b.bind(CAN_INTERFACE);
         b.setBlockingMode(false);
 
         final CanFrame input = CanFrame.create(0x7EB, new byte[]{0x20, 0x33});
@@ -147,7 +146,7 @@ class RawCanSocketTest {
         JavaCAN.initialize();
 
         final RawCanSocket a = RawCanSocket.create();
-        a.bind("vcan0");
+        a.bind(CAN_INTERFACE);
 
         a.setBlockingMode(false);
         a.setReceiveOwnMessages(true);

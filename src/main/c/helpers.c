@@ -28,19 +28,26 @@
 #include <linux/can/raw.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 
 unsigned int interface_name_to_index(const char *name) {
     return if_nametoindex(name);
 }
 
-int create_can_raw_socket() {
+inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
 }
 
-int bind_can_socket(int sock, unsigned int interface) {
+inline int create_can_isotp_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP);
+}
+
+int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr;
     addr.can_family = AF_CAN;
     addr.can_ifindex = interface;
+    addr.can_addr.tp.rx_id = rx;
+    addr.can_addr.tp.tx_id = tx;
     socklen_t length = sizeof(struct sockaddr_can);
 
     return bind(sock, (const struct sockaddr *) &addr, length);

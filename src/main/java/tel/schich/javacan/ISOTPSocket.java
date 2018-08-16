@@ -24,36 +24,45 @@ package tel.schich.javacan;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-public class ISOTPSocket extends HasFileDescriptor implements CanSocket {
+public class ISOTPSocket extends NativeSocket {
 
-    private final RawCanSocket socket;
-
-    private final boolean extendedAddressing;
-
-    private ISOTPSocket(RawCanSocket socket, boolean extendedAddressing) {
-        this.socket = socket;
-        this.extendedAddressing = extendedAddressing;
+    private ISOTPSocket(int sock) {
+        super(sock);
     }
 
-    @Override
-    public void bind(@NonNull String interfaceName) throws NativeException {
-        socket.bind(interfaceName);
+    public void bind(@NonNull String interfaceName, int rx, int tx) throws NativeException {
+        final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
+        if (ifindex == 0) {
+            throw new NativeException("Unknown interface: " + interfaceName);
+        }
+
+        final int result = NativeInterface.bindSocket(sockFD, ifindex, rx, tx);
+        if (result == -1) {
+            throw new NativeException("Unable to bind!");
+        }
     }
 
-    public boolean isExtendedAddressing() {
-        return extendedAddressing;
+    public long write(byte[] buffer, int offset, int length) throws NativeException {
+        long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
+        if (bytesWritten == -1) {
+            throw new NativeException("Unable to write to ISOTP socket!");
+        }
+        return bytesWritten;
     }
 
-    @Override
-    int getFileDescriptor() {
-        return 0;
+    public long read(byte[] buffer, int offset, int length) throws NativeException {
+        long bytesRead = NativeInterface.read(sockFD, buffer, offset, length);
+        if (bytesRead == -1) {
+            throw new NativeException("Unable to read from ISOTP socket!");
+        }
+        return bytesRead;
     }
 
     public static ISOTPSocket create() throws NativeException {
-        return create(false);
-    }
-
-    public static ISOTPSocket create(boolean extendedAddressing) throws NativeException {
-        return new ISOTPSocket(RawCanSocket.create(), extendedAddressing);
+        int fd = NativeInterface.createIsotpSocket();
+        if (fd == -1) {
+            throw new NativeException("Unable to create socket!");
+        }
+        return new ISOTPSocket(fd);
     }
 }

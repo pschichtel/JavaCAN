@@ -22,33 +22,48 @@
  */
 package tel.schich.javacan.test;
 
-import tel.schich.javacan.CanFrame;
-
 import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
-public class CanTestHelper {
-    public static final String CAN_INTERFACE = "vcan0";
+import tel.schich.javacan.ISOTPSocket;
+import tel.schich.javacan.JavaCAN;
+import tel.schich.javacan.NativeException;
 
-    public static void sendFrameViaUtils(String iface, CanFrame frame) throws IOException, InterruptedException {
-        StringBuilder data = new StringBuilder();
-        for (byte b : frame.getPayload()) {
-            data.append(String.format("%02X", b));
-        }
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
-        String textFrame;
-        if (frame.isFDFrame()) {
-            textFrame = String.format("%X##%X%s", frame.getId(), frame.getFlags(), data);
-        } else {
-            textFrame = String.format("%X#%s", frame.getId(), data);
-        }
-        final ProcessBuilder cansend = new ProcessBuilder("cansend", iface, textFrame);
-        cansend.redirectError(ProcessBuilder.Redirect.INHERIT);
-        cansend.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        cansend.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        final Process proc = cansend.start();
-        int result = proc.waitFor();
-        if (result != 0) {
-            throw new IllegalStateException("Failed to use cansend to send a CAN frame!");
-        }
+public class ISOTPSocketTest {
+    @Test
+    void testBind() throws NativeException {
+        JavaCAN.initialize();
+
+        ISOTPSocket socket = ISOTPSocket.create();
+
+        socket.bind(CAN_INTERFACE, 0x11, 0x22);
+
+        socket.close();
+    }
+
+    @Test
+    void testLoopback() throws NativeException, IOException {
+        JavaCAN.initialize();
+
+        final ISOTPSocket a = ISOTPSocket.create();
+        a.bind(CAN_INTERFACE, 0x11, 0x22);
+        a.setBlockingMode(false);
+
+        final ISOTPSocket b = ISOTPSocket.create();
+        b.bind(CAN_INTERFACE, 0x22, 0x11);
+
+        byte[] input = {0x11, 0x22, 0x33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] output = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+        a.write(input, 0, 3);
+        b.read(output, 0, 3);
+
+        assertArrayEquals(input, output);
+
+        a.close();
+        b.close();
     }
 }

@@ -26,12 +26,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 
-public class RawCanSocket extends HasFileDescriptor implements CanSocket {
-
-    private final int sockFD;
+public class RawCanSocket extends NativeSocket {
 
     private RawCanSocket(int sock) {
-        sockFD = sock;
+        super(sock);
     }
 
     public void bind(@NonNull String interfaceName) throws NativeException {
@@ -40,24 +38,10 @@ public class RawCanSocket extends HasFileDescriptor implements CanSocket {
             throw new NativeException("Unknown interface: " + interfaceName);
         }
 
-        final int result = NativeInterface.bindSocket(sockFD, ifindex);
+        final int result = NativeInterface.bindSocket(sockFD, ifindex, 0, 0);
         if (result == -1) {
             throw new NativeException("Unable to bind!");
         }
-    }
-
-    public void setBlockingMode(boolean block) throws NativeException {
-        if (NativeInterface.setBlockingMode(sockFD, block) == -1) {
-            throw new NativeException("Unable to set the blocking mode!");
-        }
-    }
-
-    public boolean isBlocking() throws NativeException {
-        final int result = NativeInterface.getBlockingMode(sockFD);
-        if (result == -1) {
-            throw new NativeException("Unable to get blocking mode!");
-        }
-        return result == 1;
     }
 
     public void setTimeouts(long read, long write) throws NativeException {
@@ -150,7 +134,7 @@ public class RawCanSocket extends HasFileDescriptor implements CanSocket {
 
     @NonNull
     public CanFrame read() throws NativeException, IOException {
-        CanFrame frame = NativeInterface.read(sockFD);
+        CanFrame frame = NativeInterface.readRawFrame(sockFD);
         if (frame == null) {
             throw new NativeException("Unable to read a frame!");
         }
@@ -162,7 +146,7 @@ public class RawCanSocket extends HasFileDescriptor implements CanSocket {
 
     public CanFrame readRetrying() throws NativeException, IOException {
         while (true) {
-            CanFrame frame = NativeInterface.read(sockFD);
+            CanFrame frame = NativeInterface.readRawFrame(sockFD);
             if (frame == null) {
                 final OSError err = OSError.getLast();
                 if (err != null && err.mayTryAgain()) {
@@ -187,7 +171,7 @@ public class RawCanSocket extends HasFileDescriptor implements CanSocket {
     }
 
     public void writeRaw(int id, byte flags, byte[] payload) throws NativeException, IOException {
-        final int writtenBytes = NativeInterface.write(sockFD, id, flags, payload);
+        final int writtenBytes = NativeInterface.writeRawFrame(sockFD, id, flags, payload);
         if (writtenBytes == -1) {
             throw new NativeException("Unable to write the frame!");
         }
@@ -196,20 +180,9 @@ public class RawCanSocket extends HasFileDescriptor implements CanSocket {
         }
     }
 
-    public void close() throws NativeException {
-        if (NativeInterface.close(sockFD) == -1) {
-            throw new NativeException("Unable to close the socket!");
-        }
-    }
-
-    @Override
-    int getFileDescriptor() {
-        return sockFD;
-    }
-
     @NonNull
     public static RawCanSocket create() throws NativeException {
-        int fd = NativeInterface.createSocket();
+        int fd = NativeInterface.createRawSocket();
         if (fd == -1) {
             throw new NativeException("Unable to create socket!");
         }
