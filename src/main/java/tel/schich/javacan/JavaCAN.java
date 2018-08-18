@@ -58,7 +58,7 @@ public class JavaCAN {
                 if (libStream == null) {
                     throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
                 }
-                final Path tempDirectory = Files.createTempDirectory(libName);
+                final Path tempDirectory = Files.createTempDirectory(libName + "-" + archSuffix + "-");
                 final Path libPath = tempDirectory.resolve("lib" + libName + ".so");
 
                 Files.copy(libStream, libPath, REPLACE_EXISTING);
