@@ -45,7 +45,7 @@ public class ISOTPSocketTest {
     }
 
     @Test
-    void testLoopback() throws NativeException, IOException {
+    void testWriteAndReadNonBlocking() throws NativeException, IOException {
         JavaCAN.initialize();
 
         final ISOTPSocket a = ISOTPSocket.create();
