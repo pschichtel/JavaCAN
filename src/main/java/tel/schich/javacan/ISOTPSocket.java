@@ -34,13 +34,13 @@ public class ISOTPSocket extends NativeSocket {
         super(sock);
     }
 
-    public void bind(@NonNull String interfaceName, int rx, int tx) throws NativeException {
+    public void bind(@NonNull String interfaceName, int incomingMask, int outgoingAddress) throws NativeException {
         final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
         if (ifindex == 0) {
             throw new NativeException("Unknown interface: " + interfaceName);
         }
 
-        final int result = NativeInterface.bindSocket(sockFD, ifindex, rx, tx);
+        final int result = NativeInterface.bindSocket(sockFD, ifindex, incomingMask, outgoingAddress);
         if (result == -1) {
             throw new NativeException("Unable to bind!");
         }
