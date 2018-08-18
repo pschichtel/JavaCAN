@@ -22,40 +22,50 @@
  */
 package tel.schich.javacan;
 
-abstract class NativeSocket implements CanSocket {
-    final int sockFD;
+public class PollEvent {
+    /**
+     * There is data to read.
+     */
+    public static final int POLLIN = 0x001;
+    /**
+     * There is urgent data to read.
+     */
+    public static final int POLLPRI = 0x002;
+    /**
+     * Writing now will not block.
+     */
+    public static final int POLLOUT = 0x004;
 
-    protected NativeSocket(int sock) {
-        sockFD = sock;
-    }
+    /**
+     * Normal data may be read.
+     */
+    public static final int POLLRDNORM = 0x040;
+    /**
+     * Priority data may be read.
+     */
+    public static final int POLLRDBAND = 0x080;
+    /**
+     * Writing now will not block.
+     */
+    public static final int POLLWRNORM = 0x100;
+    /**
+     * Priority data may be written.
+     */
+    public static final int POLLWRBAND = 0x200;
+    public static final int POLLMSG = 0x400;
+    public static final int POLLREMOVE = 0x1000;
+    public static final int POLLRDHUP = 0x2000;
 
-    public final void setBlockingMode(boolean block) throws NativeException {
-        if (NativeInterface.setBlockingMode(sockFD, block) == -1) {
-            throw new NativeException("Unable to set the blocking mode!");
-        }
-    }
-
-    public final boolean isBlocking() throws NativeException {
-        final int result = NativeInterface.getBlockingMode(sockFD);
-        if (result == -1) {
-            throw new NativeException("Unable to get blocking mode!");
-        }
-        return result == 1;
-    }
-
-
-    public short poll(int events, int timeoutMillis) throws NativeException {
-        short result = NativeInterface.poll(sockFD, events, timeoutMillis);
-        if (result == -1) {
-            throw new NativeException("Unable to poll");
-        }
-        return result;
-    }
-
-    @Override
-    public final void close() throws NativeException {
-        if (NativeInterface.close(sockFD) == -1) {
-            throw new NativeException("Unable to close the socket");
-        }
-    }
+    /**
+     * Error condition.
+     */
+    public static final int POLLERR = 0x008;
+    /**
+     * Hung up.
+     */
+    public static final int POLLHUP = 0x010;
+    /**
+     * Invalid polling request.
+     */
+    public static final int POLLNVAL = 0x020;
 }

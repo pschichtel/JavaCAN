@@ -28,31 +28,58 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 class NativeInterface {
 
     public static native long resolveInterfaceName(@NonNull String interfaceName);
+
     public static native int createRawSocket();
+
     public static native int createIsotpSocket();
+
     public static native int bindSocket(int sock, long interfaceId, int rx, int tx);
+
     public static native int close(int sock);
+
     public static native int errno();
+
     @NonNull
     public static native String errstr(int errno);
+
     public static native int setBlockingMode(int sock, boolean block);
+
     public static native int getBlockingMode(int sock);
+
     public static native int setTimeouts(int sock, long read, long write);
+
     @Nullable
     public static native CanFrame readRawFrame(int sock);
+
     public static native int writeRawFrame(int sock, int id, byte flags, byte[] payload);
+
     public static native long write(int sock, byte[] buf, int offset, int len);
+
     public static native long read(int sock, byte[] buf, int offset, int len);
+
     public static native int setFilter(int sock, int[] id, int[] mask);
+
     public static native int setLoopback(int sock, boolean enable);
+
     public static native int getLoopback(int sock);
+
     public static native int setReceiveOwnMessages(int sock, boolean enable);
+
     public static native int getReceiveOwnMessages(int sock);
+
     public static native int setJoinFilters(int sock, boolean enable);
+
     public static native int getJoinFilters(int sock);
+
     public static native int setAllowFDFrames(int sock, boolean enable);
+
     public static native int getAllowFDFrames(int sock);
+
     public static native int setErrorFilter(int sock, int mask);
+
     public static native int getErrorFilter(int sock);
+
     public static native int readableBytes(int sockFD);
+
+    public static native short poll(int sockFD, int events, int timeout);
 }

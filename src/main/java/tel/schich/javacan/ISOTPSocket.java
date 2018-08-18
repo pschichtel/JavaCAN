@@ -25,6 +25,9 @@ package tel.schich.javacan;
 import java.io.ByteArrayOutputStream;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import static tel.schich.javacan.PollEvent.POLLIN;
+import static tel.schich.javacan.PollEvent.POLLPRI;
+
 public class ISOTPSocket extends NativeSocket {
 
     private ISOTPSocket(int sock) {
@@ -70,11 +73,16 @@ public class ISOTPSocket extends NativeSocket {
         return bytesRead;
     }
 
-    public byte[] readEntirely() throws NativeException {
+    public byte[] readEntirely(int timeout) throws NativeException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[64];
         long read;
+        int polled;
         while (true) {
+            polled = poll(POLLIN | POLLPRI, timeout);
+            if (polled == 0) {
+                break;
+            }
             read = read(buf, 0, buf.length);
             if (read == 0) {
                 break;

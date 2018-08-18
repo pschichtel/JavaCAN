@@ -34,6 +34,7 @@
 #include <string.h>
 #include <jni.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
@@ -252,4 +253,17 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_readableBytes(JNI
         return -1;
     }
     return bytes_available;
+}
+
+JNIEXPORT jshort JNICALL Java_tel_schich_javacan_NativeInterface_poll(JNIEnv *env, jclass class, jint sock, jint events, jint timeout) {
+    struct pollfd fds;
+    fds.fd = sock;
+    fds.events = (short) events;
+
+    int result = poll(&fds, 1, timeout);
+    if (result <= 0) {
+        return result;
+    }
+
+    return fds.revents;
 }
