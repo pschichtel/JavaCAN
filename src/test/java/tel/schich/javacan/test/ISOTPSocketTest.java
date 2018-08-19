@@ -22,12 +22,12 @@
  */
 package tel.schich.javacan.test;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.ISOTPSocket;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NativeException;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;

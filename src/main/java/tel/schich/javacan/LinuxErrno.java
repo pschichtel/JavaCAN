@@ -23,6 +23,6 @@
 package tel.schich.javacan;
 
 public class LinuxErrno {
-    public static final int EIO    = 5;
+    public static final int EIO = 5;
     public static final int EAGAIN = 11;
 }

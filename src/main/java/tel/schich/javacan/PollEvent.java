@@ -55,7 +55,6 @@ public class PollEvent {
     public static final int POLLMSG = 0x400;
     public static final int POLLREMOVE = 0x1000;
     public static final int POLLRDHUP = 0x2000;
-
     /**
      * Error condition.
      */

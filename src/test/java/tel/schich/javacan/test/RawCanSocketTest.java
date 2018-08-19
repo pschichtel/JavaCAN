@@ -79,7 +79,7 @@ class RawCanSocketTest {
         socket.bind(CAN_INTERFACE);
         assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
-        final CanFrame input = CanFrame.create(0x7EA, new byte[] {0x34, 0x52, 0x34});
+        final CanFrame input = CanFrame.create(0x7EA, new byte[]{0x34, 0x52, 0x34});
         socket.setBlockingMode(false);
         assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
         CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
@@ -171,7 +171,7 @@ class RawCanSocketTest {
         sock.setBlockingMode(false);
 
         // more than 8 data bytes
-        final CanFrame input = CanFrame.create(0x7ED, new byte[] {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22});
+        final CanFrame input = CanFrame.create(0x7ED, new byte[]{0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22});
         CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
         Thread.sleep(50);
         final CanFrame output = sock.read();

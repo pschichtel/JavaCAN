@@ -22,8 +22,9 @@
  */
 package tel.schich.javacan;
 
-import java.io.ByteArrayOutputStream;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
+import java.io.ByteArrayOutputStream;
 
 import static tel.schich.javacan.PollEvent.POLLIN;
 import static tel.schich.javacan.PollEvent.POLLPRI;
