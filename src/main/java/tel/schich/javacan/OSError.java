@@ -25,6 +25,8 @@ package tel.schich.javacan;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import static tel.schich.javacan.LinuxErrnoBase.EAGAIN;
+
 @Nullable
 public class OSError {
     public final int errorNumber;
@@ -52,7 +54,7 @@ public class OSError {
 
     public boolean mayTryAgain() {
         switch (errorNumber) {
-            case LinuxErrno.EAGAIN:
+            case EAGAIN:
                 return true;
             default:
                 return false;
