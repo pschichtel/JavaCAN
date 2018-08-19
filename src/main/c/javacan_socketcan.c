@@ -129,7 +129,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_writeRawFrame(JNI
         length = CANFD_MAX_DLEN;
     }
     frame.len = (unsigned char) length;
-    (*env)->GetByteArrayRegion(env, payload, 0, length, (jbyte *) frame.data);
+    void* buf = (*env)->GetPrimitiveArrayCritical(env, payload, false);
+    memcpy(frame.data, buf, frame.len);
+    (*env)->ReleasePrimitiveArrayCritical(env, payload, buf, 0);
 
     ssize_t written_bytes = write(sock, &frame, length > 8 ? CANFD_MTU : CAN_MTU);
     if (written_bytes == -1) {
