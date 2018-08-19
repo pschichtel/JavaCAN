@@ -43,13 +43,31 @@ abstract class NativeSocket implements CanSocket {
         return result == 1;
     }
 
-
     public short poll(int events, int timeoutMillis) throws NativeException {
         short result = NativeInterface.poll(sockFD, events, timeoutMillis);
         if (result == -1) {
             throw new NativeException("Unable to poll");
         }
         return result;
+    }
+
+    public long read(byte[] buffer, int offset, int length) throws NativeException {
+        long bytesRead = NativeInterface.read(sockFD, buffer, offset, length);
+        if (bytesRead == -1) {
+            throw new NativeException("Unable to read from ISOTP socket!");
+        }
+        return bytesRead;
+    }
+
+    public long write(byte[] buffer, int offset, int length) throws NativeException {
+        if (length + offset > buffer.length) {
+            throw new ArrayIndexOutOfBoundsException("Tge given offset and length would go beyond the buffer!");
+        }
+        long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
+        if (bytesWritten == -1) {
+            throw new NativeException("Unable to write to ISOTP socket!");
+        }
+        return bytesWritten;
     }
 
     @Override

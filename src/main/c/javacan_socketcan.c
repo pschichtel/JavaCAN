@@ -91,55 +91,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEn
     return setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len);
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_readRawFrame(JNIEnv *env, jclass class, jint sock) {
-    jclass frameClass = (*env)->FindClass(env, "tel/schich/javacan/CanFrame");
-    jmethodID ctor = (*env)->GetMethodID(env, frameClass, "<init>", "(IB[B)V");
-
-    struct canfd_frame frame;
-    frame.can_id = 0;
-    frame.flags = 0;
-    frame.len = 0;
-    bool complete = true;
-
-    ssize_t bytes_read = read(sock, &frame, CANFD_MTU);
-    if (bytes_read != CAN_MTU && bytes_read != CANFD_MTU) {
-        if (bytes_read == -1) {
-            return NULL;
-        } else {
-            complete = false;
-        }
-    }
-
-    jbyteArray jBuf = NULL;
-    if (complete) {
-        jBuf = (*env)->NewByteArray(env, frame.len);
-        (*env)->SetByteArrayRegion(env, jBuf, 0, frame.len, (const jbyte *) frame.data);
-    }
-    jobject object = (*env)->NewObject(env, frameClass, ctor, frame.can_id, frame.flags, jBuf);
-    return object;
-}
-
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_writeRawFrame(JNIEnv *env, jclass class, jint sock, jint id, jbyte flags, jbyteArray payload) {
-    struct canfd_frame frame;
-    frame.can_id = (canid_t) id;
-    frame.flags = (unsigned char) flags;
-
-    jsize length = (*env)->GetArrayLength(env, payload);
-    if (length > CANFD_MAX_DLEN) {
-        length = CANFD_MAX_DLEN;
-    }
-    frame.len = (unsigned char) length;
-    void* buf = (*env)->GetPrimitiveArrayCritical(env, payload, false);
-    memcpy(frame.data, buf, frame.len);
-    (*env)->ReleasePrimitiveArrayCritical(env, payload, buf, 0);
-
-    ssize_t written_bytes = write(sock, &frame, length > 8 ? CANFD_MTU : CAN_MTU);
-    if (written_bytes == -1) {
-        return -1;
-    }
-    return CAN_MTU - written_bytes;
-}
-
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
     void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
     void *data_start = raw_buf + offset;

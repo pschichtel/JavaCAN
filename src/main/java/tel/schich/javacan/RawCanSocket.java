@@ -28,6 +28,12 @@ import java.io.IOException;
 
 public class RawCanSocket extends NativeSocket {
 
+    public static final int MTU = 16;
+    public static final int DLEN = 8;
+    public static final int FD_MTU = 72;
+    public static final int FD_DLEN = 64;
+    public static final int DOFFSET = MTU - DLEN;
+
     private RawCanSocket(int sock) {
         super(sock);
     }
@@ -134,20 +140,17 @@ public class RawCanSocket extends NativeSocket {
 
     @NonNull
     public CanFrame read() throws NativeException, IOException {
-        CanFrame frame = NativeInterface.readRawFrame(sockFD);
-        if (frame == null) {
-            throw new NativeException("Unable to read a frame!");
-        }
-        if (frame.isIncomplete()) {
-            throw new IOException("ISOTPFrame is incomplete!");
-        }
-        return frame;
+        byte[] frameBuf = new byte[FD_MTU];
+        long bytesRead = read(frameBuf, 0, FD_MTU);
+        return CanFrame.fromBuffer(bytesRead, frameBuf);
     }
 
     public CanFrame readRetrying() throws NativeException, IOException {
+        byte[] frameBuf = new byte[FD_MTU];
+        long bytesRead;
         while (true) {
-            CanFrame frame = NativeInterface.readRawFrame(sockFD);
-            if (frame == null) {
+            bytesRead = read(frameBuf, 0, FD_MTU);
+            if (bytesRead == -1) {
                 final OSError err = OSError.getLast();
                 if (err != null && err.mayTryAgain()) {
                     continue;
@@ -155,10 +158,7 @@ public class RawCanSocket extends NativeSocket {
                     throw new NativeException("Unable to read a frame and retry is not possible!", err);
                 }
             }
-            if (frame.isIncomplete()) {
-                throw new IOException("ISOTPFrame is incomplete, no retrying!");
-            }
-            return frame;
+            return CanFrame.fromBuffer(bytesRead, frameBuf);
         }
     }
 
@@ -167,17 +167,8 @@ public class RawCanSocket extends NativeSocket {
             throw new NullPointerException("The frame may not be null!");
         }
 
-        writeRaw(frame.getId(), frame.getFlags(), frame.getPayload());
-    }
-
-    public void writeRaw(int id, byte flags, byte[] payload) throws NativeException, IOException {
-        final int writtenBytes = NativeInterface.writeRawFrame(sockFD, id, flags, payload);
-        if (writtenBytes == -1) {
-            throw new NativeException("Unable to write the frame!");
-        }
-        if (writtenBytes > 0) {
-            throw new IOException("Unable to write the entire frame!");
-        }
+        final byte[] buffer = CanFrame.toBuffer(frame);
+        write(buffer, 0, buffer.length);
     }
 
     @NonNull

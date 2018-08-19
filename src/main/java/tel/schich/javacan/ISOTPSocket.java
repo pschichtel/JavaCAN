@@ -47,31 +47,12 @@ public class ISOTPSocket extends NativeSocket {
         }
     }
 
-    public long write(byte[] buffer, int offset, int length) throws NativeException {
-        if (length + offset > buffer.length) {
-            throw new ArrayIndexOutOfBoundsException("Tge given offset and length would go beyond the buffer!");
-        }
-        long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
-        if (bytesWritten == -1) {
-            throw new NativeException("Unable to write to ISOTP socket!");
-        }
-        return bytesWritten;
-    }
-
     public void writeAll(byte[] buffer) throws NativeException {
         int offset = 0;
 
         while (offset < buffer.length) {
             offset += write(buffer, offset, buffer.length - offset);
         }
-    }
-
-    public long read(byte[] buffer, int offset, int length) throws NativeException {
-        long bytesRead = NativeInterface.read(sockFD, buffer, offset, length);
-        if (bytesRead == -1) {
-            throw new NativeException("Unable to read from ISOTP socket!");
-        }
-        return bytesRead;
     }
 
     public byte[] readEntirely(int timeout) throws NativeException {

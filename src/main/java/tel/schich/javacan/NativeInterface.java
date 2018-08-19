@@ -23,7 +23,6 @@
 package tel.schich.javacan;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 class NativeInterface {
 
@@ -47,11 +46,6 @@ class NativeInterface {
     public static native int getBlockingMode(int sock);
 
     public static native int setTimeouts(int sock, long read, long write);
-
-    @Nullable
-    public static native CanFrame readRawFrame(int sock);
-
-    public static native int writeRawFrame(int sock, int id, byte flags, byte[] payload);
 
     public static native long write(int sock, byte[] buf, int offset, int len);
 
