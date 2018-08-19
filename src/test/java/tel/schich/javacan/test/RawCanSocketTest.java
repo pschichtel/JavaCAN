@@ -91,7 +91,7 @@ class RawCanSocketTest {
         socket.close();
     }
 
-    @Test
+    //@Test
     void testBlockingRead() throws NativeException {
         JavaCAN.initialize();
 
