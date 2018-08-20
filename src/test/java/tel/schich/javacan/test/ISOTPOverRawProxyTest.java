@@ -24,23 +24,34 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
 import tel.schich.javacan.ISOTPOverRawProxy;
+import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NativeException;
 import tel.schich.javacan.RawCanSocket;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.ISOTPOverRawProxy.ADDR_ECU_1;
+import static tel.schich.javacan.ISOTPOverRawProxy.ADDR_PHY_EXT_DIAG;
+import static tel.schich.javacan.ISOTPOverRawProxy.EFF_FUNCTIONAL_ADDRESSING;
+import static tel.schich.javacan.ISOTPOverRawProxy.SFF_FUNCTIONAL_ADDRESSING;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class ISOTPOverRawProxyTest {
 
     @Test
     void testWrite() throws NativeException, IOException {
+        JavaCAN.initialize();
+
         final RawCanSocket socket = RawCanSocket.create();
         socket.bind(CAN_INTERFACE);
 
-        final ISOTPOverRawProxy isotp = new ISOTPOverRawProxy(socket);
+        final ISOTPOverRawProxy isotpEff = new ISOTPOverRawProxy(socket, true);
 
-        isotp.write(0x7F1, new byte[] {0x11, 0x22, 0x33});
+        isotpEff.write((byte)0x18,
+                EFF_FUNCTIONAL_ADDRESSING, ADDR_PHY_EXT_DIAG, ADDR_ECU_1, new byte[] {0x11, 0x22, 0x33});
+
+        final ISOTPOverRawProxy isotpSff = new ISOTPOverRawProxy(socket, false);
+
+        isotpSff.write((byte)0xF, SFF_FUNCTIONAL_ADDRESSING, ADDR_PHY_EXT_DIAG, ADDR_ECU_1, new byte[] {0x33, 0x22, 0x11});
     }
 }

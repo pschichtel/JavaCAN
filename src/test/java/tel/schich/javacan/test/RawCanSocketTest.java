@@ -91,7 +91,7 @@ class RawCanSocketTest {
         socket.close();
     }
 
-    //@Test
+    @Test
     void testBlockingRead() throws NativeException {
         JavaCAN.initialize();
 
@@ -100,21 +100,24 @@ class RawCanSocketTest {
         socket.setBlockingMode(true);
 
         {
-            socket.setTimeouts(5000000, 5000000);
+            long timeout = 3L;
+            socket.setTimeouts(timeout * 1000000, timeout * 1000000);
             final long start = System.currentTimeMillis();
             final NativeException err = assertThrows(NativeException.class, socket::read);
             final long delta = (System.currentTimeMillis() - start) / 1000;
-            assertEquals(5L, delta);
+            assertEquals(timeout, delta);
             assertEquals(EAGAIN, err.getError().errorNumber);
             assertTrue(err.mayTryAgain());
         }
 
         {
-            socket.setTimeouts(2000000, 1000000);
+            long rtimeout = 1;
+            long wtimeout = 10;
+            socket.setTimeouts(rtimeout * 1000000, wtimeout * 1000000);
             final long start = System.currentTimeMillis();
             final NativeException err = assertThrows(NativeException.class, socket::read);
             final long delta = (System.currentTimeMillis() - start) / 1000;
-            assertEquals(2L, delta);
+            assertEquals(rtimeout, delta);
             assertEquals(EAGAIN, err.getError().errorNumber);
             assertTrue(err.mayTryAgain());
         }

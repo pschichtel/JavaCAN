@@ -31,16 +31,16 @@ import static tel.schich.javacan.RawCanSocket.FD_MTU;
 import static tel.schich.javacan.RawCanSocket.MTU;
 
 public class CanFrame {
-    public static final int EFF_FLAG = 0x80000000;
-    public static final int RTR_FLAG = 0x40000000;
-    public static final int ERR_FLAG = 0x20000000;
-    private static final int SFF_MASK = 0x000007ff;
-    private static final int EFF_MASK = 0x1fffffff;
-    private static final int ERR_MASK = 0x1fffffff;
+    public static final int EFF_FLAG  = 0b10000000_00000000_00000000_00000000;
+    public static final int RTR_FLAG  = 0b01000000_00000000_00000000_00000000;
+    public static final int ERR_FLAG  = 0b00100000_00000000_00000000_00000000;
+    static final int SFF_MASK         = 0b00000000_00000000_00000111_11111111;
+    static final int EFF_MASK         = 0b00011111_11111111_11111111_11111111;
+    private static final int ERR_MASK = EFF_MASK;
 
-    public static final byte FD_NO_FLAGS = 0;
-    public static final byte FD_FLAG_BRS = 0x01;
-    public static final byte FD_FLAG_ESI = 0x02;
+    public static final byte FD_NO_FLAGS = 0b00;
+    public static final byte FD_FLAG_BRS = 0b01;
+    public static final byte FD_FLAG_ESI = 0b10;
 
     public static final int MAX_DATA_LENGTH = 8;
     public static final int MAX_FD_DATA_LENGTH = 64;
