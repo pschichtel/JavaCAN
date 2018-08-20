@@ -68,6 +68,6 @@ do
         "$proxy" "$CC" "${includes[@]}" -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
         out_files+=("$out_file")
     done
-    "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack -fPIC -std=c99 -shared || exit 1
+    "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack -fPIC -fvisibility=hidden -std=c99 -shared || exit 1
     mv "$lib_output" "$output_dir"
 done
