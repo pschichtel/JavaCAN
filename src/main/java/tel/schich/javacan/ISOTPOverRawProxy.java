@@ -77,7 +77,8 @@ public class ISOTPOverRawProxy {
             // |       _ _             | -> ????
             // | _ _ _                 | -> some kind of prio?
             // 7DF -> OBD functional ECU address
-            // 7E<n> -> physical ECU address
+            // 7E<n> -> physical ECU destination address (0 <= n <  8)
+            // 7E<n> -> physical ECU return address      (8 <= n <= F)
             return (((prio & 0b111) << 8) | ((type & 0b11) << 4) | (to & 0x3)) & SFF_MASK;
         }
     }
