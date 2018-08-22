@@ -24,28 +24,11 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
-import static tel.schich.javacan.CanFrame.EFF_FLAG;
-import static tel.schich.javacan.CanFrame.EFF_MASK;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.CanFrame.SFF_MASK;
 import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
-public class ISOTPOverRawProxy {
-
-    public static final byte ADDR_ECU_1 = 0x00;
-    public static final byte ADDR_ECU_2 = 0x01;
-    public static final byte ADDR_ECU_3 = 0x02;
-    public static final byte ADDR_ECU_4 = 0x03;
-    public static final byte ADDR_ECU_5 = 0x04;
-    public static final byte ADDR_ECU_6 = 0x05;
-    public static final byte ADDR_ECU_7 = 0x06;
-    public static final byte ADDR_ECU_FUNCTIONAL = 0x33;
-    public static final byte ADDR_PHY_EXT_DIAG = (byte)0xF1;
-    public static final byte EFF_PHYSICAL_ADDRESSING = (byte)0xDA;
-    public static final byte EFF_FUNCTIONAL_ADDRESSING = (byte)0xDB;
-    public static final byte SFF_PHYSICAL_ADDRESSING = (byte)0b10;
-    public static final byte SFF_FUNCTIONAL_ADDRESSING = (byte)0b01;
+public class ISOTPGateway {
 
     private static final int CODE_SF = 0;
     private static final int CODE_FF = 0;
@@ -54,39 +37,22 @@ public class ISOTPOverRawProxy {
 
     private final RawCanSocket socket;
 
-    private final boolean eff;
-
-    public ISOTPOverRawProxy(RawCanSocket socket, boolean eff) {
+    public ISOTPGateway(RawCanSocket socket) {
         this.socket = socket;
-        this.eff = eff;
     }
 
-    private int addrToCanId(byte prio, byte type, byte from, byte to) {
-        if (eff) {
-            // | _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ | <- 29 bit CAN id
-            // |                                           _ _ _ _ _ _ _ _ | -> receiver address
-            // |                           _ _ _ _ _ _ _ _                 | -> sender address
-            // |           _ _ _ _ _ _ _ _                                 | -> address type (e.g. phy vs func)
-            // | _ _ _ _ _                                                 | -> priority (e.g. 0x18 for OBD)
-            return ((((prio & 0xFF) << 24) | ((type & 0xFF) << 16) | ((from & 0xFF) << 8) | (to & 0xFF)) & EFF_MASK) | EFF_FLAG;
-        } else {
-            // | _ _ _ _ _ _ _ _ _ _ _ | <- 11 bit CAN id
-            // |                 _ _ _ | -> receiver address
-            // |               _       | -> some kind of flag? request/response?
-            // |           _ _         | -> address type (0b10 for phy, 0b01 for func)
-            // |       _ _             | -> ????
-            // | _ _ _                 | -> some kind of prio?
-            // 7DF -> OBD functional ECU address
-            // 7E<n> -> physical ECU destination address (0 <= n <  8)
-            // 7E<n> -> physical ECU return address      (8 <= n <= F)
-            return (((prio & 0b111) << 8) | ((type & 0b11) << 4) | (to & 0x3)) & SFF_MASK;
-        }
+    public static byte[] decomposeEffAddress(int effAddr) {
+        byte prio = (byte)(effAddr >>> 24);
+        byte type = (byte)((effAddr >>> 16) & 0xFF);
+        byte from = (byte)((effAddr >>> 8) & 0xFF);
+        byte to   = (byte)(effAddr & 0xFF);
+        return new byte[] {prio, type, from, to};
     }
 
-    public void write(byte prio, byte type, byte from, byte to, byte[] message) throws NativeException, IOException {
+    public void write(int id, byte[] message) throws NativeException, IOException {
         final int maxLength = socket.isAllowFDFrames() ? FD_DLEN : DLEN;
         if (fitsIntoSingleFrame(message.length, maxLength)) {
-            writeSingleFrame(addrToCanId(prio, type, from, to), message, maxLength);
+            writeSingleFrame(id, message, maxLength);
         }
     }
 

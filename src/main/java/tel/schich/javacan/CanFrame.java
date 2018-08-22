@@ -23,7 +23,6 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
-import java.nio.ByteOrder;
 import java.util.Objects;
 
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
@@ -31,12 +30,6 @@ import static tel.schich.javacan.RawCanSocket.FD_MTU;
 import static tel.schich.javacan.RawCanSocket.MTU;
 
 public class CanFrame {
-    public static final int EFF_FLAG  = 0b10000000_00000000_00000000_00000000;
-    public static final int RTR_FLAG  = 0b01000000_00000000_00000000_00000000;
-    public static final int ERR_FLAG  = 0b00100000_00000000_00000000_00000000;
-    static final int SFF_MASK         = 0b00000000_00000000_00000111_11111111;
-    static final int EFF_MASK         = 0b00011111_11111111_11111111_11111111;
-    private static final int ERR_MASK = EFF_MASK;
 
     public static final byte FD_NO_FLAGS = 0b00;
     public static final byte FD_FLAG_BRS = 0b01;
@@ -60,7 +53,7 @@ public class CanFrame {
     }
 
     public int getId() {
-        return (isExtended() ? (id & EFF_MASK) : (id & SFF_MASK));
+        return CanId.getId(id);
     }
 
     public byte getFlags() {
@@ -78,19 +71,19 @@ public class CanFrame {
     }
 
     public boolean isExtended() {
-        return (id & EFF_FLAG) != 0;
+        return CanId.isExtended(id);
     }
 
     public boolean isError() {
-        return (id & ERR_FLAG) != 0;
+        return CanId.isError(id);
     }
 
     public int getError() {
-        return (id & ERR_MASK);
+        return CanId.getError(id);
     }
 
     public boolean isRemoveTransmissionRequest() {
-        return (id & RTR_FLAG) != 0;
+        return CanId.isRemoveTransmissionRequest(id);
     }
 
     @Override
@@ -163,20 +156,15 @@ public class CanFrame {
         return new CanFrame(id, flags, payload, 0, payload.length);
     }
 
-    static CanFrame fromBuffer(long read, byte[] buf) throws IOException {
+    static CanFrame fromBuffer(long read, byte[] buffer) throws IOException {
         boolean fdFrame = read == RawCanSocket.FD_MTU;
         if (read != MTU && !fdFrame) {
             throw new IOException("Frame is incomplete!");
         }
-        final int id;
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            id = ((buf[3] & 0xFF) << 24) | ((buf[2] & 0xFF) << 16) | ((buf[1] & 0xFF) << 8) | (buf[0] & 0xFF);
-        } else {
-            id = ((buf[0] & 0xFF) << 24) | ((buf[1] & 0xFF) << 16) | ((buf[2] & 0xFF) << 8) | (buf[3] & 0xFF);
-        }
-        int length = buf[4];
-        byte flags = fdFrame ? buf[5] : 0;
-        return new CanFrame(id, flags, buf, 8, length);
+        final int id = CanId.readId(buffer, 0);
+        int length = buffer[4];
+        byte flags = fdFrame ? buffer[5] : 0;
+        return new CanFrame(id, flags, buffer, 8, length);
     }
 
     static byte[] toBuffer(CanFrame frame) {
@@ -192,18 +180,7 @@ public class CanFrame {
         } else {
             buffer = new byte[MTU];
         }
-
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            buffer[0] = (byte)(frame.id & 0xFF);
-            buffer[1] = (byte)((frame.id >> 8) & 0xFF);
-            buffer[2] = (byte)((frame.id >> 16) & 0xFF);
-            buffer[3] = (byte)((frame.id >> 24) & 0xFF);
-        } else {
-            buffer[0] = (byte)((frame.id >> 24) & 0xFF);
-            buffer[1] = (byte)((frame.id >> 16) & 0xFF);
-            buffer[2] = (byte)((frame.id >> 8) & 0xFF);
-            buffer[3] = (byte)(frame.id & 0xFF);
-        }
+        CanId.writeId(buffer, 0, frame.id);
 
         buffer[4] = (byte)(frame.dataLength & 0xFF);
         if (fdFrame) {

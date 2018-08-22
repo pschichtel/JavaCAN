@@ -22,21 +22,22 @@
  */
 package tel.schich.javacan.test;
 
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
-import tel.schich.javacan.ISOTPOverRawProxy;
+
+import tel.schich.javacan.ISOTPGateway;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NativeException;
 import tel.schich.javacan.RawCanSocket;
 
-import java.io.IOException;
-
-import static tel.schich.javacan.ISOTPOverRawProxy.ADDR_ECU_1;
-import static tel.schich.javacan.ISOTPOverRawProxy.ADDR_PHY_EXT_DIAG;
-import static tel.schich.javacan.ISOTPOverRawProxy.EFF_FUNCTIONAL_ADDRESSING;
-import static tel.schich.javacan.ISOTPOverRawProxy.SFF_FUNCTIONAL_ADDRESSING;
+import static tel.schich.javacan.ISOTPAddress.ECU_1;
+import static tel.schich.javacan.ISOTPAddress.EFF_FUNCTIONAL_ADDRESSING;
+import static tel.schich.javacan.ISOTPAddress.EFF_TESTER;
+import static tel.schich.javacan.ISOTPAddress.SFF_ECU_REQUEST_BASE;
+import static tel.schich.javacan.ISOTPAddress.composeEffAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
-class ISOTPOverRawProxyTest {
+class ISOTPGatewayTest {
 
     @Test
     void testWrite() throws NativeException, IOException {
@@ -45,13 +46,12 @@ class ISOTPOverRawProxyTest {
         final RawCanSocket socket = RawCanSocket.create();
         socket.bind(CAN_INTERFACE);
 
-        final ISOTPOverRawProxy isotpEff = new ISOTPOverRawProxy(socket, true);
+        final ISOTPGateway isotpEff = new ISOTPGateway(socket);
 
-        isotpEff.write((byte)0x18,
-                EFF_FUNCTIONAL_ADDRESSING, ADDR_PHY_EXT_DIAG, ADDR_ECU_1, new byte[] {0x11, 0x22, 0x33});
+        isotpEff.write(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1), new byte[] {0x11, 0x22, 0x33});
 
-        final ISOTPOverRawProxy isotpSff = new ISOTPOverRawProxy(socket, false);
+        final ISOTPGateway isotpSff = new ISOTPGateway(socket);
 
-        isotpSff.write((byte)0xF, SFF_FUNCTIONAL_ADDRESSING, ADDR_PHY_EXT_DIAG, ADDR_ECU_1, new byte[] {0x33, 0x22, 0x11});
+        isotpSff.write(SFF_ECU_REQUEST_BASE + ECU_1, new byte[] {0x33, 0x22, 0x11});
     }
 }
