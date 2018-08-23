@@ -31,10 +31,14 @@ import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
 public class ISOTPGateway {
 
-    private static final int CODE_SF = 0b0000;
-    private static final int CODE_FF = 0b0001;
-    private static final int CODE_CF = 0b0010;
-    private static final int CODE_FC = 0b0011;
+    private static final int CODE_SF = 0x00;
+    private static final int CODE_FF = 0x10;
+    private static final int CODE_CF = 0x20;
+    private static final int CODE_FC = 0x30;
+
+    private static final int FC_CONTINUE = 0x00;
+    private static final int FC_WAIT     = 0x01;
+    private static final int FC_OVERFLOW = 0x02;
 
     private final RawCanSocket socket;
 
@@ -46,10 +50,26 @@ public class ISOTPGateway {
         return new ISOTPChannel(targetAddress, responseAddressMask);
     }
 
+    public ISOTPChannel createChannel(int targetAddress) {
+        return new ISOTPChannel(targetAddress, ISOTPAddress.returnAddress(targetAddress));
+    }
+
     public void write(int id, byte[] message) throws NativeException, IOException {
         final int maxLength = socket.isAllowFDFrames() ? FD_DLEN : DLEN;
         if (fitsIntoSingleFrame(message.length, maxLength)) {
             writeSingleFrame(id, message, maxLength);
+        } else {
+            writeFragmented(id, message, maxLength);
+        }
+    }
+
+    public void writeFragmented(int id, byte[] message, int maxLength) throws NativeException {
+        int offset = writeFirstFrame(id, message);
+
+        int sn = 0;
+        while (offset < message.length) {
+            offset += writeConsecutiveFrame(id, message, offset, sn);
+            sn = (sn + 1) % 16;
         }
     }
 
@@ -57,29 +77,47 @@ public class ISOTPGateway {
         return len + 1 <= maxLen;
     }
 
-    private void writeSingleFrame(int to, byte[] message, int maxLen) throws IOException, NativeException {
+    private void writeSingleFrame(int id, byte[] message, int maxLen) throws IOException, NativeException {
         byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, to, 8, FD_NO_FLAGS);
-        final int headerLength = writeSingleFrameHeader(buffer, DOFFSET, message.length);
-        System.arraycopy(message, 0, buffer, DOFFSET + headerLength, message.length);
+        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
+        buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
+        System.arraycopy(message, 0, buffer, DOFFSET + 1, message.length);
         socket.write(buffer, 0, buffer.length);
     }
 
-    private static int writeSingleFrameHeader(byte[] buffer, int offset, int length) {
-        buffer[offset] = (byte)((CODE_SF << 4) | (length & 0xF));
-        return 1;
+    private int writeFirstFrame(int id, byte[] message) throws NativeException {
+        byte[] buffer = CanFrame.allocateBuffer(false);
+        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
+        final int headerLength = writeFirstFrameHeader(buffer, DOFFSET, message.length);
+        final int len = Math.min(DLEN - headerLength, message.length);
+        System.arraycopy(message, 0, buffer, DOFFSET + headerLength, len);
+        socket.write(buffer, 0, buffer.length);
+        return len;
     }
 
-    private int writeFirstFrame(int to, byte[] message) {
-        throw new UnsupportedOperationException("Not implemented");
+    private static int writeFirstFrameHeader(byte[] buffer, int offset, int length) {
+        buffer[offset] = (byte)(CODE_FF | ((length >> Byte.SIZE) & 0xF));
+        buffer[offset + 1] = (byte)(length & 0xFF);
+        return 2;
     }
 
-    private int writeConsecutiveFrame(int to, byte[] message) {
-        throw new UnsupportedOperationException("Not implemented");
+    private int writeConsecutiveFrame(int id, byte[] message, int offset, int sn) throws NativeException {
+        byte[] buffer = CanFrame.allocateBuffer(false);
+        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
+        buffer[DOFFSET] = (byte)(CODE_CF | (sn & 0xF));
+        final int len = Math.min(DLEN - 1, message.length - offset);
+        System.arraycopy(message, offset, buffer, DOFFSET + 1, len);
+        socket.write(buffer, 0, buffer.length);
+        return len;
     }
 
-    private int writeFlowControlFrame(int to, byte[] message) {
-        throw new UnsupportedOperationException("Not implemented");
+    private void writeFlowControlFrame(int id, int flag, int blockSize, int separationTime) throws NativeException {
+        byte[] buffer = CanFrame.allocateBuffer(false);
+        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
+        buffer[DOFFSET] = (byte)(CODE_FC | (flag & 0xF));
+        buffer[DOFFSET + 1] = (byte)(blockSize & 0xFF);
+        buffer[DOFFSET + 2] = (byte)(separationTime & 0xFF);
+        socket.write(buffer, 0, buffer.length);
     }
 
     public class ISOTPChannel {
@@ -89,6 +127,10 @@ public class ISOTPGateway {
         private ISOTPChannel(int targetAddress, int responseAddressMask) {
             this.targetAddress = targetAddress;
             this.responseAddressMask = responseAddressMask;
+        }
+
+        public void write(byte[] message) throws IOException, NativeException {
+            ISOTPGateway.this.write(targetAddress, message);
         }
     }
 }

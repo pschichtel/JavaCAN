@@ -34,6 +34,8 @@ import static tel.schich.javacan.ISOTPAddress.ECU_1;
 import static tel.schich.javacan.ISOTPAddress.EFF_FUNCTIONAL_ADDRESSING;
 import static tel.schich.javacan.ISOTPAddress.EFF_TESTER;
 import static tel.schich.javacan.ISOTPAddress.SFF_ECU_REQUEST_BASE;
+import static tel.schich.javacan.ISOTPAddress.SFF_ECU_RESPONSE_BASE;
+import static tel.schich.javacan.ISOTPAddress.SFF_FUNCTIONAL_ADDRESS;
 import static tel.schich.javacan.ISOTPAddress.composeEffAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
@@ -51,6 +53,9 @@ class ISOTPGatewayTest {
             isotp.write(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1), new byte[] { 0x11, 0x22, 0x33 });
 
             isotp.write(SFF_ECU_REQUEST_BASE + ECU_1, new byte[] { 0x33, 0x22, 0x11 });
+
+            ISOTPGateway.ISOTPChannel channel = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE);
+            channel.write(new byte[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2});
         }
     }
 }

@@ -37,8 +37,8 @@ public class ISOTPAddress {
     public static final int EFF_FUNCTIONAL_ADDRESSING = 0xDB;
 
     public static final int SFF_ECU_REQUEST_BASE = 0x7E0;
-    public static final int SFF_ECU_RESPONSE_BASE = 0x7E9;
-    public static final int SFF_FUNCTIONAL_ADDRESS = 0x7EF;
+    public static final int SFF_ECU_RESPONSE_BASE = 0x7E8;
+    public static final int SFF_FUNCTIONAL_ADDRESS = 0x7DF;
 
     public static int composeEffAddress(int prio, int type, int from, int to) {
         return composeEffAddress((byte)prio, (byte)type, (byte)from, (byte)to);
