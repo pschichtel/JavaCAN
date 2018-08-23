@@ -22,48 +22,40 @@
  */
 package tel.schich.javacan;
 
-import java.util.Objects;
+import java.nio.ByteOrder;
 
-public class CanFilter {
+public class Util {
 
-    static final int BYTES = Integer.BYTES * 2;
+    public static int readInt(byte[] buffer, int offset) {
+        int a = buffer[offset    ] & 0xFF;
+        int b = buffer[offset + 1] & 0xFF;
+        int c = buffer[offset + 2] & 0xFF;
+        int d = buffer[offset + 3] & 0xFF;
 
-    public final int id;
-    public final int mask;
-
-    public CanFilter(int id, int mask) {
-        this.id = id;
-        this.mask = mask;
+        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+            return (d << 24) | (c << 16) | (b << 8) | a;
+        } else {
+            return (a << 24) | (b << 16) | (c << 8) | d;
+        }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        CanFilter canFilter = (CanFilter) o;
-        return id == canFilter.id && mask == canFilter.mask;
+    public static void writeInt(byte[] buffer, int offset, int id) {
+        byte a = (byte) (id & 0xFF);
+        byte b = (byte) ((id >> 8) & 0xFF);
+        byte c = (byte) ((id >> 16) & 0xFF);
+        byte d = (byte) ((id >> 24) & 0xFF);
+
+        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+            buffer[offset    ] = a;
+            buffer[offset + 1] = b;
+            buffer[offset + 2] = c;
+            buffer[offset + 3] = d;
+        } else {
+            buffer[offset    ] = d;
+            buffer[offset + 1] = c;
+            buffer[offset + 2] = b;
+            buffer[offset + 3] = a;
+        }
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, mask);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("CanFilter(id=%X, mask=%X)", id, mask);
-    }
-
-    static CanFilter fromBuffer(byte[] buffer, int offset) {
-        int id = Util.readInt(buffer, offset);
-        int mask = Util.readInt(buffer, offset + Integer.BYTES);
-        return new CanFilter(id, mask);
-    }
-
-    static void toBuffer(CanFilter filter, byte[] buffer, int offset) {
-        Util.writeInt(buffer, offset, filter.id);
-        Util.writeInt(buffer, offset + Integer.BYTES, filter.mask);
-    }
 }

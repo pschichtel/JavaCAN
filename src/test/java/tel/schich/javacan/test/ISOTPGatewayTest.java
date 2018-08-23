@@ -43,15 +43,14 @@ class ISOTPGatewayTest {
     void testWrite() throws NativeException, IOException {
         JavaCAN.initialize();
 
-        final RawCanSocket socket = RawCanSocket.create();
-        socket.bind(CAN_INTERFACE);
+        try (final RawCanSocket socket = RawCanSocket.create()) {
+            socket.bind(CAN_INTERFACE);
 
-        final ISOTPGateway isotpEff = new ISOTPGateway(socket);
+            final ISOTPGateway isotp = new ISOTPGateway(socket);
 
-        isotpEff.write(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1), new byte[] {0x11, 0x22, 0x33});
+            isotp.write(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1), new byte[] { 0x11, 0x22, 0x33 });
 
-        final ISOTPGateway isotpSff = new ISOTPGateway(socket);
-
-        isotpSff.write(SFF_ECU_REQUEST_BASE + ECU_1, new byte[] {0x33, 0x22, 0x11});
+            isotp.write(SFF_ECU_REQUEST_BASE + ECU_1, new byte[] { 0x33, 0x22, 0x11 });
+        }
     }
 }

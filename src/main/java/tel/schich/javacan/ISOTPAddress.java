@@ -50,7 +50,7 @@ public class ISOTPAddress {
 
     public static int returnAddress(int addr) {
         if (CanId.isExtended(addr)) {
-            byte[] components = ISOTPGateway.decomposeEffAddress(addr);
+            byte[] components = decomposeEffAddress(addr);
             return composeEffAddress(components[0], components[1], components[3], components[2]);
         } else {
             if ((addr & 0b1000) > 0) {
@@ -59,5 +59,13 @@ public class ISOTPAddress {
                 return addr + 8;
             }
         }
+    }
+
+    public static byte[] decomposeEffAddress(int effAddr) {
+        byte prio = (byte)(effAddr >>> 24);
+        byte type = (byte)((effAddr >>> 16) & 0xFF);
+        byte from = (byte)((effAddr >>> 8) & 0xFF);
+        byte to   = (byte)(effAddr & 0xFF);
+        return new byte[] {prio, type, from, to};
     }
 }

@@ -51,7 +51,9 @@ class NativeInterface {
 
     public static native long read(int sock, byte[] buf, int offset, int len);
 
-    public static native int setFilter(int sock, int[] id, int[] mask);
+    public static native int setFilters(int sock, byte[] data);
+
+    public static native byte[] getFilters(int sock);
 
     public static native int setLoopback(int sock, boolean enable);
 

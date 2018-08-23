@@ -29,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 import static tel.schich.javacan.PollEvent.POLLIN;
 import static tel.schich.javacan.PollEvent.POLLPRI;
 
-public class ISOTPSocket extends NativeSocket {
+public class ISOTPSocket extends NativeSocket implements AutoCloseable {
 
     private ISOTPSocket(int sock) {
         super(sock);

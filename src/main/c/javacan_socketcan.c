@@ -68,8 +68,6 @@ JNIEXPORT jstring JNICALL Java_tel_schich_javacan_NativeInterface_errstr(JNIEnv 
     return (*env)->NewStringUTF(env, strerror(err));
 }
 
-
-
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setBlockingMode(JNIEnv *env, jclass class, jint sock, jboolean block) {
     return set_blocking_mode(sock, block);
 }
@@ -107,49 +105,33 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env
     return bytes_read;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilter(JNIEnv *env, jclass class, jint sock, jintArray ids, jintArray masks) {
-    jsize idCount = (*env)->GetArrayLength(env, ids);
-    jsize maskCount = (*env)->GetArrayLength(env, masks);
-
-    if (idCount != maskCount) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    jsize count = (jsize) idCount;
-
-    jint *filterIds = malloc(count * sizeof(jint));
-    if (!filterIds) {
-        return -1;
-    }
-    jint *filterMasks = malloc(count * sizeof(jint));
-    if (!filterMasks) {
-        free(filterIds);
-        return -1;
-    }
-    struct can_filter *filters = malloc(idCount * sizeof(struct can_filter));
-    if (!filters) {
-        free(filterIds);
-        free(filterMasks);
-        return -1;
-    }
-
-    (*env)->GetIntArrayRegion(env, ids, 0, count, filterIds);
-    (*env)->GetIntArrayRegion(env, masks, 0, count, filterMasks);
-
-    for (jsize i = 0; i < count; ++i) {
-        filters[i].can_id = (canid_t) filterIds[i];
-        filters[i].can_mask = (canid_t) filterMasks[i];
-    }
-
-    int result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, (socklen_t) count);
-    free(filters);
-    free(filterIds);
-    free(filterMasks);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilters(JNIEnv *env, jclass class, jint sock, jbyteArray data) {
+    void *rawData = (*env)->GetPrimitiveArrayCritical(env, data, false);
+    int result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, rawData, (socklen_t) (*env)->GetArrayLength(env, data));
+    (*env)->ReleasePrimitiveArrayCritical(env, data, rawData, 0);
 
     return result;
 }
 
+JNIEXPORT jbyteArray JNICALL Java_tel_schich_javacan_NativeInterface_getFilters(JNIEnv *env, jclass class, jint sock) {
+    // yep, assign the signed integer max value to an unsigned integer, socketcan's getsockopt implementation
+    unsigned int size = INT32_MAX;
+    // TODO this is a horrible idea, but it seems to be the only way to get all filters without knowing how many there are
+    // see: https://github.com/torvalds/linux/blob/master/net/can/raw.c#L669-L683
+    // surprisingly this does not increase the system memory usage given that this should be a significant chunk by numbers
+    void* filters = malloc(size);
+    if (filters == NULL) {
+        return NULL;
+    }
+    int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
+    if (result == -1) {
+        return NULL;
+    }
+    jbyteArray array = (*env)->NewByteArray(env, size);
+    (*env)->SetByteArrayRegion(env, array, 0, size, (const jbyte *) filters);
+    free(filters);
+    return array;
+}
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean enable) {
     return set_boolean_opt(sock, CAN_RAW_LOOPBACK, enable);

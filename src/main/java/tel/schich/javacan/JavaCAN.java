@@ -31,7 +31,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class JavaCAN {
 
-    private static boolean initialized = false;
+    private static volatile boolean initialized = false;
 
     public synchronized static void initialize() {
         if (!initialized) {

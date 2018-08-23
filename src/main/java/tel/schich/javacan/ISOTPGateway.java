@@ -41,12 +41,8 @@ public class ISOTPGateway {
         this.socket = socket;
     }
 
-    public static byte[] decomposeEffAddress(int effAddr) {
-        byte prio = (byte)(effAddr >>> 24);
-        byte type = (byte)((effAddr >>> 16) & 0xFF);
-        byte from = (byte)((effAddr >>> 8) & 0xFF);
-        byte to   = (byte)(effAddr & 0xFF);
-        return new byte[] {prio, type, from, to};
+    public ISOTPChannel createChannel(int targetAddress, int responseAddressMask) {
+        return new ISOTPChannel(targetAddress, responseAddressMask);
     }
 
     public void write(int id, byte[] message) throws NativeException, IOException {
@@ -82,5 +78,15 @@ public class ISOTPGateway {
 
     private int writeFlowControlFrame(int to, byte[] message) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public class ISOTPChannel {
+        private final int targetAddress;
+        private final int responseAddressMask;
+
+        private ISOTPChannel(int targetAddress, int responseAddressMask) {
+            this.targetAddress = targetAddress;
+            this.responseAddressMask = responseAddressMask;
+        }
     }
 }

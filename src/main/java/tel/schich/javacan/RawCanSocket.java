@@ -26,7 +26,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
 
-public class RawCanSocket extends NativeSocket {
+public class RawCanSocket extends NativeSocket implements AutoCloseable {
 
     public static final int MTU = 16;
     public static final int DLEN = 8;
@@ -131,18 +131,37 @@ public class RawCanSocket extends NativeSocket {
         return mask;
     }
 
-    public void setFilters(CanFilter... filters) {
-        int[] ids = new int[filters.length];
-        int[] masks = new int[filters.length];
+    public void setFilters(CanFilter... filters) throws NativeException {
+        byte[] filterData = new byte[filters.length * CanFilter.BYTES];
+        for (int i = 0; i < filters.length; i++) {
+            CanFilter.toBuffer(filters[i], filterData, i * CanFilter.BYTES);
+        }
 
-        NativeInterface.setFilter(sockFD, ids, masks);
+        if (NativeInterface.setFilters(sockFD, filterData) == -1) {
+            throw new NativeException("Unable to set the filters!");
+        }
+    }
+
+    public CanFilter[] getFilters() throws NativeException {
+        byte[] filterData = NativeInterface.getFilters(sockFD);
+        if (filterData == null) {
+            throw new NativeException("Unable to get the filters!");
+        }
+
+        int count = filterData.length / CanFilter.BYTES;
+        CanFilter[] filters = new CanFilter[count];
+        for (int i = 0; i < count; i++) {
+            filters[i] = CanFilter.fromBuffer(filterData, i * CanFilter.BYTES);
+        }
+
+        return filters;
     }
 
     @NonNull
     public CanFrame read() throws NativeException, IOException {
         byte[] frameBuf = new byte[FD_MTU];
         long bytesRead = read(frameBuf, 0, FD_MTU);
-        return CanFrame.fromBuffer(bytesRead, frameBuf);
+        return CanFrame.fromBuffer(frameBuf, 0, bytesRead);
     }
 
     public CanFrame readRetrying() throws NativeException, IOException {
@@ -158,7 +177,7 @@ public class RawCanSocket extends NativeSocket {
                     throw new NativeException("Unable to read a frame and retry is not possible!", err);
                 }
             }
-            return CanFrame.fromBuffer(bytesRead, frameBuf);
+            return CanFrame.fromBuffer(frameBuf, 0, bytesRead);
         }
     }
 

@@ -3,3 +3,4 @@ cmake-*/
 CMakeLists.txt
 *.iml
 target/
+*.log

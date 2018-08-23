@@ -37,33 +37,32 @@ public class ISOTPSocketTest {
     void testBind() throws NativeException {
         JavaCAN.initialize();
 
-        ISOTPSocket socket = ISOTPSocket.create();
-
-        socket.bind(CAN_INTERFACE, 0x11, 0x22);
-
-        socket.close();
+        try (final ISOTPSocket socket = ISOTPSocket.create()) {
+            socket.bind(CAN_INTERFACE, 0x11, 0x22);
+        }
     }
 
     @Test
     void testWriteAndReadNonBlocking() throws NativeException, IOException {
         JavaCAN.initialize();
 
-        final ISOTPSocket a = ISOTPSocket.create();
-        a.bind(CAN_INTERFACE, 0x11, 0x22);
-        a.setBlockingMode(false);
+        try (final ISOTPSocket a = ISOTPSocket.create()) {
+            a.bind(CAN_INTERFACE, 0x11, 0x22);
+            a.setBlockingMode(false);
 
-        final ISOTPSocket b = ISOTPSocket.create();
-        b.setBlockingMode(false);
-        b.bind(CAN_INTERFACE, 0x22, 0x11);
+            try (final ISOTPSocket b = ISOTPSocket.create()) {
+                b.setBlockingMode(false);
+                b.bind(CAN_INTERFACE, 0x22, 0x11);
 
-        byte[] input = {0x11, 0x22, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x22, 0x11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                byte[] input = { 0x11, 0x22, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x22, 0x11, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0 };
 
-        a.writeAll(input);
-        byte[] output = b.readEntirely(2);
+                a.writeAll(input);
+                byte[] output = b.readEntirely(2);
 
-        assertArrayEquals(input, output, "what comes in should come out");
+                assertArrayEquals(input, output, "what comes in should come out");
 
-        a.close();
-        b.close();
+            }
+        }
     }
 }

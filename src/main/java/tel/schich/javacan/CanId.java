@@ -51,37 +51,4 @@ public class CanId {
     public static boolean isRemoveTransmissionRequest(int id) {
         return (id & RTR_FLAG) != 0;
     }
-
-    public static int readId(byte[] buffer, int offset) {
-        int a = buffer[offset    ] & 0xFF;
-        int b = buffer[offset + 1] & 0xFF;
-        int c = buffer[offset + 2] & 0xFF;
-        int d = buffer[offset + 3] & 0xFF;
-
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            return (d << 24) | (c << 16) | (b << 8) | a;
-        } else {
-            return (a << 24) | (b << 16) | (c << 8) | d;
-        }
-    }
-
-    public static void writeId(byte[] buffer, int offset, int id) {
-        byte a = (byte) (id & 0xFF);
-        byte b = (byte) ((id >> 8) & 0xFF);
-        byte c = (byte) ((id >> 16) & 0xFF);
-        byte d = (byte) ((id >> 24) & 0xFF);
-
-        if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
-            buffer[offset    ] = a;
-            buffer[offset + 1] = b;
-            buffer[offset + 2] = c;
-            buffer[offset + 3] = d;
-        } else {
-            buffer[offset    ] = d;
-            buffer[offset + 1] = c;
-            buffer[offset + 2] = b;
-            buffer[offset + 3] = a;
-        }
-    }
-
 }
