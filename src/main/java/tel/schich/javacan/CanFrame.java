@@ -156,6 +156,10 @@ public class CanFrame {
         return new CanFrame(id, flags, payload, 0, payload.length);
     }
 
+    static byte[] allocateBuffer(boolean fd) {
+        return new byte[fd ? FD_MTU : MTU];
+    }
+
     static CanFrame fromBuffer(byte[] buffer, int offset, long bytes) throws IOException {
         boolean fdFrame = bytes == RawCanSocket.FD_MTU;
         if (bytes != MTU && !fdFrame) {
@@ -167,11 +171,8 @@ public class CanFrame {
         return new CanFrame(id, flags, buffer, 8, length);
     }
 
-    static void toBuffer(CanFrame frame, byte[] buffer, int offset) {
-        Util.writeInt(buffer, offset, frame.id);
-
-        buffer[offset + 4] = (byte)(frame.dataLength & 0xFF);
-        buffer[offset + 5] = frame.isFDFrame() ? frame.flags : 0;
+    static void toBuffer(byte[] buffer, int offset, CanFrame frame) {
+        toBuffer(buffer, offset, frame.id, frame.dataLength,frame.isFDFrame() ? frame.flags : 0);
         System.arraycopy(frame.payload, frame.dataOffset, buffer, offset + DOFFSET, frame.dataLength);
     }
 
@@ -183,12 +184,17 @@ public class CanFrame {
             return frame.payload;
         } else if (!fdFrame && frame.payload.length == MTU && frame.dataOffset == DOFFSET) {
             return frame.payload;
-        } else if (fdFrame) {
-            buffer = new byte[FD_MTU];
         } else {
-            buffer = new byte[MTU];
+            buffer = allocateBuffer(fdFrame);
         }
-        toBuffer(frame, buffer, 0);
+        toBuffer(buffer, 0, frame);
         return buffer;
+    }
+
+    static void toBuffer(byte[] buffer, int offset, int id, int dataLength, byte flags) {
+        Util.writeInt(buffer, offset, id);
+
+        buffer[offset + Integer.BYTES] = (byte)(dataLength & 0xFF);
+        buffer[offset + Integer.BYTES + 1] = flags;
     }
 }

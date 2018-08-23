@@ -26,14 +26,15 @@ import java.io.IOException;
 
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.RawCanSocket.DLEN;
+import static tel.schich.javacan.RawCanSocket.DOFFSET;
 import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
 public class ISOTPGateway {
 
-    private static final int CODE_SF = 0;
-    private static final int CODE_FF = 0;
-    private static final int CODE_CF = 0;
-    private static final int CODE_FC = 0;
+    private static final int CODE_SF = 0b0000;
+    private static final int CODE_FF = 0b0001;
+    private static final int CODE_CF = 0b0010;
+    private static final int CODE_FC = 0b0011;
 
     private final RawCanSocket socket;
 
@@ -57,14 +58,15 @@ public class ISOTPGateway {
     }
 
     private void writeSingleFrame(int to, byte[] message, int maxLen) throws IOException, NativeException {
-        final byte[] payload = new byte[maxLen];
-        final int headerLength = writeSingleFrameHeader(payload, message.length);
-        System.arraycopy(message, 0, payload, headerLength, message.length);
-        socket.write(new CanFrame(to, FD_NO_FLAGS, payload, 0, headerLength + message.length));
+        byte[] buffer = CanFrame.allocateBuffer(false);
+        CanFrame.toBuffer(buffer, 0, to, 8, FD_NO_FLAGS);
+        final int headerLength = writeSingleFrameHeader(buffer, DOFFSET, message.length);
+        System.arraycopy(message, 0, buffer, DOFFSET + headerLength, message.length);
+        socket.write(buffer, 0, buffer.length);
     }
 
-    private static int writeSingleFrameHeader(byte[] buffer, int length) {
-        buffer[0] = (byte)((CODE_SF << 4) | (length & 0xF));
+    private static int writeSingleFrameHeader(byte[] buffer, int offset, int length) {
+        buffer[offset] = (byte)((CODE_SF << 4) | (length & 0xF));
         return 1;
     }
 

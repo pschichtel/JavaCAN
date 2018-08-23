@@ -187,7 +187,10 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         }
 
         final byte[] buffer = CanFrame.toBuffer(frame);
-        write(buffer, 0, buffer.length);
+        long written = write(buffer, 0, buffer.length);
+        if (written != buffer.length) {
+            throw new IOException("Frame written incompletely!");
+        }
     }
 
     @NonNull

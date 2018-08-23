@@ -113,7 +113,7 @@ class RawCanSocketTest {
         JavaCAN.initialize();
 
         try (final RawCanSocket socket = RawCanSocket.create()) {
-            socket.bind("vcan0");
+            socket.bind(CAN_INTERFACE);
             socket.setBlockingMode(true);
 
             {

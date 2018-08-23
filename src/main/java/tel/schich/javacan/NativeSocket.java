@@ -65,7 +65,7 @@ abstract class NativeSocket implements CanSocket {
         }
         long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
         if (bytesWritten == -1) {
-            throw new NativeException("Unable to write to ISOTP socket!");
+            throw new NativeException("Unable to write to the socket!");
         }
         return bytesWritten;
     }
