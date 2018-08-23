@@ -35,6 +35,7 @@
 #include <jni.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
+#include <limits.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
@@ -114,8 +115,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilters(JNIEnv
 }
 
 JNIEXPORT jbyteArray JNICALL Java_tel_schich_javacan_NativeInterface_getFilters(JNIEnv *env, jclass class, jint sock) {
-    // yep, assign the signed integer max value to an unsigned integer, socketcan's getsockopt implementation
-    unsigned int size = INT32_MAX;
+    // assign the signed integer max value to an unsigned integer, socketcan's getsockopt implementation uses int's
+    // instead of uint's and resets the size to the actual size only if the given size is larger.
+    socklen_t size = INT_MAX;
     // TODO this is a horrible idea, but it seems to be the only way to get all filters without knowing how many there are
     // see: https://github.com/torvalds/linux/blob/master/net/can/raw.c#L669-L683
     // surprisingly this does not increase the system memory usage given that this should be a significant chunk by numbers
