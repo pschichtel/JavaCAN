@@ -27,6 +27,15 @@ Currently the full build process includes the following architectures:
 * armv7
 * aarch64
 
+## How to use
+
+1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
+2. Call `JavaCAN.initialize()`
+3. Create a `RawCanSocket` by calling `RawCanSocket.create()`
+4. Bind the socket to an interface using the `bind(String)` method
+
+Usage example can be found in the unit tests.
+
 ## How to build
 
 ### Prerequisites
