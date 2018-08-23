@@ -31,6 +31,7 @@ import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
 public class ISOTPGateway {
 
+    private static final int CODE_MASK = 0xF0;
     private static final int CODE_SF = 0x00;
     private static final int CODE_FF = 0x10;
     private static final int CODE_CF = 0x20;
