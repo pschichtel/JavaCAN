@@ -88,17 +88,12 @@ public class ISOTPGateway {
     private int writeFirstFrame(int id, byte[] message) throws NativeException {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
-        final int headerLength = writeFirstFrameHeader(buffer, DOFFSET, message.length);
-        final int len = Math.min(DLEN - headerLength, message.length);
-        System.arraycopy(message, 0, buffer, DOFFSET + headerLength, len);
+        buffer[DOFFSET] = (byte)(CODE_FF | ((message.length >> Byte.SIZE) & 0xF));
+        buffer[DOFFSET + 1] = (byte)(message.length & 0xFF);
+        final int len = Math.min(DLEN - 2, message.length);
+        System.arraycopy(message, 0, buffer, DOFFSET + 2, len);
         socket.write(buffer, 0, buffer.length);
         return len;
-    }
-
-    private static int writeFirstFrameHeader(byte[] buffer, int offset, int length) {
-        buffer[offset] = (byte)(CODE_FF | ((length >> Byte.SIZE) & 0xF));
-        buffer[offset + 1] = (byte)(length & 0xFF);
-        return 2;
     }
 
     private int writeConsecutiveFrame(int id, byte[] message, int offset, int sn) throws NativeException {
