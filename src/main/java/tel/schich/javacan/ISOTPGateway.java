@@ -22,14 +22,21 @@
  */
 package tel.schich.javacan;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
+import static tel.schich.javacan.PollEvent.POLLIN;
+import static tel.schich.javacan.PollEvent.POLLPRI;
 import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
 import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
-public class ISOTPGateway {
+public class ISOTPGateway implements Closeable {
 
     private static final int CODE_MASK = 0xF0;
     private static final int CODE_SF = 0x00;
@@ -42,9 +49,66 @@ public class ISOTPGateway {
     private static final int FC_OVERFLOW = 0x02;
 
     private final RawCanSocket socket;
+    private final ThreadFactory threadFactory;
+    private final BlockingQueue<CanFrame> inboundQueue;
+    private final BlockingQueue<OutboundMessage> outboundQueue;
 
-    public ISOTPGateway(RawCanSocket socket) {
+    private PollingThread readFrames;
+    private PollingThread processFrames;
+    private PollingThread sendFrames;
+
+    public ISOTPGateway(RawCanSocket socket, ThreadFactory threadFactory, int queueLength) {
         this.socket = socket;
+        this.threadFactory = threadFactory;
+        inboundQueue = new ArrayBlockingQueue<>(queueLength);
+        outboundQueue = new ArrayBlockingQueue<>(queueLength);
+    }
+
+    private PollingThread makeThread(String name, long timeout, PollFunction foo) {
+        Poller p = new Poller(name, timeout, foo);
+        Thread t = threadFactory.newThread(p);
+        t.setUncaughtExceptionHandler(this::handleException);
+        return new PollingThread(p, t);
+    }
+
+    public void start(long pollTimeout) {
+        if (readFrames != null) {
+            throw new IllegalStateException("Already running!");
+        }
+
+        readFrames = makeThread("read-frames", pollTimeout, this::readFrame);
+        processFrames = makeThread("process-frames", pollTimeout, this::processInbound);
+        sendFrames = makeThread("send-frames", pollTimeout, this::processOutbound);
+
+        readFrames.start();
+        processFrames.start();
+        sendFrames.start();
+    }
+
+    public synchronized void stop() throws InterruptedException {
+        readFrames.stop();
+        processFrames.stop();
+        sendFrames.stop();
+        try {
+            readFrames.join();
+            processFrames.join();
+            sendFrames.join();
+        } finally {
+            readFrames = null;
+            processFrames = null;
+            sendFrames = null;
+        }
+    }
+
+    private void handleException(Thread thread, Throwable t) {
+        System.err.println("Polling thread failed: " + thread.getName());
+        t.printStackTrace(System.err);
+        System.err.println("Terminating other threads.");
+        try {
+            stop();
+        } catch (InterruptedException e) {
+            System.err.println("Got interrupted while stopping the threads");
+        }
     }
 
     public ISOTPChannel createChannel(int targetAddress, int responseAddressMask) {
@@ -55,7 +119,7 @@ public class ISOTPGateway {
         return new ISOTPChannel(targetAddress, ISOTPAddress.returnAddress(targetAddress));
     }
 
-    public void write(int id, byte[] message) throws NativeException, IOException {
+    private void write(int id, byte[] message) throws NativeException, IOException {
         final int maxLength = socket.isAllowFDFrames() ? FD_DLEN : DLEN;
         if (fitsIntoSingleFrame(message.length, maxLength)) {
             writeSingleFrame(id, message, maxLength);
@@ -116,7 +180,122 @@ public class ISOTPGateway {
         socket.write(buffer, 0, buffer.length);
     }
 
-    public class ISOTPChannel {
+    @Override
+    public void close() throws IOException {
+        // TODO implement me
+    }
+
+    @FunctionalInterface
+    private interface PollFunction {
+        boolean poll(long timeout) throws Exception;
+    }
+
+    private static final class PollingThread {
+        final Poller poller;
+        final Thread thread;
+
+        public PollingThread(Poller poller, Thread thread) {
+            this.poller = poller;
+            this.thread = thread;
+        }
+
+        public void start() {
+            thread.start();
+        }
+
+        public void stop() {
+            this.poller.keepPolling = false;
+        }
+
+        public void join(long millis) throws InterruptedException {
+            thread.join(millis);
+        }
+
+        public void join(long millis, int nanos) throws InterruptedException {
+            thread.join(millis, nanos);
+        }
+
+        public void join() throws InterruptedException {
+            thread.join();
+        }
+    }
+
+    public static final class Poller implements Runnable {
+        private final String name;
+        public final long timeout;
+        public final PollFunction foo;
+
+        public volatile boolean keepPolling = true;
+
+        public Poller(String name, long timeout, PollFunction foo) {
+            this.name = name;
+            this.timeout = timeout;
+            this.foo = foo;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("Let the polling begin...");
+            while (keepPolling) {
+                System.out.println("Poll!");
+                try {
+                    if (!foo.poll(timeout)) {
+                        break;
+                    }
+                } catch (NativeException e) {
+                    if (!e.mayTryAgain()) {
+                        throw new RuntimeException("Polling failed", e);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Polling failed", e);
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    private boolean readFrame(long timeout) throws NativeException, IOException {
+        System.out.println("Waiting for the socket to have a readable frame...");
+        int polled = socket.poll(POLLIN | POLLPRI, (int) timeout);
+        if (polled > 0) {
+            inboundQueue.offer(socket.read());
+        }
+        return true;
+    }
+
+    private boolean processInbound(long timeout) throws Exception {
+        System.out.println("Waiting for a frame to come in ready to process...");
+        CanFrame frame = inboundQueue.poll(timeout, TimeUnit.MILLISECONDS);
+        if (frame != null) {
+            System.out.println(frame);
+        }
+        return true;
+    }
+
+    private boolean processOutbound(long timeout) throws Exception {
+        System.out.println("Waiting for a send request...");
+        OutboundMessage message = outboundQueue.poll(timeout, TimeUnit.MILLISECONDS);
+        if (message != null) {
+            write(message.destinationId, message.payload);
+        }
+        return true;
+    }
+
+    public static final class OutboundMessage {
+        private final int destinationId;
+        private final byte[] payload;
+
+        public OutboundMessage(int destinationId, byte[] payload) {
+            this.destinationId = destinationId;
+            this.payload = payload;
+        }
+    }
+
+    public class ISOTPChannel implements Closeable {
         private final int targetAddress;
         private final int responseAddressMask;
 
@@ -125,8 +304,14 @@ public class ISOTPGateway {
             this.responseAddressMask = responseAddressMask;
         }
 
-        public void write(byte[] message) throws IOException, NativeException {
+        public void send(byte[] message) throws IOException, NativeException {
+            outboundQueue.offer(new OutboundMessage(targetAddress, message));
             ISOTPGateway.this.write(targetAddress, message);
+        }
+
+        @Override
+        public void close() throws IOException {
+            // TODO implement me
         }
     }
 }

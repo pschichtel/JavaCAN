@@ -22,12 +22,11 @@
  */
 package tel.schich.javacan.test;
 
-import java.io.IOException;
+import java.util.concurrent.ThreadFactory;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.ISOTPGateway;
 import tel.schich.javacan.JavaCAN;
-import tel.schich.javacan.NativeException;
 import tel.schich.javacan.RawCanSocket;
 
 import static tel.schich.javacan.ISOTPAddress.ECU_1;
@@ -41,21 +40,51 @@ import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class ISOTPGatewayTest {
 
+    private static ThreadFactory threadFactory = r -> new Thread(r, "test-thread-" + r.toString());
+
     @Test
-    void testWrite() throws NativeException, IOException {
+    void testWrite() throws Exception {
         JavaCAN.initialize();
 
         try (final RawCanSocket socket = RawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
-            final ISOTPGateway isotp = new ISOTPGateway(socket);
+            try (final ISOTPGateway isotp = new ISOTPGateway(socket, threadFactory, 100)) {
 
-            isotp.write(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1), new byte[] { 0x11, 0x22, 0x33 });
+                try (final ISOTPGateway.ISOTPChannel eff = isotp.createChannel(composeEffAddress(0x18, EFF_FUNCTIONAL_ADDRESSING, EFF_TESTER, ECU_1))) {
+                    eff.send(new byte[] { 0x11, 0x22, 0x33 });
+                }
 
-            isotp.write(SFF_ECU_REQUEST_BASE + ECU_1, new byte[] { 0x33, 0x22, 0x11 });
+                try (final ISOTPGateway.ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + ECU_1)) {
+                    sff.send(new byte[] { 0x33, 0x22, 0x11 });
+                }
 
-            ISOTPGateway.ISOTPChannel channel = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE);
-            channel.write(new byte[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2});
+                try (final ISOTPGateway.ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE)) {
+                    sff.send(
+                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
+                }
+            }
+        }
+    }
+
+    @Test
+    void testPolling() throws Exception {
+        JavaCAN.initialize();
+
+        try (final RawCanSocket socket = RawCanSocket.create()) {
+            socket.bind(CAN_INTERFACE);
+
+            try (final ISOTPGateway isotp = new ISOTPGateway(socket, threadFactory, 100)) {
+                isotp.start(10000);
+
+
+                try (final ISOTPGateway.ISOTPChannel channel = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE)) {
+                    channel.send(new byte[] { 1, 2, 2 });
+                }
+
+                isotp.stop();
+            }
         }
     }
 }
