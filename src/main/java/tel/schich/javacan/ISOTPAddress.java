@@ -24,48 +24,66 @@ package tel.schich.javacan;
 
 public class ISOTPAddress {
 
-    public static final int ECU_1 = 0;
-    public static final int ECU_2 = 1;
-    public static final int ECU_3 = 2;
-    public static final int ECU_4 = 3;
-    public static final int ECU_5 = 4;
-    public static final int ECU_6 = 5;
-    public static final int ECU_7 = 6;
-    public static final int EFF_FUNCTIONAL = 0x33;
-    public static final int EFF_TESTER = 0xF1;
-    public static final int EFF_PHYSICAL_ADDRESSING = 0xDA;
-    public static final int EFF_FUNCTIONAL_ADDRESSING = 0xDB;
+    public static final int DESTINATION_ECU_1              = 0x00;
+    public static final int DESTINATION_ECU_2              = 0x01;
+    public static final int DESTINATION_ECU_3              = 0x02;
+    public static final int DESTINATION_ECU_4              = 0x03;
+    public static final int DESTINATION_ECU_5              = 0x04;
+    public static final int DESTINATION_ECU_6              = 0x05;
+    public static final int DESTINATION_ECU_7              = 0x06;
+    public static final int DESTINATION_EFF_FUNCTIONAL     = 0x33;
+    public static final int DESTINATION_EFF_TEST_EQUIPMENT = 0xF1;
 
-    public static final int SFF_ECU_REQUEST_BASE = 0x7E0;
-    public static final int SFF_ECU_RESPONSE_BASE = 0x7E8;
+    public static final int EFF_TYPE_PHYSICAL_ADDRESSING   = 0xDA;
+    public static final int EFF_TYPE_FUNCTIONAL_ADDRESSING = 0xDB;
+
+    public static final int EFF_MASK_FUNCTIONAL_RESPONSE = 0xFFFF00FF;
+
+    public static final int SFF_ECU_REQUEST_BASE   = 0x7E0;
+    public static final int SFF_ECU_RESPONSE_BASE  = 0x7E8;
     public static final int SFF_FUNCTIONAL_ADDRESS = 0x7DF;
 
-    public static int composeEffAddress(int prio, int type, int from, int to) {
-        return composeEffAddress((byte)prio, (byte)type, (byte)from, (byte)to);
+    public static final int SFF_MASK_FUNCTIONAL_RESPONSE = 0b111_11111000;
+
+    public static final CanFilter SFF_FUNCTIONAL_FILTER = new CanFilter(SFF_ECU_RESPONSE_BASE, SFF_MASK_FUNCTIONAL_RESPONSE);
+
+    public static int effAddress(int priority, int type, int sender, int receiver) {
+        return ((((priority & 0xFF) << 24) | ((type & 0xFF) << 16) | ((sender & 0xFF) << 8) | (receiver & 0xFF)) & CanId.EFF_MASK) | CanId.EFF_FLAG;
     }
 
-    public static int composeEffAddress(byte prio, byte type, byte from, byte to) {
-        return ((((prio & 0xFF) << 24) | ((type & 0xFF) << 16) | ((from & 0xFF) << 8) | (to & 0xFF)) & CanId.EFF_MASK) | CanId.EFF_FLAG;
-    }
-
-    public static int returnAddress(int addr) {
+    public static CanFilter filterFromDestination(int addr) {
         if (CanId.isExtended(addr)) {
-            byte[] components = decomposeEffAddress(addr);
-            return composeEffAddress(components[0], components[1], components[3], components[2]);
-        } else {
-            if ((addr & 0b1000) > 0) {
-                return addr - 8;
+            int[] components = decomposeEffAddress(addr);
+            int priority = components[0];
+            int type = components[1];
+            int sender = components[2];
+            int receiver = components[3];
+
+            if (type == EFF_TYPE_FUNCTIONAL_ADDRESSING && receiver == DESTINATION_EFF_FUNCTIONAL) {
+                return new CanFilter(effAddress(priority, EFF_TYPE_PHYSICAL_ADDRESSING, 0x00, sender), EFF_MASK_FUNCTIONAL_RESPONSE);
             } else {
-                return addr + 8;
+                return new CanFilter(effAddress(priority, type, receiver, sender));
+            }
+        } else {
+            if (addr == SFF_FUNCTIONAL_ADDRESS) {
+                return SFF_FUNCTIONAL_FILTER;
+            } else {
+                int returnAddr;
+                if ((addr & 0b1000) > 0) {
+                    returnAddr = addr - 8;
+                } else {
+                    returnAddr = addr + 8;
+                }
+                return new CanFilter(returnAddr);
             }
         }
     }
 
-    public static byte[] decomposeEffAddress(int effAddr) {
-        byte prio = (byte)(effAddr >>> 24);
-        byte type = (byte)((effAddr >>> 16) & 0xFF);
-        byte from = (byte)((effAddr >>> 8) & 0xFF);
-        byte to   = (byte)(effAddr & 0xFF);
-        return new byte[] {prio, type, from, to};
+    public static int[] decomposeEffAddress(int effAddr) {
+        int prio = (effAddr >>> 24);
+        int type = ((effAddr >>> 16) & 0xFF);
+        int from = ((effAddr >>> 8) & 0xFF);
+        int to   = (effAddr & 0xFF);
+        return new int[] {prio, type, from, to};
     }
 }

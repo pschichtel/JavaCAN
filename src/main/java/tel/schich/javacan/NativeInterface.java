@@ -53,6 +53,7 @@ class NativeInterface {
 
     public static native int setFilters(int sock, byte[] data);
 
+    @Deprecated
     public static native byte[] getFilters(int sock);
 
     public static native int setLoopback(int sock, boolean enable);

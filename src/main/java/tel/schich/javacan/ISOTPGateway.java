@@ -22,10 +22,13 @@
  */
 package tel.schich.javacan;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +39,7 @@ import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
 import static tel.schich.javacan.RawCanSocket.FD_DLEN;
 
-public class ISOTPGateway implements Closeable {
+public class ISOTPGateway implements AutoCloseable {
 
     private static final int CODE_MASK = 0xF0;
     private static final int CODE_SF = 0x00;
@@ -57,11 +60,18 @@ public class ISOTPGateway implements Closeable {
     private PollingThread processFrames;
     private PollingThread sendFrames;
 
-    public ISOTPGateway(RawCanSocket socket, ThreadFactory threadFactory, int queueLength) {
-        this.socket = socket;
+    private final List<ISOTPChannel> channels;
+
+    public ISOTPGateway(ThreadFactory threadFactory, int queueLength) throws NativeException {
+        this.socket = RawCanSocket.create();
         this.threadFactory = threadFactory;
-        inboundQueue = new ArrayBlockingQueue<>(queueLength);
-        outboundQueue = new ArrayBlockingQueue<>(queueLength);
+        this.inboundQueue = new ArrayBlockingQueue<>(queueLength);
+        this.outboundQueue = new ArrayBlockingQueue<>(queueLength);
+        this.channels = new CopyOnWriteArrayList<>();
+    }
+
+    public void bind(String interfaceName) throws NativeException {
+        socket.bind(interfaceName);
     }
 
     private PollingThread makeThread(String name, long timeout, PollFunction foo) {
@@ -71,9 +81,10 @@ public class ISOTPGateway implements Closeable {
         return new PollingThread(p, t);
     }
 
-    public void start(long pollTimeout) {
-        if (readFrames != null) {
-            throw new IllegalStateException("Already running!");
+    public void start(long pollTimeout) throws NativeException {
+        if (readFrames != null || processFrames != null || sendFrames != null) {
+            // already running
+            return;
         }
 
         readFrames = makeThread("read-frames", pollTimeout, this::readFrame);
@@ -83,9 +94,20 @@ public class ISOTPGateway implements Closeable {
         readFrames.start();
         processFrames.start();
         sendFrames.start();
+        updateSocketFilters();
     }
 
-    public synchronized void stop() throws InterruptedException {
+    public void stop() throws InterruptedException {
+        if (readFrames == null || processFrames == null || sendFrames == null) {
+            // already stopped
+            return;
+        }
+        try {
+            clearFilters();
+        } catch (NativeException e) {
+            System.err.println("Failed to clear the filter before stopping!");
+            e.printStackTrace(System.err);
+        }
         readFrames.stop();
         processFrames.stop();
         sendFrames.stop();
@@ -111,15 +133,43 @@ public class ISOTPGateway implements Closeable {
         }
     }
 
-    public ISOTPChannel createChannel(int targetAddress, int responseAddressMask) {
-        return new ISOTPChannel(targetAddress, responseAddressMask);
+    public ISOTPChannel createChannel(int targetAddress, CanFilter returnFilter) throws NativeException {
+        ISOTPChannel ch = new ISOTPChannel(this, targetAddress, returnFilter);
+        this.channels.add(ch);
+        updateSocketFilters();
+        return ch;
     }
 
-    public ISOTPChannel createChannel(int targetAddress) {
-        return new ISOTPChannel(targetAddress, ISOTPAddress.returnAddress(targetAddress));
+    public ISOTPChannel createChannel(int targetAddress, int returnAddress) throws NativeException {
+        return createChannel(targetAddress, new CanFilter(returnAddress));
     }
 
-    private void write(int id, byte[] message) throws NativeException, IOException {
+    public ISOTPChannel createChannel(int targetAddress) throws NativeException {
+        return createChannel(targetAddress, ISOTPAddress.filterFromDestination(targetAddress));
+    }
+
+    void dropChannel(ISOTPChannel channel) throws NativeException {
+        this.channels.remove(channel);
+        updateSocketFilters();
+    }
+
+    private void clearFilters() throws NativeException {
+        socket.setFilters(CanFilter.NONE);
+    }
+
+    private void updateSocketFilters() throws NativeException {
+        if (channels.isEmpty()) {
+            clearFilters();
+        } else {
+            socket.setFilters(channels, ISOTPChannel::getReturnFilter);
+        }
+    }
+
+    void offer(OutboundMessage message) {
+        this.outboundQueue.offer(message);
+    }
+
+    private void write(int id, byte[] message) throws NativeException {
         final int maxLength = socket.isAllowFDFrames() ? FD_DLEN : DLEN;
         if (fitsIntoSingleFrame(message.length, maxLength)) {
             writeSingleFrame(id, message, maxLength);
@@ -142,7 +192,7 @@ public class ISOTPGateway implements Closeable {
         return len + 1 <= maxLen;
     }
 
-    private void writeSingleFrame(int id, byte[] message, int maxLen) throws IOException, NativeException {
+    private void writeSingleFrame(int id, byte[] message, int maxLen) throws NativeException {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
@@ -181,8 +231,9 @@ public class ISOTPGateway implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-        // TODO implement me
+    public void close() throws NativeException, InterruptedException {
+        this.stop();
+        this.socket.close();
     }
 
     @FunctionalInterface
@@ -235,9 +286,7 @@ public class ISOTPGateway implements Closeable {
 
         @Override
         public void run() {
-            System.out.println("Let the polling begin...");
             while (keepPolling) {
-                System.out.println("Poll!");
                 try {
                     if (!foo.poll(timeout)) {
                         break;
@@ -259,7 +308,6 @@ public class ISOTPGateway implements Closeable {
     }
 
     private boolean readFrame(long timeout) throws NativeException, IOException {
-        System.out.println("Waiting for the socket to have a readable frame...");
         int polled = socket.poll(POLLIN | POLLPRI, (int) timeout);
         if (polled > 0) {
             inboundQueue.offer(socket.read());
@@ -268,19 +316,24 @@ public class ISOTPGateway implements Closeable {
     }
 
     private boolean processInbound(long timeout) throws Exception {
-        System.out.println("Waiting for a frame to come in ready to process...");
+        System.out.println("Active filters: " + Arrays.toString(socket.getFilters()));
         CanFrame frame = inboundQueue.poll(timeout, TimeUnit.MILLISECONDS);
         if (frame != null) {
             System.out.println(frame);
+            System.out.flush();
         }
         return true;
     }
 
     private boolean processOutbound(long timeout) throws Exception {
-        System.out.println("Waiting for a send request...");
         OutboundMessage message = outboundQueue.poll(timeout, TimeUnit.MILLISECONDS);
         if (message != null) {
-            write(message.destinationId, message.payload);
+            try {
+                write(message.destinationId, message.payload);
+                message.promise.complete(null);
+            } catch (Exception e) {
+                message.promise.completeExceptionally(e);
+            }
         }
         return true;
     }
@@ -288,30 +341,13 @@ public class ISOTPGateway implements Closeable {
     public static final class OutboundMessage {
         private final int destinationId;
         private final byte[] payload;
+        private final CompletableFuture<Void> promise;
 
-        public OutboundMessage(int destinationId, byte[] payload) {
+        public OutboundMessage(int destinationId, byte[] payload, CompletableFuture<Void> promise) {
             this.destinationId = destinationId;
             this.payload = payload;
+            this.promise = promise;
         }
     }
 
-    public class ISOTPChannel implements Closeable {
-        private final int targetAddress;
-        private final int responseAddressMask;
-
-        private ISOTPChannel(int targetAddress, int responseAddressMask) {
-            this.targetAddress = targetAddress;
-            this.responseAddressMask = responseAddressMask;
-        }
-
-        public void send(byte[] message) throws IOException, NativeException {
-            outboundQueue.offer(new OutboundMessage(targetAddress, message));
-            ISOTPGateway.this.write(targetAddress, message);
-        }
-
-        @Override
-        public void close() throws IOException {
-            // TODO implement me
-        }
-    }
 }

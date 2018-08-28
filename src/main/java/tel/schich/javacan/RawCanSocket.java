@@ -22,9 +22,11 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.io.IOException;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class RawCanSocket extends NativeSocket implements AutoCloseable {
 
@@ -131,6 +133,27 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         return mask;
     }
 
+    public void setFilters(Stream<CanFilter> filters) throws NativeException {
+        setFilters(filters.toArray(CanFilter[]::new));
+    }
+
+    public void setFilters(Collection<CanFilter> filters) throws NativeException {
+        setFilters(filters, Function.identity());
+    }
+
+    public <A> void setFilters(Collection<A> filters, Function<A, CanFilter> f) throws NativeException {
+        byte[] filterData = new byte[filters.size() * CanFilter.BYTES];
+        int offset = 0;
+        for (A holder : filters) {
+            CanFilter.toBuffer(f.apply(holder), filterData, offset);
+            offset += CanFilter.BYTES;
+        }
+
+        if (NativeInterface.setFilters(sockFD, filterData) == -1) {
+            throw new NativeException("Unable to set the filters!");
+        }
+    }
+
     public void setFilters(CanFilter... filters) throws NativeException {
         byte[] filterData = new byte[filters.length * CanFilter.BYTES];
         for (int i = 0; i < filters.length; i++) {
@@ -142,6 +165,14 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         }
     }
 
+    /**
+     * Loads {@link tel.schich.javacan.CanFilter} instances from the underlying native socket's configuration.
+     *
+     * @return an array {@link tel.schich.javacan.CanFilter} instances, potentially empty
+     * @throws NativeException if the underlying native implementation encounters an error
+     * @deprecated The underlying native implementation might consume **A LOT** of memory due to a ill-designed kernel API
+     */
+    @Deprecated
     public CanFilter[] getFilters() throws NativeException {
         byte[] filterData = NativeInterface.getFilters(sockFD);
         if (filterData == null) {

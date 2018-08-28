@@ -115,6 +115,7 @@ class RawCanSocketTest {
         try (final RawCanSocket socket = RawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
             socket.setBlockingMode(true);
+            socket.setFilters(CanFilter.NONE);
 
             {
                 long timeout = 3L;

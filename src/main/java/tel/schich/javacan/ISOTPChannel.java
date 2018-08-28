@@ -23,37 +23,32 @@
 package tel.schich.javacan;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
-import static tel.schich.javacan.CanId.ERR_FLAG;
+public class ISOTPChannel implements AutoCloseable {
+    private final ISOTPGateway gateway;
 
-public class CanFilter {
+    private final int receiverAddress;
+    private final CanFilter returnFilter;
 
-    public static final int INVERTED_BIT = ERR_FLAG;
-
-    public static final CanFilter ANY = new CanFilter(0, 0);
-    public static final CanFilter NONE = new CanFilter(0);
-
-    public static final int BYTES = Integer.BYTES * 2;
-    public static final int EXACT = -1;
-
-    public final int id;
-    public final int mask;
-
-    public CanFilter(int id) {
-        this(id, EXACT);
+    ISOTPChannel(ISOTPGateway gateway, int receiverAddress, CanFilter returnFilter) {
+        this.gateway = gateway;
+        this.receiverAddress = receiverAddress;
+        this.returnFilter = returnFilter;
     }
 
-    public CanFilter(int id, int mask) {
-        this.id = id;
-        this.mask = mask & ~ERR_FLAG;
+    public int getReceiverAddress() {
+        return receiverAddress;
     }
 
-    public boolean isInverted() {
-        return (id & INVERTED_BIT) > 0;
+    public CanFilter getReturnFilter() {
+        return returnFilter;
     }
 
-    public boolean isExact() {
-        return mask == EXACT;
+    public CompletableFuture<Void> send(byte[] message) {
+        CompletableFuture<Void> promise = new CompletableFuture<>();
+        gateway.offer(new ISOTPGateway.OutboundMessage(receiverAddress, message, promise));
+        return promise;
     }
 
     @Override
@@ -62,28 +57,17 @@ public class CanFilter {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        CanFilter canFilter = (CanFilter) o;
-        return id == canFilter.id && mask == canFilter.mask;
+        ISOTPChannel that = (ISOTPChannel) o;
+        return receiverAddress == that.receiverAddress && Objects.equals(returnFilter, that.returnFilter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, mask);
+        return Objects.hash(receiverAddress, returnFilter);
     }
 
     @Override
-    public String toString() {
-        return (isInverted() ? "~" : "") +  String.format("CanFilter(id=%X, mask=%X)", id, mask);
-    }
-
-    static CanFilter fromBuffer(byte[] buffer, int offset) {
-        int id = Util.readInt(buffer, offset);
-        int mask = Util.readInt(buffer, offset + Integer.BYTES);
-        return new CanFilter(id, mask);
-    }
-
-    static void toBuffer(CanFilter filter, byte[] buffer, int offset) {
-        Util.writeInt(buffer, offset, filter.id);
-        Util.writeInt(buffer, offset + Integer.BYTES, filter.mask);
+    public void close() throws NativeException {
+        gateway.dropChannel(this);
     }
 }
