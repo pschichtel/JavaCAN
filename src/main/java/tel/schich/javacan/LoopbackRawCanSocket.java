@@ -25,8 +25,8 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,9 +41,17 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     private volatile boolean joinFilters;
     private volatile int errorFilter;
 
-    private final BlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(10000);
+    private final BlockingQueue<byte[]> queue;
     private final Object queueReadMonitor = new Object[0];
     private final Object queueWriteMonitor = new Object[0];
+
+    public LoopbackRawCanSocket() {
+        this(10000);
+    }
+
+    public LoopbackRawCanSocket(int capacity) {
+        this.queue = new LinkedBlockingQueue<>(capacity);
+    }
 
     @Override
     public void bind(String interfaceName) {

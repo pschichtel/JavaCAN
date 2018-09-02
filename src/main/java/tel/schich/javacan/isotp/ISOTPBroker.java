@@ -22,14 +22,15 @@
  */
 package tel.schich.javacan.isotp;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import tel.schich.javacan.CanFilter;
@@ -40,7 +41,6 @@ import tel.schich.javacan.RawCanSocket;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
-import static tel.schich.javacan.isotp.ISOTPAddress.returnAddress;
 
 public class ISOTPBroker implements AutoCloseable {
 
@@ -65,6 +65,7 @@ public class ISOTPBroker implements AutoCloseable {
     private PollingThread processFrames;
 
     private final List<ISOTPChannel> channels;
+    private final Lock writeLock;
 
     private boolean highPressure = false;
 
@@ -74,8 +75,10 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket = socketFactory.get();
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
-        this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity, queueSettings.fairBlocking);
+//        this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity, queueSettings.fairBlocking);
+        this.inboundQueue = new LinkedBlockingQueue<>(queueSettings.capacity);
         this.channels = new CopyOnWriteArrayList<>();
+        this.writeLock = new ReentrantLock(queueSettings.fairBlocking);
     }
 
     public void bind(String interfaceName) {
@@ -174,12 +177,22 @@ public class ISOTPBroker implements AutoCloseable {
         return len + 1 <= DLEN;
     }
 
+    private long write(byte[] buffer, int offset, int length) {
+        Lock lock = this.writeLock;
+        lock.lock();
+        try {
+            return socket.write(buffer, offset, length);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     void writeSingleFrame(int id, byte[] message) {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, DLEN, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
         System.arraycopy(message, 0, buffer, DOFFSET + 1, message.length);
-        socket.write(buffer, 0, buffer.length);
+        write(buffer, 0, buffer.length);
     }
 
     int writeFirstFrame(int id, byte[] message) {
@@ -189,7 +202,7 @@ public class ISOTPBroker implements AutoCloseable {
         buffer[DOFFSET + 1] = (byte)(message.length & 0xFF);
         final int len = Math.min(DLEN - 2, message.length);
         System.arraycopy(message, 0, buffer, DOFFSET + 2, len);
-        socket.write(buffer, 0, buffer.length);
+        write(buffer, 0, buffer.length);
         return len;
     }
 
@@ -199,7 +212,7 @@ public class ISOTPBroker implements AutoCloseable {
         buffer[DOFFSET] = (byte)(CODE_CF | (sn & 0xF));
         final int len = Math.min(DLEN - 1, message.length - offset);
         System.arraycopy(message, offset, buffer, DOFFSET + 1, len);
-        socket.write(buffer, 0, buffer.length);
+        write(buffer, 0, buffer.length);
         return len;
     }
 
@@ -209,7 +222,7 @@ public class ISOTPBroker implements AutoCloseable {
         buffer[DOFFSET] = (byte)(CODE_FC | (flag & 0xF));
         buffer[DOFFSET + 1] = blockSize;
         buffer[DOFFSET + 2] = separationTime;
-        socket.write(buffer, 0, buffer.length);
+        write(buffer, 0, buffer.length);
     }
 
     @Override
@@ -218,9 +231,10 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket.close();
     }
 
-    private boolean readFrame(long timeout) throws IOException {
+    private boolean readFrame(long timeout) throws Exception {
         if (socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
-            inboundQueue.offer(socket.read());
+            CanFrame frame = socket.read();
+             inboundQueue.put(frame);
         }
         return true;
     }
@@ -262,25 +276,7 @@ public class ISOTPBroker implements AutoCloseable {
                 int len = ((firstByte & 0xF) << Byte.SIZE) | (frame.read(1) & 0xFF);
                 for (ISOTPChannel receiver : receivers) {
                     receiver.getHandler().handleFirstFrame(receiver, id, frame.getPayload(2, frameLen - 2), len);
-                    int flowControlFlag;
-                    if (this.inboundQueue.remainingCapacity() == 0) {
-                        flowControlFlag = FC_OVERFLOW;
-                    } else {
-                        int queueUsage = queueSettings.capacity - inboundQueue.remainingCapacity();
-                        if ((!highPressure && queueUsage > queueSettings.highWaterMark) || (highPressure && queueUsage > queueSettings.lowerWaterMark)) {
-                            highPressure = true;
-                            flowControlFlag = FC_WAIT;
-                        } else {
-                            highPressure = true;
-                            flowControlFlag = FC_CONTINUE;
-                        }
-                    }
-                    try {
-                        writeFlowControlFrame(returnAddress(id), flowControlFlag, parameters.inboundBlockSizeByte, parameters.inboundSeparationTimeByte);
-                    } catch (NativeException e) {
-                        System.err.println("Failed to respond with a flow control frame!");
-                        e.printStackTrace(System.err);
-                    }
+                    returnFlowControlFrame(receiver.getReceiverAddress());
                 }
             } else if ((firstByte & CODE_MASK) == CODE_CF) {
                 int seqNumber = firstByte & 0xF;
@@ -301,4 +297,27 @@ public class ISOTPBroker implements AutoCloseable {
             }
         }
     }
+
+    private void returnFlowControlFrame(int id) {
+        int flowControlFlag;
+        if (this.inboundQueue.remainingCapacity() == 0) {
+            flowControlFlag = FC_OVERFLOW;
+        } else {
+            int queueUsage = queueSettings.capacity - inboundQueue.remainingCapacity();
+            if ((!highPressure && queueUsage > queueSettings.highWaterMark) || (highPressure && queueUsage > queueSettings.lowerWaterMark)) {
+                highPressure = true;
+                flowControlFlag = FC_WAIT;
+            } else {
+                highPressure = true;
+                flowControlFlag = FC_CONTINUE;
+            }
+        }
+        try {
+            writeFlowControlFrame(id, flowControlFlag, parameters.inboundBlockSizeByte, parameters.inboundSeparationTimeByte);
+        } catch (NativeException e) {
+            System.err.println("Failed to respond with a flow control frame!");
+            e.printStackTrace(System.err);
+        }
+    }
+
 }

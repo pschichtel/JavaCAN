@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.test;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanFilter;
@@ -40,10 +41,13 @@ import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
 
+    @BeforeAll
+    static void init() {
+        JavaCAN.initialize();
+    }
+
     @Test
     void testOptions() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
@@ -81,8 +85,6 @@ class RawCanSocketTest {
     @Test
     @SuppressWarnings("deprecated")
     void testFilters() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
@@ -100,8 +102,6 @@ class RawCanSocketTest {
 
     @Test
     void testNonBlockingRead() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
             assertTrue(socket.isBlocking(), "Socket is blocking by default");
@@ -118,8 +118,6 @@ class RawCanSocketTest {
 
     @Test
     void testBlockingRead() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
             socket.setBlockingMode(true);
@@ -150,8 +148,6 @@ class RawCanSocketTest {
 
     @Test
     void testLoopback() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket a = NativeRawCanSocket.create()) {
             a.bind(CAN_INTERFACE);
 
@@ -171,8 +167,6 @@ class RawCanSocketTest {
 
     @Test
     void testOwnMessage() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
@@ -192,8 +186,6 @@ class RawCanSocketTest {
 
     @Test
     void testFDFrame() throws Exception {
-        JavaCAN.initialize();
-
         try (final RawCanSocket sock = NativeRawCanSocket.create()) {
             sock.bind(CAN_INTERFACE);
             sock.setAllowFDFrames(true);

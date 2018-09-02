@@ -106,10 +106,10 @@ public final class AggregatingFrameHandler implements FrameHandler {
         private ByteArrayOutputStream receiveBuffer = new ByteArrayOutputStream(64);
         private byte[][] fragmentRing = new byte[FRAGMENT_BUFFER_SIZE][];
         private BitSet filledValues = new BitSet(FRAGMENT_BUFFER_SIZE);
-        public int expectedSequenceNumber;
+        private int expectedSequenceNumber;
         private int missingBytes;
 
-        public State(int messageLength) {
+        State(int messageLength) {
             missingBytes = messageLength;
         }
 

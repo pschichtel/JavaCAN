@@ -24,10 +24,17 @@ package tel.schich.javacan.test.isotp;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.LoopbackRawCanSocket;
 import tel.schich.javacan.NativeRawCanSocket;
+import tel.schich.javacan.RawCanSocket;
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
@@ -36,6 +43,7 @@ import tel.schich.javacan.isotp.NoopFrameHandler;
 import tel.schich.javacan.isotp.ProtocolParameters;
 import tel.schich.javacan.isotp.QueueSettings;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.isotp.AggregatingFrameHandler.aggregateFrames;
 import static tel.schich.javacan.isotp.ISOTPAddress.DESTINATION_ECU_1;
 import static tel.schich.javacan.isotp.ISOTPAddress.EFF_TYPE_FUNCTIONAL_ADDRESSING;
@@ -54,46 +62,66 @@ class ISOTPBrokerTest {
     private static final ProtocolParameters PARAMETERS = ProtocolParameters.DEFAULT
             .withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100));
 
+    @BeforeAll
+    static void init() {
+        JavaCAN.initialize();
+    }
+
     @Test
     void testWrite() throws Exception {
-        JavaCAN.initialize();
+        try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS,
+                PARAMETERS)) {
+            isotp.bind(CAN_INTERFACE);
 
-            try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS,
-                    PARAMETERS)) {
-                isotp.bind(CAN_INTERFACE);
+            try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
+                    EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), NoopFrameHandler.INSTANCE)) {
+                eff.send(new byte[] { 0x11, 0x22, 0x33 });
+            }
 
-                try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
-                        EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), NoopFrameHandler.INSTANCE)) {
-                    eff.send(new byte[] { 0x11, 0x22, 0x33 });
-                }
+            try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, NoopFrameHandler.INSTANCE)) {
+                sff.send(new byte[] { 0x33, 0x22, 0x11 });
+            }
 
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, NoopFrameHandler.INSTANCE)) {
-                    sff.send(new byte[] { 0x33, 0x22, 0x11 });
-                }
-
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, NoopFrameHandler.INSTANCE)) {
-                    sff.send(
-                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
-                }
+            try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, NoopFrameHandler.INSTANCE)) {
+                sff.send(
+                        new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
+            }
 
         }
     }
 
     @Test
-    void testPolling() throws Exception {
-        JavaCAN.initialize();
+    void testLoopbackPolling() throws Exception {
+        testBrokerWith(LoopbackRawCanSocket::new);
+    }
 
-        try (final ISOTPBroker isotp = new ISOTPBroker(LoopbackRawCanSocket::new, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+
+    @Test
+    @Disabled("CAN kernel module seems to be flaky, needs debugging")
+    void testKernelPolling() throws Exception {
+        testBrokerWith(NativeRawCanSocket::create);
+    }
+
+    void testBrokerWith(Supplier<RawCanSocket> socket) throws Exception {
+        try (final ISOTPBroker isotp = new ISOTPBroker(socket, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 
-            final ISOTPChannel a = isotp.createChannel(0x7E8, 0x7E0, aggregateFrames(new PingPing()));
-            final ISOTPChannel b = isotp.createChannel(0x7E0, 0x7E8, aggregateFrames(new PingPing()));
+            final Lock lock = new ReentrantLock();
+            final Condition condition = lock.newCondition();
+
+            final ISOTPChannel a = isotp.createChannel(0x7E8, 0x7E0, aggregateFrames(new PingPing(lock, condition)));
+            final ISOTPChannel b = isotp.createChannel(0x7E0, 0x7E8, aggregateFrames(new PingPing(lock, condition)));
 
             a.send(new byte[] { 1 }).get();
 
-            Thread.sleep(100000);
+            try {
+                lock.lock();
+                assertTrue(condition.await(20, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 20 seconds of ping-pong");
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -109,6 +137,14 @@ class ISOTPBrokerTest {
     }
 
     private static final class PingPing implements MessageHandler {
+        private final Lock lock;
+        private final Condition condition;
+
+        public PingPing(Lock lock, Condition condition) {
+            this.lock = lock;
+            this.condition = condition;
+        }
+
         @Override
         public void handle(ISOTPChannel ch, int sender, byte[] payload) {
             if (payload.length % 200 == 0) {
@@ -122,6 +158,12 @@ class ISOTPBrokerTest {
                 if (t != null) {
                     System.err.println("Failed to send message:");
                     t.printStackTrace(System.err);
+                    lock.lock();
+                    try {
+                        condition.signalAll();
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             });
         }

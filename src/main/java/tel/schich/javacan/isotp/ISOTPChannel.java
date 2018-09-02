@@ -38,6 +38,7 @@ import static tel.schich.javacan.isotp.ISOTPBroker.FC_WAIT;
 public class ISOTPChannel implements AutoCloseable {
 
     private static final boolean HIGH_PRECISION_TIMING = Boolean.parseBoolean(System.getProperty("high-precision-timing", "true"));
+    private static final int MESSAGE_MAX_LENGTH = 0b1111_11111111;
 
     private final ISOTPBroker broker;
     private final BlockingQueue<OutboundMessage> outboundQueue;
@@ -73,8 +74,13 @@ public class ISOTPChannel implements AutoCloseable {
 
     public CompletableFuture<Void> send(byte[] message) {
         CompletableFuture<Void> promise = new CompletableFuture<>();
-        outboundQueue.offer(new OutboundMessage(receiverAddress, message, promise));
-        outboundProcessor.start();
+        if (message.length > MESSAGE_MAX_LENGTH) {
+            // TODO support longer messages
+            promise.completeExceptionally(new IllegalArgumentException("Message may not be longer than " + MESSAGE_MAX_LENGTH + " bytes!"));
+        } else {
+            outboundQueue.offer(new OutboundMessage(receiverAddress, message, promise));
+            outboundProcessor.start();
+        }
         return promise;
     }
 
