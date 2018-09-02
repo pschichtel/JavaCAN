@@ -54,7 +54,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_close(JNIEnv *env
     return close(sock);
 }
 
-
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_errno(JNIEnv *env, jclass class) {
     return errno;
 }
