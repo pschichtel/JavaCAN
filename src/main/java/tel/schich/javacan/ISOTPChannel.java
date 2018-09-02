@@ -29,18 +29,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import static tel.schich.javacan.ISOTPGateway.FC_OVERFLOW;
-import static tel.schich.javacan.ISOTPGateway.FC_WAIT;
+import static tel.schich.javacan.ISOTPBroker.FC_OVERFLOW;
+import static tel.schich.javacan.ISOTPBroker.FC_WAIT;
 
 public class ISOTPChannel implements AutoCloseable {
 
-    private static final boolean HIGH_PRECISION_TIMING;
+    private static final boolean HIGH_PRECISION_TIMING = Boolean.parseBoolean(System.getProperty("high-precision-timing", "true"));
 
-    static {
-        HIGH_PRECISION_TIMING = Boolean.parseBoolean(System.getProperty("high-precision-timing", "true"));
-    }
-
-    private final ISOTPGateway gateway;
+    private final ISOTPBroker broker;
     private final BlockingQueue<OutboundMessage> outboundQueue;
 
     private final int receiverAddress;
@@ -55,13 +51,13 @@ public class ISOTPChannel implements AutoCloseable {
 
     private PollingThread outboundProcessor;
 
-    ISOTPChannel(ISOTPGateway gateway, int receiverAddress, CanFilter returnFilter, FrameHandler handler, QueueSettings queueLength) {
-        this.gateway = gateway;
+    ISOTPChannel(ISOTPBroker broker, int receiverAddress, CanFilter returnFilter, FrameHandler handler, QueueSettings queueLength) {
+        this.broker = broker;
         this.receiverAddress = receiverAddress;
         this.returnFilter = returnFilter;
         this.handler = handler;
         this.outboundQueue = new ArrayBlockingQueue<>(queueLength.capacity);
-        this.outboundProcessor = gateway.makePollingThread("channel-outbound-" + String.format("%X", receiverAddress), this::processOutbound);
+        this.outboundProcessor = broker.makePollingThread("channel-outbound-" + String.format("%X", receiverAddress), this::processOutbound);
     }
 
     public int getReceiverAddress() {
@@ -98,7 +94,7 @@ public class ISOTPChannel implements AutoCloseable {
     public void close() throws NativeException, InterruptedException {
         this.outboundProcessor.stop();
         this.outboundProcessor.join();
-        gateway.dropChannel(this);
+        broker.dropChannel(this);
     }
 
     FrameHandler getHandler() {
@@ -136,13 +132,13 @@ public class ISOTPChannel implements AutoCloseable {
         int length = payload.length;
         int id = message.destinationId;
 
-        if (gateway.fitsIntoSingleFrame(length, maxLen)) {
-            gateway.writeSingleFrame(id, payload, maxLen);
+        if (broker.fitsIntoSingleFrame(length, maxLen)) {
+            broker.writeSingleFrame(id, payload, maxLen);
         } else {
             if (ISOTPAddress.isFunctional(id)) {
                 throw new IllegalArgumentException("Functional addresses do not support fragmented messages!");
             }
-            int bytesWritten = gateway.writeFirstFrame(id, payload);
+            int bytesWritten = broker.writeFirstFrame(id, payload);
 
             int sequenceNumber = 1;
             int blocks;
@@ -155,7 +151,7 @@ public class ISOTPChannel implements AutoCloseable {
                     blocks = -1;
                 }
                 while (true) {
-                    bytesWritten += gateway.writeConsecutiveFrame(id, payload, bytesWritten, sequenceNumber);
+                    bytesWritten += broker.writeConsecutiveFrame(id, payload, bytesWritten, sequenceNumber);
                     sequenceNumber = (sequenceNumber + 1) % 16;
                     if (bytesWritten < length && blocks != 0) {
                         if (flowControlSeparationTime > 0) {

@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.ISOTPChannel;
-import tel.schich.javacan.ISOTPGateway;
+import tel.schich.javacan.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.MessageHandler;
 import tel.schich.javacan.QueueSettings;
@@ -41,7 +41,7 @@ import static tel.schich.javacan.ISOTPAddress.SFF_FUNCTIONAL_ADDRESS;
 import static tel.schich.javacan.ISOTPAddress.effAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
-class ISOTPGatewayTest {
+class ISOTPBrokerTest {
 
     private static ThreadFactory threadFactory = r -> new Thread(r, "test-thread-" + r.toString());
 
@@ -49,19 +49,19 @@ class ISOTPGatewayTest {
     void testWrite() throws Exception {
         JavaCAN.initialize();
 
-            try (final ISOTPGateway isotp = new ISOTPGateway(threadFactory, QueueSettings.DEFAULT, 1000)) {
+            try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, 1000)) {
                 isotp.bind(CAN_INTERFACE);
 
                 try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
-                        EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), ISOTPGateway.NOOP_HANDLER)) {
+                        EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), ISOTPBroker.NOOP_HANDLER)) {
                     eff.send(new byte[] { 0x11, 0x22, 0x33 });
                 }
 
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, ISOTPGateway.NOOP_HANDLER)) {
+                try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, ISOTPBroker.NOOP_HANDLER)) {
                     sff.send(new byte[] { 0x33, 0x22, 0x11 });
                 }
 
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, ISOTPGateway.NOOP_HANDLER)) {
+                try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, ISOTPBroker.NOOP_HANDLER)) {
                     sff.send(
                             new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
@@ -74,7 +74,7 @@ class ISOTPGatewayTest {
     void testPolling() throws Exception {
         JavaCAN.initialize();
 
-        try (final ISOTPGateway isotp = new ISOTPGateway(threadFactory, QueueSettings.DEFAULT, 10000)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, 10000)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 

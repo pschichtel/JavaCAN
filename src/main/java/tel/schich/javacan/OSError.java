@@ -52,12 +52,20 @@ public class OSError {
         return new OSError(lastErrno, NativeInterface.errstr(lastErrno));
     }
 
-    public boolean mayTryAgain() {
-        switch (errorNumber) {
-            case EAGAIN:
-                return true;
-            default:
-                return false;
+    private static boolean isTemporary(int errno) {
+        switch (errno) {
+        case EAGAIN:
+            return true;
+        default:
+            return false;
         }
+    }
+
+    public boolean mayTryAgain() {
+        return isTemporary(errorNumber);
+    }
+
+    public static boolean wasTemporaryError() {
+        return isTemporary(NativeInterface.errno());
     }
 }

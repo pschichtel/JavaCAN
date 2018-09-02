@@ -195,23 +195,6 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         return CanFrame.fromBuffer(frameBuf, 0, bytesRead);
     }
 
-    public CanFrame readRetrying() throws NativeException, IOException {
-        byte[] frameBuf = new byte[FD_MTU];
-        long bytesRead;
-        while (true) {
-            bytesRead = read(frameBuf, 0, FD_MTU);
-            if (bytesRead == -1) {
-                final OSError err = OSError.getLast();
-                if (err != null && err.mayTryAgain()) {
-                    continue;
-                } else {
-                    throw new NativeException("Unable to read a frame and retry is not possible!", err);
-                }
-            }
-            return CanFrame.fromBuffer(frameBuf, 0, bytesRead);
-        }
-    }
-
     public void write(CanFrame frame) throws NativeException, IOException {
         if (frame == null) {
             throw new NullPointerException("The frame may not be null!");

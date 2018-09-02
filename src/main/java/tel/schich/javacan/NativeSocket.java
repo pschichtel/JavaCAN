@@ -43,7 +43,7 @@ abstract class NativeSocket implements CanSocket {
         return result == 1;
     }
 
-    public short poll(int events, int timeoutMillis) throws NativeException {
+    protected short poll(int events, int timeoutMillis) throws NativeException {
         short result = NativeInterface.poll(sockFD, events, timeoutMillis);
         if (result == -1) {
             throw new NativeException("Unable to poll");

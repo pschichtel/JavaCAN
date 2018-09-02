@@ -34,11 +34,10 @@ import java.util.concurrent.TimeUnit;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.ISOTPAddress.returnAddress;
 import static tel.schich.javacan.PollEvent.POLLIN;
-import static tel.schich.javacan.PollEvent.POLLPRI;
 import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
 
-public class ISOTPGateway implements AutoCloseable {
+public class ISOTPBroker implements AutoCloseable {
 
     public static final FrameHandler NOOP_HANDLER = new FrameHandler() {
         @Override
@@ -84,7 +83,7 @@ public class ISOTPGateway implements AutoCloseable {
 
     private final List<ISOTPChannel> channels;
 
-    public ISOTPGateway(ThreadFactory threadFactory, QueueSettings queueSettings, long pollTimeout) throws NativeException {
+    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, long pollTimeout) throws NativeException {
         this.queueSettings = queueSettings;
         this.pollTimeout = pollTimeout;
         this.socket = RawCanSocket.create();
@@ -234,7 +233,7 @@ public class ISOTPGateway implements AutoCloseable {
     }
 
     private boolean readFrame(long timeout) throws NativeException, IOException {
-        int polled = socket.poll(POLLIN | POLLPRI, (int) timeout);
+        int polled = socket.poll(POLLIN, (int) timeout);
         if (polled > 0) {
             inboundQueue.offer(socket.read());
         }
