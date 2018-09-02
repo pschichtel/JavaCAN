@@ -24,6 +24,8 @@
 #include <fcntl.h>
 #include <net/if.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <linux/can/isotp.h>
@@ -100,4 +102,27 @@ int get_boolean_opt(int sock, int opt) {
         return -1;
     }
     return enabled;
+}
+
+short poll_single(int sock, short events, int timeout) {
+
+    struct pollfd fds;
+    fds.fd = sock;
+    fds.events = events;
+
+    int result = poll(&fds, 1, timeout);
+    if (result <= 0) {
+        return (short) result;
+    }
+
+    return fds.revents;
+}
+
+int get_readable_bytes(int sock) {
+    int bytes_available = 0;
+    int result = ioctl(sock, FIONREAD, &bytes_available);
+    if (result == -1) {
+        return -1;
+    }
+    return bytes_available;
 }

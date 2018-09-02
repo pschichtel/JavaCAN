@@ -33,8 +33,6 @@
 #include <errno.h>
 #include <string.h>
 #include <jni.h>
-#include <sys/ioctl.h>
-#include <sys/poll.h>
 #include <limits.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
@@ -184,23 +182,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JN
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_readableBytes(JNIEnv *env, jclass class, jint sock) {
-    int bytes_available = 0;
-    int result = ioctl(sock, FIONREAD, &bytes_available);
-    if (result == -1) {
-        return -1;
-    }
-    return bytes_available;
+    return get_readable_bytes(sock);
 }
 
 JNIEXPORT jshort JNICALL Java_tel_schich_javacan_NativeInterface_poll(JNIEnv *env, jclass class, jint sock, jint events, jint timeout) {
-    struct pollfd fds;
-    fds.fd = sock;
-    fds.events = (short) events;
-
-    int result = poll(&fds, 1, timeout);
-    if (result <= 0) {
-        return result;
-    }
-
-    return fds.revents;
+    return poll_single(sock, (short) events, timeout);
 }

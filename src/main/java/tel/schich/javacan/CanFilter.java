@@ -56,6 +56,10 @@ public class CanFilter {
         return mask == EXACT;
     }
 
+    public boolean matchId(int id) {
+        return (this.id & mask) == (id & mask);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

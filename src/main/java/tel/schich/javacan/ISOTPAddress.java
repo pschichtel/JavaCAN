@@ -51,6 +51,54 @@ public class ISOTPAddress {
         return ((((priority & 0xFF) << 24) | ((type & 0xFF) << 16) | ((sender & 0xFF) << 8) | (receiver & 0xFF)) & CanId.EFF_MASK) | CanId.EFF_FLAG;
     }
 
+    public static int returnAddress(int addr) {
+        if (CanId.isExtended(addr)) {
+            return effReturnAddress(addr);
+        } else {
+            return sffReturnAddress(addr);
+        }
+    }
+
+    private static int effReturnAddress(int addr) {
+        int[] components = decomposeEffAddress(addr);
+        return effReturnAddress(components[0], components[1], components[2], components[3]);
+    }
+
+    private static int effReturnAddress(int priority, int type, int sender, int receiver) {
+        return effAddress(priority, type, receiver, sender);
+    }
+
+    private static int sffReturnAddress(int addr) {
+        int returnAddr;
+        if ((addr & 0b1000) > 0) {
+            returnAddr = addr - 8;
+        } else {
+            returnAddr = addr + 8;
+        }
+        return returnAddr;
+    }
+
+    private static boolean isEffAddressFunctional(int addr) {
+        int[] components = decomposeEffAddress(addr);
+        return isEffAddressFunctional(components[1], components[3]);
+    }
+
+    private static boolean isEffAddressFunctional(int type, int receiver) {
+        return type == EFF_TYPE_FUNCTIONAL_ADDRESSING && receiver == DESTINATION_EFF_FUNCTIONAL;
+    }
+
+    private static boolean isSffAddressFunctional(int addr) {
+        return addr == SFF_FUNCTIONAL_ADDRESS;
+    }
+
+    public static boolean isFunctional(int addr) {
+        if (CanId.isExtended(addr)) {
+            return isEffAddressFunctional(addr);
+        } else {
+            return isSffAddressFunctional(addr);
+        }
+    }
+
     public static CanFilter filterFromDestination(int addr) {
         if (CanId.isExtended(addr)) {
             int[] components = decomposeEffAddress(addr);
@@ -59,22 +107,16 @@ public class ISOTPAddress {
             int sender = components[2];
             int receiver = components[3];
 
-            if (type == EFF_TYPE_FUNCTIONAL_ADDRESSING && receiver == DESTINATION_EFF_FUNCTIONAL) {
+            if (isEffAddressFunctional(type, receiver)) {
                 return new CanFilter(effAddress(priority, EFF_TYPE_PHYSICAL_ADDRESSING, 0x00, sender), EFF_MASK_FUNCTIONAL_RESPONSE);
             } else {
-                return new CanFilter(effAddress(priority, type, receiver, sender));
+                return new CanFilter(effReturnAddress(priority, type, sender, receiver));
             }
         } else {
-            if (addr == SFF_FUNCTIONAL_ADDRESS) {
+            if (isSffAddressFunctional(addr)) {
                 return SFF_FUNCTIONAL_FILTER;
             } else {
-                int returnAddr;
-                if ((addr & 0b1000) > 0) {
-                    returnAddr = addr - 8;
-                } else {
-                    returnAddr = addr + 8;
-                }
-                return new CanFilter(returnAddr);
+                return new CanFilter(sffReturnAddress(addr));
             }
         }
     }

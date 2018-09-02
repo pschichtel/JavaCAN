@@ -72,6 +72,7 @@ class RawCanSocketTest {
     }
 
     @Test
+    @SuppressWarnings("deprecated")
     void testFilters() throws NativeException {
         JavaCAN.initialize();
 

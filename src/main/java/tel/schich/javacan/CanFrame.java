@@ -61,9 +61,21 @@ public class CanFrame {
     }
 
     public byte[] getPayload() {
-        byte[] copy = new byte[dataLength];
-        System.arraycopy(payload, 0, copy, dataOffset, dataLength);
+        return getPayload(0, dataLength);
+    }
+
+    public byte[] getPayload(int offset, int length) {
+        byte[] copy = new byte[length];
+        System.arraycopy(payload, dataOffset + offset, copy, 0, length);
         return copy;
+    }
+
+    public int getLength() {
+        return dataLength;
+    }
+
+    public int read(int offset) {
+        return this.payload[this.dataOffset + offset];
     }
 
     public boolean isFDFrame() {

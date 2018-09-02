@@ -61,7 +61,7 @@ abstract class NativeSocket implements CanSocket {
 
     public long write(byte[] buffer, int offset, int length) throws NativeException {
         if (length + offset > buffer.length) {
-            throw new ArrayIndexOutOfBoundsException("Tge given offset and length would go beyond the buffer!");
+            throw new ArrayIndexOutOfBoundsException("The given offset and length would go beyond the buffer!");
         }
         long bytesWritten = NativeInterface.write(sockFD, buffer, offset, length);
         if (bytesWritten == -1) {
