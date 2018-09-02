@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
+import tel.schich.javacan.LoopbackRawCanSocket;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
@@ -83,7 +84,7 @@ class ISOTPBrokerTest {
     void testPolling() throws Exception {
         JavaCAN.initialize();
 
-        try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS, PARAMETERS)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(LoopbackRawCanSocket::new, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 

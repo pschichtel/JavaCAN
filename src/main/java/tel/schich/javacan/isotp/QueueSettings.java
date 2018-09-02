@@ -24,14 +24,15 @@ package tel.schich.javacan.isotp;
 
 public class QueueSettings {
 
-    public static final QueueSettings DEFAULT = new QueueSettings(5000, 100, 70, 90);
+    public static final QueueSettings DEFAULT = new QueueSettings(true, 5000, 100, 70, 90);
 
+    public final boolean fairBlocking;
     public final long pollingTimeout;
     public final int capacity;
     public final int lowerWaterMark;
     public final int highWaterMark;
 
-    public QueueSettings(long pollingTimeoutMillis, int capacity, int lowerWaterMark, int highWaterMark) {
+    public QueueSettings(boolean fairBlocking, long pollingTimeoutMillis, int capacity, int lowerWaterMark, int highWaterMark) {
         if (highWaterMark >= capacity) {
             throw new IllegalArgumentException("High water mark must be smaller than the queue capacity!");
         }
@@ -41,6 +42,7 @@ public class QueueSettings {
         if (pollingTimeoutMillis <= 0) {
             throw new IllegalArgumentException("The polling timeout must be greater than 0");
         }
+        this.fairBlocking = fairBlocking;
         this.pollingTimeout = pollingTimeoutMillis;
         this.capacity = capacity;
         this.lowerWaterMark = lowerWaterMark;
