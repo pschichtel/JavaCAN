@@ -48,7 +48,7 @@ public class ISOTPChannel implements AutoCloseable {
 
     private volatile int flowControlFlags = 0;
     private volatile int flowControlBlockSize = 0;
-    private volatile int flowControlSeparationTime = 0;
+    private volatile long flowControlSeparationTimeNanos = 0;
     private volatile boolean flowControlReceived = false;
     private final Object flowControlMonitor = new Object[0];
 
@@ -104,11 +104,11 @@ public class ISOTPChannel implements AutoCloseable {
         return handler;
     }
 
-    void updateFlowControlState(int flags, int blockSize, int separationTime) {
+    void updateFlowControlState(int flags, int blockSize, long separationTimeNanos) {
         synchronized (this) {
             flowControlFlags = flags;
             flowControlBlockSize = blockSize;
-            flowControlSeparationTime = separationTime;
+            flowControlSeparationTimeNanos = separationTimeNanos;
             flowControlReceived = true;
             synchronized (flowControlMonitor) {
                 flowControlMonitor.notifyAll();
@@ -157,8 +157,8 @@ public class ISOTPChannel implements AutoCloseable {
                     bytesWritten += broker.writeConsecutiveFrame(id, payload, bytesWritten, sequenceNumber);
                     sequenceNumber = (sequenceNumber + 1) % 16;
                     if (bytesWritten < length && blocks != 0) {
-                        if (flowControlSeparationTime > 0) {
-                            sleepMicros(flowControlSeparationTime);
+                        if (flowControlSeparationTimeNanos > 0) {
+                            sleepNanos(flowControlSeparationTimeNanos);
                         }
                         blocks--;
                     } else {
@@ -187,14 +187,14 @@ public class ISOTPChannel implements AutoCloseable {
         return true;
     }
 
-    private void sleepMicros(int micros) {
+    private void sleepNanos(long nanos) {
         if (HIGH_PRECISION_TIMING) {
-            long goal = System.nanoTime() + (micros * 1000);
+            long goal = System.nanoTime() + nanos;
             while (System.nanoTime() < goal) {
                 Thread.yield();
             }
         } else {
-            LockSupport.parkNanos(micros * 1000L);
+            LockSupport.parkNanos(nanos * 1000L);
         }
     }
 

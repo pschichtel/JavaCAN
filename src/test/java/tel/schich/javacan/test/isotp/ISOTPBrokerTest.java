@@ -23,12 +23,15 @@
 package tel.schich.javacan.test.isotp;
 
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.isotp.MessageHandler;
+import tel.schich.javacan.isotp.NoopFrameHandler;
+import tel.schich.javacan.isotp.ProtocolParameters;
 import tel.schich.javacan.isotp.QueueSettings;
 
 import static tel.schich.javacan.isotp.AggregatingFrameHandler.aggregateFrames;
@@ -49,19 +52,19 @@ class ISOTPBrokerTest {
     void testWrite() throws Exception {
         JavaCAN.initialize();
 
-            try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, 1000)) {
+            try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, ProtocolParameters.DEFAULT)) {
                 isotp.bind(CAN_INTERFACE);
 
                 try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
-                        EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), ISOTPBroker.NOOP_HANDLER)) {
+                        EFF_TYPE_FUNCTIONAL_ADDRESSING, DESTINATION_EFF_TEST_EQUIPMENT, DESTINATION_ECU_1), NoopFrameHandler.INSTANCE)) {
                     eff.send(new byte[] { 0x11, 0x22, 0x33 });
                 }
 
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, ISOTPBroker.NOOP_HANDLER)) {
+                try (final ISOTPChannel sff = isotp.createChannel(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1, NoopFrameHandler.INSTANCE)) {
                     sff.send(new byte[] { 0x33, 0x22, 0x11 });
                 }
 
-                try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, ISOTPBroker.NOOP_HANDLER)) {
+                try (final ISOTPChannel sff = isotp.createChannel(SFF_FUNCTIONAL_ADDRESS, SFF_ECU_RESPONSE_BASE, NoopFrameHandler.INSTANCE)) {
                     sff.send(
                             new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
@@ -74,11 +77,9 @@ class ISOTPBrokerTest {
     void testPolling() throws Exception {
         JavaCAN.initialize();
 
-        try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, 10000)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, ProtocolParameters.DEFAULT.withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100)))) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
-
-            isotp.start();
 
             final ISOTPChannel a = isotp.createChannel(0x7E8, 0x7E0, aggregateFrames(new PingPing()));
             final ISOTPChannel b = isotp.createChannel(0x7E0, 0x7E8, aggregateFrames(new PingPing()));

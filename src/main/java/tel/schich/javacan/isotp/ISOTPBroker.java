@@ -43,28 +43,6 @@ import static tel.schich.javacan.isotp.ISOTPAddress.returnAddress;
 
 public class ISOTPBroker implements AutoCloseable {
 
-    public static final FrameHandler NOOP_HANDLER = new FrameHandler() {
-        @Override
-        public void handleSingleFrame(ISOTPChannel ch, int sender, byte[] payload) {
-
-        }
-
-        @Override
-        public void handleFirstFrame(ISOTPChannel ch, int sender, byte[] payload, int messageLength) {
-
-        }
-
-        @Override
-        public void handleConsecutiveFrame(ISOTPChannel ch, int sender, byte[] payload, int index) {
-
-        }
-
-        @Override
-        public void handleNonISOTPFrame(CanFrame frame) {
-
-        }
-    };
-
     private static final int CODE_MASK = 0xF0;
     private static final int CODE_SF = 0x00;
     private static final int CODE_FF = 0x10;
@@ -80,17 +58,18 @@ public class ISOTPBroker implements AutoCloseable {
     private final BlockingQueue<CanFrame> inboundQueue;
 
     private final QueueSettings queueSettings;
-    private final long pollTimeout;
+    private final ProtocolParameters parameters;
 
     private PollingThread readFrames;
     private PollingThread processFrames;
 
     private final List<ISOTPChannel> channels;
 
-    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, long pollTimeout) throws
-            NativeException {
+    private boolean highPressure = false;
+
+    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
         this.queueSettings = queueSettings;
-        this.pollTimeout = pollTimeout;
+        this.parameters = parameters;
         this.socket = RawCanSocket.create();
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
@@ -98,19 +77,19 @@ public class ISOTPBroker implements AutoCloseable {
         this.channels = new CopyOnWriteArrayList<>();
     }
 
-    public void bind(String interfaceName) throws NativeException {
+    public void bind(String interfaceName) {
         socket.bind(interfaceName);
     }
 
-    public void setReceiveOwnMessages(boolean receiveOwnMessages) throws NativeException {
+    public void setReceiveOwnMessages(boolean receiveOwnMessages) {
         socket.setReceiveOwnMessages(receiveOwnMessages);
     }
 
     PollingThread makePollingThread(String name, PollFunction foo) {
-        return PollingThread.create(name, pollTimeout, threadFactory, foo, this::handleException);
+        return PollingThread.create(name, queueSettings.pollingTimeout, threadFactory, foo, this::handleException);
     }
 
-    public void start() throws NativeException {
+    public void start() {
         if (readFrames != null || processFrames != null) {
             // already running
             return;
@@ -157,31 +136,32 @@ public class ISOTPBroker implements AutoCloseable {
         }
     }
 
-    public ISOTPChannel createChannel(int targetAddress, CanFilter returnFilter, FrameHandler handler) throws NativeException {
+    public ISOTPChannel createChannel(int targetAddress, CanFilter returnFilter, FrameHandler handler) {
         ISOTPChannel ch = new ISOTPChannel(this, targetAddress, returnFilter, handler, queueSettings);
         this.channels.add(ch);
+        start();
         updateSocketFilters();
         return ch;
     }
 
-    public ISOTPChannel createChannel(int targetAddress, int returnAddress, FrameHandler handler) throws NativeException {
+    public ISOTPChannel createChannel(int targetAddress, int returnAddress, FrameHandler handler) {
         return createChannel(targetAddress, new CanFilter(returnAddress), handler);
     }
 
-    public ISOTPChannel createChannel(int targetAddress, FrameHandler handler) throws NativeException {
+    public ISOTPChannel createChannel(int targetAddress, FrameHandler handler) {
         return createChannel(targetAddress, ISOTPAddress.filterFromDestination(targetAddress), handler);
     }
 
-    void dropChannel(ISOTPChannel channel) throws NativeException {
+    void dropChannel(ISOTPChannel channel) {
         this.channels.remove(channel);
         updateSocketFilters();
     }
 
-    private void clearFilters() throws NativeException {
+    private void clearFilters() {
         socket.setFilters(CanFilter.NONE);
     }
 
-    private void updateSocketFilters() throws NativeException {
+    private void updateSocketFilters() {
         if (channels.isEmpty()) {
             clearFilters();
         } else {
@@ -193,7 +173,7 @@ public class ISOTPBroker implements AutoCloseable {
         return len + 1 <= maxLen;
     }
 
-    void writeSingleFrame(int id, byte[] message, int maxLen) throws NativeException {
+    void writeSingleFrame(int id, byte[] message, int maxLen) {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
@@ -201,7 +181,7 @@ public class ISOTPBroker implements AutoCloseable {
         socket.write(buffer, 0, buffer.length);
     }
 
-    int writeFirstFrame(int id, byte[] message) throws NativeException {
+    int writeFirstFrame(int id, byte[] message) {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_FF | ((message.length >> Byte.SIZE) & 0xF));
@@ -212,7 +192,7 @@ public class ISOTPBroker implements AutoCloseable {
         return len;
     }
 
-    int writeConsecutiveFrame(int id, byte[] message, int offset, int sn) throws NativeException {
+    int writeConsecutiveFrame(int id, byte[] message, int offset, int sn) {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_CF | (sn & 0xF));
@@ -222,22 +202,22 @@ public class ISOTPBroker implements AutoCloseable {
         return len;
     }
 
-    void writeFlowControlFrame(int id, int flag, int blockSize, int separationTime) throws NativeException {
+    void writeFlowControlFrame(int id, int flag, byte blockSize, byte separationTime) {
         byte[] buffer = CanFrame.allocateBuffer(false);
         CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_FC | (flag & 0xF));
-        buffer[DOFFSET + 1] = (byte)(blockSize & 0xFF);
-        buffer[DOFFSET + 2] = (byte)(separationTime & 0xFF);
+        buffer[DOFFSET + 1] = blockSize;
+        buffer[DOFFSET + 2] = separationTime;
         socket.write(buffer, 0, buffer.length);
     }
 
     @Override
-    public void close() throws NativeException, InterruptedException {
+    public void close() throws InterruptedException {
         this.shutdown();
         this.socket.close();
     }
 
-    private boolean readFrame(long timeout) throws NativeException, IOException {
+    private boolean readFrame(long timeout) throws IOException {
         if (socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
             inboundQueue.offer(socket.read());
         }
@@ -265,8 +245,6 @@ public class ISOTPBroker implements AutoCloseable {
         return true;
     }
 
-    private boolean highPressure = false;
-
     private void handleFrame(List<ISOTPChannel> receivers, CanFrame frame) {
 
         int frameLen = frame.getLength();
@@ -274,12 +252,12 @@ public class ISOTPBroker implements AutoCloseable {
             int id = frame.getId();
             int firstByte = frame.read(0);
 
-            if ((firstByte & 0xF0) == CODE_SF) {
+            if ((firstByte & CODE_MASK) == CODE_SF) {
                 int len = firstByte & 0xF;
                 for (ISOTPChannel receiver : receivers) {
                     receiver.getHandler().handleSingleFrame(receiver, id, frame.getPayload(1, len));
                 }
-            } else if ((firstByte & 0xF0) == CODE_FF && frameLen >= 2) {
+            } else if ((firstByte & CODE_MASK) == CODE_FF && frameLen >= 2) {
                 int len = ((firstByte & 0xF) << Byte.SIZE) | (frame.read(1) & 0xFF);
                 for (ISOTPChannel receiver : receivers) {
                     receiver.getHandler().handleFirstFrame(receiver, id, frame.getPayload(2, frameLen - 2), len);
@@ -297,26 +275,21 @@ public class ISOTPBroker implements AutoCloseable {
                         }
                     }
                     try {
-                        writeFlowControlFrame(returnAddress(id), flowControlFlag, 0, 0xF1);
+                        writeFlowControlFrame(returnAddress(id), flowControlFlag, parameters.inboundBlockSizeByte, parameters.inboundSeparationTimeByte);
                     } catch (NativeException e) {
                         System.err.println("Failed to respond with a flow control frame!");
                         e.printStackTrace(System.err);
                     }
                 }
-            } else if ((firstByte & 0xF0) == CODE_CF) {
+            } else if ((firstByte & CODE_MASK) == CODE_CF) {
                 int seqNumber = firstByte & 0xF;
                 for (ISOTPChannel receiver : receivers) {
                     receiver.getHandler().handleConsecutiveFrame(receiver, id, frame.getPayload(1, frameLen - 1), seqNumber);
                 }
-            } else if ((firstByte & 0xF0) == CODE_FC && frameLen >= 3) {
+            } else if ((firstByte & CODE_MASK) == CODE_FC && frameLen >= 3) {
                 int flags = firstByte & 0xF;
                 int blockSize = frame.read(1) & 0xFF;
-                int separationTime = frame.read(2) & 0xFF;
-                if (separationTime < 128) {
-                    separationTime = separationTime * 1000;
-                } else {
-                    separationTime = (separationTime - 0xF0) * 100;
-                }
+                long separationTime = ProtocolParameters.separationTimeByteToNanos(frame.read(2));
                 for (ISOTPChannel receiver : receivers) {
                     receiver.updateFlowControlState(flags, blockSize, separationTime);
                 }
@@ -325,9 +298,6 @@ public class ISOTPBroker implements AutoCloseable {
                     receiver.getHandler().handleNonISOTPFrame(frame);
                 }
             }
-
         }
-
     }
-
 }

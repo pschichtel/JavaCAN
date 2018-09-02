@@ -22,28 +22,29 @@
  */
 package tel.schich.javacan.isotp;
 
-public class QueueSettings {
+import tel.schich.javacan.CanFrame;
 
-    public static final QueueSettings DEFAULT = new QueueSettings(5000, 100, 70, 90);
+public class NoopFrameHandler implements FrameHandler {
 
-    public final long pollingTimeout;
-    public final int capacity;
-    public final int lowerWaterMark;
-    public final int highWaterMark;
+    public static final FrameHandler INSTANCE = new NoopFrameHandler();
 
-    public QueueSettings(long pollingTimeoutMillis, int capacity, int lowerWaterMark, int highWaterMark) {
-        if (highWaterMark >= capacity) {
-            throw new IllegalArgumentException("High water mark must be smaller than the queue capacity!");
-        }
-        if (lowerWaterMark >= highWaterMark) {
-            throw new IllegalArgumentException("low water mark must be smaller than the high water mark!");
-        }
-        if (pollingTimeoutMillis <= 0) {
-            throw new IllegalArgumentException("The polling timeout must be greater than 0");
-        }
-        this.pollingTimeout = pollingTimeoutMillis;
-        this.capacity = capacity;
-        this.lowerWaterMark = lowerWaterMark;
-        this.highWaterMark = highWaterMark;
+    @Override
+    public void handleSingleFrame(ISOTPChannel ch, int sender, byte[] payload) {
+
+    }
+
+    @Override
+    public void handleFirstFrame(ISOTPChannel ch, int sender, byte[] payload, int messageLength) {
+
+    }
+
+    @Override
+    public void handleConsecutiveFrame(ISOTPChannel ch, int sender, byte[] payload, int index) {
+
+    }
+
+    @Override
+    public void handleNonISOTPFrame(CanFrame frame) {
+
     }
 }
