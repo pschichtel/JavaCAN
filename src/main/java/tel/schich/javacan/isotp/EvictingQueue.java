@@ -1,7 +1,7 @@
 package tel.schich.javacan.isotp;
 
 /**
- * This queue scales very badly increasing capacities. It is implemented that way to be easily viewable within a debugging
+ * This queue scales very badly with increasing capacities. It is implemented this way to be easily viewable within a debugging
  * view, as the last message is always in the last array position. Debugging is the <strong>only</strong> intended use-case
  * for this queue!
  * @param <T> The element type, should provide a good toString() implementation for debug purposes
