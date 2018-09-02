@@ -30,6 +30,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
@@ -67,10 +68,10 @@ public class ISOTPBroker implements AutoCloseable {
 
     private boolean highPressure = false;
 
-    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
+    public ISOTPBroker(Supplier<RawCanSocket> socketFactory, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
         this.queueSettings = queueSettings;
         this.parameters = parameters;
-        this.socket = RawCanSocket.create();
+        this.socket = socketFactory.get();
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
         this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity);
@@ -169,13 +170,13 @@ public class ISOTPBroker implements AutoCloseable {
         }
     }
 
-    boolean fitsIntoSingleFrame(int len, int maxLen) {
-        return len + 1 <= maxLen;
+    boolean fitsIntoSingleFrame(int len) {
+        return len + 1 <= DLEN;
     }
 
-    void writeSingleFrame(int id, byte[] message, int maxLen) {
+    void writeSingleFrame(int id, byte[] message) {
         byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
+        CanFrame.toBuffer(buffer, 0, id, DLEN, FD_NO_FLAGS);
         buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
         System.arraycopy(message, 0, buffer, DOFFSET + 1, message.length);
         socket.write(buffer, 0, buffer.length);
@@ -212,7 +213,7 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     @Override
-    public void close() throws InterruptedException {
+    public void close() throws Exception {
         this.shutdown();
         this.socket.close();
     }

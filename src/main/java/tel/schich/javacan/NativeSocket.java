@@ -29,13 +29,13 @@ abstract class NativeSocket implements CanSocket {
         sockFD = sock;
     }
 
-    public final void setBlockingMode(boolean block) throws NativeException {
+    public final void setBlockingMode(boolean block) {
         if (NativeInterface.setBlockingMode(sockFD, block) == -1) {
             throw new NativeException("Unable to set the blocking mode!");
         }
     }
 
-    public final boolean isBlocking() throws NativeException {
+    public final boolean isBlocking() {
         final int result = NativeInterface.getBlockingMode(sockFD);
         if (result == -1) {
             throw new NativeException("Unable to get blocking mode!");
@@ -43,7 +43,7 @@ abstract class NativeSocket implements CanSocket {
         return result == 1;
     }
 
-    protected short poll(int events, int timeoutMillis) throws NativeException {
+    protected short poll(int events, int timeoutMillis) {
         short result = NativeInterface.poll(sockFD, events, timeoutMillis);
         if (result == -1) {
             throw new NativeException("Unable to poll");
@@ -51,7 +51,7 @@ abstract class NativeSocket implements CanSocket {
         return result;
     }
 
-    public long read(byte[] buffer, int offset, int length) throws NativeException {
+    public long read(byte[] buffer, int offset, int length) {
         long bytesRead = NativeInterface.read(sockFD, buffer, offset, length);
         if (bytesRead == -1) {
             throw new NativeException("Unable to read from ISOTP socket!");
@@ -59,7 +59,7 @@ abstract class NativeSocket implements CanSocket {
         return bytesRead;
     }
 
-    public long write(byte[] buffer, int offset, int length) throws NativeException {
+    public long write(byte[] buffer, int offset, int length) {
         if (length + offset > buffer.length) {
             throw new ArrayIndexOutOfBoundsException("The given offset and length would go beyond the buffer!");
         }
@@ -71,7 +71,7 @@ abstract class NativeSocket implements CanSocket {
     }
 
     @Override
-    public final void close() throws NativeException {
+    public final void close() {
         if (NativeInterface.close(sockFD) == -1) {
             throw new NativeException("Unable to close the socket");
         }

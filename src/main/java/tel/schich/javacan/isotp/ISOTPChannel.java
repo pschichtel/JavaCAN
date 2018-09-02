@@ -130,13 +130,12 @@ public class ISOTPChannel implements AutoCloseable {
     }
 
     private void writeFrameCompletely(OutboundMessage message) throws NativeException, DestinationOverflown, InterruptedException {
-        int maxLen = 8;
         byte[] payload = message.payload;
         int length = payload.length;
         int id = message.destinationId;
 
-        if (broker.fitsIntoSingleFrame(length, maxLen)) {
-            broker.writeSingleFrame(id, payload, maxLen);
+        if (broker.fitsIntoSingleFrame(length)) {
+            broker.writeSingleFrame(id, payload);
         } else {
             if (ISOTPAddress.isFunctional(id)) {
                 throw new IllegalArgumentException("Functional addresses do not support fragmented messages!");

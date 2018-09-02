@@ -23,20 +23,28 @@
 package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
-import tel.schich.javacan.*;
 
-import java.io.IOException;
+import tel.schich.javacan.CanFilter;
+import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.JavaCAN;
+import tel.schich.javacan.NativeException;
+import tel.schich.javacan.NativeRawCanSocket;
+import tel.schich.javacan.RawCanSocket;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
 
     @Test
-    void testOptions() throws NativeException {
+    void testOptions() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket socket = RawCanSocket.create()) {
+        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
             assertTrue(socket.isLoopback(), "loopback defaults to true");
@@ -72,10 +80,10 @@ class RawCanSocketTest {
 
     @Test
     @SuppressWarnings("deprecated")
-    void testFilters() throws NativeException {
+    void testFilters() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket socket = RawCanSocket.create()) {
+        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
             CanFilter[] input = {
@@ -91,10 +99,10 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testNonBlockingRead() throws IOException, NativeException, InterruptedException {
+    void testNonBlockingRead() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket socket = RawCanSocket.create()) {
+        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
             assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
@@ -109,10 +117,10 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testBlockingRead() throws NativeException {
+    void testBlockingRead() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket socket = RawCanSocket.create()) {
+        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
             socket.setBlockingMode(true);
             socket.setFilters(CanFilter.NONE);
@@ -141,13 +149,13 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testLoopback() throws NativeException, IOException {
+    void testLoopback() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket a = RawCanSocket.create()) {
+        try (final RawCanSocket a = NativeRawCanSocket.create()) {
             a.bind(CAN_INTERFACE);
 
-            try (final RawCanSocket b = RawCanSocket.create()) {
+            try (final RawCanSocket b = NativeRawCanSocket.create()) {
                 b.bind(CAN_INTERFACE);
                 b.setBlockingMode(false);
 
@@ -162,10 +170,10 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testOwnMessage() throws NativeException, IOException {
+    void testOwnMessage() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket socket = RawCanSocket.create()) {
+        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
             socket.bind(CAN_INTERFACE);
 
             socket.setBlockingMode(false);
@@ -183,10 +191,10 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testFDFrame() throws NativeException, IOException, InterruptedException {
+    void testFDFrame() throws Exception {
         JavaCAN.initialize();
 
-        try (final RawCanSocket sock = RawCanSocket.create()) {
+        try (final RawCanSocket sock = NativeRawCanSocket.create()) {
             sock.bind(CAN_INTERFACE);
             sock.setAllowFDFrames(true);
             sock.setBlockingMode(false);

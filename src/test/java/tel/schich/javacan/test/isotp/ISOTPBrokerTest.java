@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
+import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
@@ -48,11 +49,16 @@ class ISOTPBrokerTest {
 
     private static ThreadFactory threadFactory = r -> new Thread(r, "test-thread-" + r.toString());
 
+    private static final QueueSettings QUEUE_SETTINGS = QueueSettings.DEFAULT;
+    private static final ProtocolParameters PARAMETERS = ProtocolParameters.DEFAULT
+            .withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100));
+
     @Test
     void testWrite() throws Exception {
         JavaCAN.initialize();
 
-            try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, ProtocolParameters.DEFAULT)) {
+            try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS,
+                    PARAMETERS)) {
                 isotp.bind(CAN_INTERFACE);
 
                 try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
@@ -77,7 +83,7 @@ class ISOTPBrokerTest {
     void testPolling() throws Exception {
         JavaCAN.initialize();
 
-        try (final ISOTPBroker isotp = new ISOTPBroker(threadFactory, QueueSettings.DEFAULT, ProtocolParameters.DEFAULT.withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100)))) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS, PARAMETERS)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 
