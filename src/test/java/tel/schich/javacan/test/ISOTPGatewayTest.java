@@ -80,8 +80,8 @@ class ISOTPGatewayTest {
 
             isotp.start();
 
-            final ISOTPChannel a = isotp.createChannel(0x7E8, 0x7E0, aggregateFrames(new PingPing("a")));
-            final ISOTPChannel b = isotp.createChannel(0x7E0, 0x7E8, aggregateFrames(new PingPing("b")));
+            final ISOTPChannel a = isotp.createChannel(0x7E8, 0x7E0, aggregateFrames(new PingPing()));
+            final ISOTPChannel b = isotp.createChannel(0x7E0, 0x7E8, aggregateFrames(new PingPing()));
 
             a.send(new byte[] { 1 }).get();
 
@@ -101,15 +101,10 @@ class ISOTPGatewayTest {
     }
 
     private static final class PingPing implements MessageHandler {
-        private final String name;
-        public PingPing(String name) {
-            this.name = name;
-        }
-
         @Override
         public void handle(ISOTPChannel ch, int sender, byte[] payload) {
             if (payload.length % 200 == 0) {
-                System.out.println(String.format(name + " (" + payload.length + ") -> %08X#%s", sender, hexDump(payload)));
+                System.out.println(String.format("(%04d) -> %08X#%s", payload.length, sender, hexDump(payload)));
                 System.out.flush();
             }
             byte[] newMessage = new byte[payload.length + 1];
