@@ -28,8 +28,6 @@ class NativeInterface {
 
     public static native int createRawSocket();
 
-    public static native int createIsotpSocket();
-
     public static native int bindSocket(int sock, long interfaceId, int rx, int tx);
 
     public static native int close(int sock);

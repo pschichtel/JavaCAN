@@ -46,10 +46,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createRawSocket(J
     return create_can_raw_socket();
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_createIsotpSocket(JNIEnv *env, jclass class) {
-    return create_can_isotp_socket();
-}
-
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_bindSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
     return bind_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
 }
