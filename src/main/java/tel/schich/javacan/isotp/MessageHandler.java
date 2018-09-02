@@ -20,9 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
-@FunctionalInterface
-interface PollFunction {
-    boolean poll(long timeout) throws Exception;
+public interface MessageHandler {
+    void handle(ISOTPChannel ch, int sender, byte[] payload);
 }

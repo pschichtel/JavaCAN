@@ -20,7 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
+
+import tel.schich.javacan.CanFilter;
+import tel.schich.javacan.CanId;
 
 public class ISOTPAddress {
 

@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,11 +31,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import tel.schich.javacan.CanFilter;
+import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.NativeException;
+import tel.schich.javacan.RawCanSocket;
+
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.ISOTPAddress.returnAddress;
-import static tel.schich.javacan.PollEvent.POLLIN;
 import static tel.schich.javacan.RawCanSocket.DLEN;
 import static tel.schich.javacan.RawCanSocket.DOFFSET;
+import static tel.schich.javacan.isotp.ISOTPAddress.returnAddress;
 
 public class ISOTPBroker implements AutoCloseable {
 
@@ -83,7 +87,8 @@ public class ISOTPBroker implements AutoCloseable {
 
     private final List<ISOTPChannel> channels;
 
-    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, long pollTimeout) throws NativeException {
+    public ISOTPBroker(ThreadFactory threadFactory, QueueSettings queueSettings, long pollTimeout) throws
+            NativeException {
         this.queueSettings = queueSettings;
         this.pollTimeout = pollTimeout;
         this.socket = RawCanSocket.create();
@@ -233,8 +238,7 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     private boolean readFrame(long timeout) throws NativeException, IOException {
-        int polled = socket.poll(POLLIN, (int) timeout);
-        if (polled > 0) {
+        if (socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
             inboundQueue.offer(socket.read());
         }
         return true;

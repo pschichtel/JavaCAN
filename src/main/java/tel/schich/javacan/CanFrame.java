@@ -168,11 +168,11 @@ public class CanFrame {
         return new CanFrame(id, flags, payload, 0, payload.length);
     }
 
-    static byte[] allocateBuffer(boolean fd) {
+    public static byte[] allocateBuffer(boolean fd) {
         return new byte[fd ? FD_MTU : MTU];
     }
 
-    static CanFrame fromBuffer(byte[] buffer, int offset, long bytes) throws IOException {
+    public static CanFrame fromBuffer(byte[] buffer, int offset, long bytes) throws IOException {
         boolean fdFrame = bytes == RawCanSocket.FD_MTU;
         if (bytes != MTU && !fdFrame) {
             throw new IOException("Frame is incomplete!");
@@ -183,12 +183,12 @@ public class CanFrame {
         return new CanFrame(id, flags, buffer, 8, length);
     }
 
-    static void toBuffer(byte[] buffer, int offset, CanFrame frame) {
+    public static void toBuffer(byte[] buffer, int offset, CanFrame frame) {
         toBuffer(buffer, offset, frame.id, frame.dataLength,frame.isFDFrame() ? frame.flags : 0);
         System.arraycopy(frame.payload, frame.dataOffset, buffer, offset + DOFFSET, frame.dataLength);
     }
 
-    static byte[] toBuffer(CanFrame frame) {
+    public static byte[] toBuffer(CanFrame frame) {
         final boolean fdFrame = frame.isFDFrame();
         final byte[] buffer;
         if (fdFrame && frame.payload.length == FD_MTU && frame.dataOffset == DOFFSET) {
@@ -203,7 +203,7 @@ public class CanFrame {
         return buffer;
     }
 
-    static void toBuffer(byte[] buffer, int offset, int id, int dataLength, byte flags) {
+    public static void toBuffer(byte[] buffer, int offset, int id, int dataLength, byte flags) {
         Util.writeInt(buffer, offset, id);
 
         buffer[offset + Integer.BYTES] = (byte)(dataLength & 0xFF);

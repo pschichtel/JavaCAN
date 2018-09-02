@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-public class LinuxErrnoBase {
+class LinuxErrnoBase {
     /**
      * Operation not permitted
      */

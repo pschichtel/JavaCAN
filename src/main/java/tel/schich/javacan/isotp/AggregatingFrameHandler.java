@@ -20,12 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
 import java.io.ByteArrayOutputStream;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import tel.schich.javacan.CanFrame;
 
 public final class AggregatingFrameHandler implements FrameHandler {
 

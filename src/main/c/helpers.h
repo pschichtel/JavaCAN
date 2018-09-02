@@ -39,6 +39,5 @@ int is_blocking(int);
 int set_boolean_opt(int sock, int opt, bool enable);
 int get_boolean_opt(int sock, int opt);
 short poll_single(int, short, int);
-int get_readable_bytes(int);
 
 #endif

@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.io.ByteArrayOutputStream;
 
 import static tel.schich.javacan.PollEvent.POLLIN;
@@ -35,7 +33,7 @@ public class ISOTPSocket extends NativeSocket implements AutoCloseable {
         super(sock);
     }
 
-    public void bind(@NonNull String interfaceName, int incomingMask, int outgoingAddress) throws NativeException {
+    public void bind(String interfaceName, int incomingMask, int outgoingAddress) throws NativeException {
         final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
         if (ifindex == 0) {
             throw new NativeException("Unknown interface: " + interfaceName);

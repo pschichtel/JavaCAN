@@ -28,7 +28,6 @@ import tel.schich.javacan.*;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.LinuxErrnoBase.EAGAIN;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
@@ -125,7 +124,6 @@ class RawCanSocketTest {
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
                 assertEquals(timeout, delta);
-                assertEquals(EAGAIN, err.getError().errorNumber);
                 assertTrue(err.mayTryAgain());
             }
 
@@ -137,7 +135,6 @@ class RawCanSocketTest {
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
                 assertEquals(rtimeout, delta);
-                assertEquals(EAGAIN, err.getError().errorNumber);
                 assertTrue(err.mayTryAgain());
             }
         }

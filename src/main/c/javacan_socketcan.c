@@ -181,10 +181,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getErrorFilter(JN
     return mask;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_readableBytes(JNIEnv *env, jclass class, jint sock) {
-    return get_readable_bytes(sock);
-}
-
 JNIEXPORT jshort JNICALL Java_tel_schich_javacan_NativeInterface_poll(JNIEnv *env, jclass class, jint sock, jint events, jint timeout) {
     return poll_single(sock, (short) events, timeout);
 }

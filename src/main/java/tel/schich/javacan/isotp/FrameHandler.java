@@ -20,7 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
+
+import tel.schich.javacan.CanFrame;
 
 public interface FrameHandler {
     void handleSingleFrame(ISOTPChannel ch, int sender, byte[] payload);

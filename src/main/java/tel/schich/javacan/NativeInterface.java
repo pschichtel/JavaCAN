@@ -22,11 +22,9 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 class NativeInterface {
 
-    public static native long resolveInterfaceName(@NonNull String interfaceName);
+    public static native long resolveInterfaceName(String interfaceName);
 
     public static native int createRawSocket();
 
@@ -38,7 +36,6 @@ class NativeInterface {
 
     public static native int errno();
 
-    @NonNull
     public static native String errstr(int errno);
 
     public static native int setBlockingMode(int sock, boolean block);
@@ -75,8 +72,6 @@ class NativeInterface {
     public static native int setErrorFilter(int sock, int mask);
 
     public static native int getErrorFilter(int sock);
-
-    public static native int readableBytes(int sockFD);
 
     public static native short poll(int sockFD, int events, int timeout);
 }

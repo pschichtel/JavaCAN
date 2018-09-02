@@ -20,36 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
-public class NativeException extends RuntimeException {
-    private final OSError error;
-
-    public NativeException(String message) {
-        this(message, OSError.getLast());
-    }
-
-    public NativeException(String message, OSError error) {
-        super(makeSuperMessage(message, error));
-        this.error = error;
-    }
-
-    private static String makeSuperMessage(String message, OSError lastError) {
-        if (lastError == null) {
-            return message;
-        } else {
-            return message + " - " + lastError.toString();
-        }
-    }
-
-    public boolean mayTryAgain() {
-        if (error == null) {
-            return false;
-        }
-        return error.mayTryAgain();
-    }
-
-    public OSError getError() {
-        return error;
-    }
+@FunctionalInterface
+interface PollFunction {
+    boolean poll(long timeout) throws Exception;
 }

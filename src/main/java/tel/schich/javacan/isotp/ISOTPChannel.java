@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -29,8 +29,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import static tel.schich.javacan.ISOTPBroker.FC_OVERFLOW;
-import static tel.schich.javacan.ISOTPBroker.FC_WAIT;
+import tel.schich.javacan.CanFilter;
+import tel.schich.javacan.NativeException;
+
+import static tel.schich.javacan.isotp.ISOTPBroker.FC_OVERFLOW;
+import static tel.schich.javacan.isotp.ISOTPBroker.FC_WAIT;
 
 public class ISOTPChannel implements AutoCloseable {
 

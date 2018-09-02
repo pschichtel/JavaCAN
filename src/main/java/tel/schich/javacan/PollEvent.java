@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-public class PollEvent {
+class PollEvent {
     /**
      * There is data to read.
      */

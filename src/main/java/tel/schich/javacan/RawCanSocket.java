@@ -24,9 +24,12 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import org.checkerframework.checker.nullness.qual.NonNull;
+
+import static tel.schich.javacan.PollEvent.POLLIN;
+import static tel.schich.javacan.PollEvent.POLLOUT;
 
 public class RawCanSocket extends NativeSocket implements AutoCloseable {
 
@@ -40,7 +43,7 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         super(sock);
     }
 
-    public void bind(@NonNull String interfaceName) throws NativeException {
+    public void bind(String interfaceName) throws NativeException {
         final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
         if (ifindex == 0) {
             throw new NativeException("Unknown interface: " + interfaceName);
@@ -188,7 +191,6 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         return filters;
     }
 
-    @NonNull
     public CanFrame read() throws NativeException, IOException {
         byte[] frameBuf = new byte[FD_MTU];
         long bytesRead = read(frameBuf, 0, FD_MTU);
@@ -207,7 +209,14 @@ public class RawCanSocket extends NativeSocket implements AutoCloseable {
         }
     }
 
-    @NonNull
+    public boolean awaitReadable(long timeout, TimeUnit unit) {
+        return poll(POLLIN, (int)unit.toMillis(timeout)) != 0;
+    }
+
+    public boolean awaitWritable(long timeout, TimeUnit unit) {
+        return poll(POLLOUT, (int)unit.toMillis(timeout)) != 0;
+    }
+
     public static RawCanSocket create() throws NativeException {
         int fd = NativeInterface.createRawSocket();
         if (fd == -1) {

@@ -20,25 +20,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.test;
+package tel.schich.javacan.test.isotp;
 
 import java.util.concurrent.ThreadFactory;
 import org.junit.jupiter.api.Test;
 
-import tel.schich.javacan.ISOTPChannel;
-import tel.schich.javacan.ISOTPBroker;
+import tel.schich.javacan.isotp.ISOTPChannel;
+import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
-import tel.schich.javacan.MessageHandler;
-import tel.schich.javacan.QueueSettings;
+import tel.schich.javacan.isotp.MessageHandler;
+import tel.schich.javacan.isotp.QueueSettings;
 
-import static tel.schich.javacan.AggregatingFrameHandler.aggregateFrames;
-import static tel.schich.javacan.ISOTPAddress.DESTINATION_ECU_1;
-import static tel.schich.javacan.ISOTPAddress.EFF_TYPE_FUNCTIONAL_ADDRESSING;
-import static tel.schich.javacan.ISOTPAddress.DESTINATION_EFF_TEST_EQUIPMENT;
-import static tel.schich.javacan.ISOTPAddress.SFF_ECU_REQUEST_BASE;
-import static tel.schich.javacan.ISOTPAddress.SFF_ECU_RESPONSE_BASE;
-import static tel.schich.javacan.ISOTPAddress.SFF_FUNCTIONAL_ADDRESS;
-import static tel.schich.javacan.ISOTPAddress.effAddress;
+import static tel.schich.javacan.isotp.AggregatingFrameHandler.aggregateFrames;
+import static tel.schich.javacan.isotp.ISOTPAddress.DESTINATION_ECU_1;
+import static tel.schich.javacan.isotp.ISOTPAddress.EFF_TYPE_FUNCTIONAL_ADDRESSING;
+import static tel.schich.javacan.isotp.ISOTPAddress.DESTINATION_EFF_TEST_EQUIPMENT;
+import static tel.schich.javacan.isotp.ISOTPAddress.SFF_ECU_REQUEST_BASE;
+import static tel.schich.javacan.isotp.ISOTPAddress.SFF_ECU_RESPONSE_BASE;
+import static tel.schich.javacan.isotp.ISOTPAddress.SFF_FUNCTIONAL_ADDRESS;
+import static tel.schich.javacan.isotp.ISOTPAddress.effAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class ISOTPBrokerTest {

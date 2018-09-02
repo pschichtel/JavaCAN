@@ -20,9 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.isotp;
 
 import java.util.concurrent.ThreadFactory;
+
+import tel.schich.javacan.NativeException;
 
 final class PollingThread {
     private final Poller poller;
@@ -92,12 +94,8 @@ final class PollingThread {
                     }
                 } catch (Exception e) {
                     throw new RuntimeException("Polling failed", e);
-                } catch (Throwable t) {
-                    System.out.println("Fatal error in polling thread: " + t);
-                    throw t;
                 }
             }
-            System.out.println("Thread " + name + " ended!");
         }
 
         @Override

@@ -117,12 +117,3 @@ short poll_single(int sock, short events, int timeout) {
 
     return fds.revents;
 }
-
-int get_readable_bytes(int sock) {
-    int bytes_available = 0;
-    int result = ioctl(sock, FIONREAD, &bytes_available);
-    if (result == -1) {
-        return -1;
-    }
-    return bytes_available;
-}
