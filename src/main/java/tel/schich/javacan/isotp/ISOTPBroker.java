@@ -252,10 +252,7 @@ public class ISOTPBroker implements AutoCloseable {
 
             if (receivers.size() > 0) {
                 handleFrame(receivers, frame);
-            } else {
-                System.out.println("NO APPLICABLE RECEIVER FOR INBOUND FRAME FROM: " + String.format("%X", frame.getId()));
             }
-
         }
         return true;
     }
@@ -276,7 +273,11 @@ public class ISOTPBroker implements AutoCloseable {
                 int len = ((firstByte & 0xF) << Byte.SIZE) | (frame.read(1) & 0xFF);
                 for (ISOTPChannel receiver : receivers) {
                     receiver.getHandler().handleFirstFrame(receiver, id, frame.getPayload(2, frameLen - 2), len);
-                    returnFlowControlFrame(receiver.getReceiverAddress());
+                    int returnAddress = receiver.getReceiverAddress();
+                    if (ISOTPAddress.isFunctional(returnAddress)) {
+                        returnAddress = ISOTPAddress.returnAddress(id);
+                    }
+                    returnFlowControlFrame(returnAddress);
                 }
             } else if ((firstByte & CODE_MASK) == CODE_CF) {
                 int seqNumber = firstByte & 0xF;
