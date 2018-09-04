@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-abstract class NativeSocket implements CanSocket {
+abstract class NativeSocket {
     final int sockFD;
 
     protected NativeSocket(int sock) {
@@ -70,7 +70,6 @@ abstract class NativeSocket implements CanSocket {
         return bytesWritten;
     }
 
-    @Override
     public final void close() {
         if (NativeInterface.close(sockFD) == -1) {
             throw new NativeException("Unable to close the socket");

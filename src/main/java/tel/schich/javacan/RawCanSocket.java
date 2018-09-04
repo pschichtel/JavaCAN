@@ -28,13 +28,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
+import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
+import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
+
 public interface RawCanSocket extends AutoCloseable {
 
-    int MTU = 16;
-    int DLEN = 8;
-    int FD_MTU = 72;
-    int FD_DLEN = 64;
-    int DOFFSET = MTU - DLEN;
+    int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
+    int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
 
     void bind(String interfaceName);
     void setBlockingMode(boolean block);

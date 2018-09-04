@@ -38,9 +38,7 @@ import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.NativeException;
 import tel.schich.javacan.RawCanSocket;
 
-import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.RawCanSocket.DLEN;
-import static tel.schich.javacan.RawCanSocket.DOFFSET;
+import static tel.schich.javacan.CanFrame.*;
 
 public class ISOTPBroker implements AutoCloseable {
 
@@ -49,6 +47,10 @@ public class ISOTPBroker implements AutoCloseable {
     private static final int CODE_FF = 0x10;
     private static final int CODE_CF = 0x20;
     private static final int CODE_FC = 0x30;
+
+    private static final int SF_PCI_SIZE = 1;
+    private static final int FF_PCI_SIZE = 2;
+    private static final int CF_PCI_SIZE = 1;
 
     static final int FC_CONTINUE = 0x00;
     static final int FC_WAIT     = 0x01;
@@ -60,6 +62,7 @@ public class ISOTPBroker implements AutoCloseable {
 
     private final QueueSettings queueSettings;
     private final ProtocolParameters parameters;
+    private final int maxDataLength;
 
     private PollingThread readFrames;
     private PollingThread processFrames;
@@ -72,6 +75,7 @@ public class ISOTPBroker implements AutoCloseable {
     public ISOTPBroker(Supplier<RawCanSocket> socketFactory, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
         this.queueSettings = queueSettings;
         this.parameters = parameters;
+        this.maxDataLength = parameters.sendFDFrames ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
         this.socket = socketFactory.get();
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
@@ -174,7 +178,7 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     boolean fitsIntoSingleFrame(int len) {
-        return len + 1 <= DLEN;
+        return len + SF_PCI_SIZE <= maxDataLength;
     }
 
     private long write(byte[] buffer, int offset, int length) {
@@ -188,40 +192,61 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     void writeSingleFrame(int id, byte[] message) {
-        byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, id, DLEN, FD_NO_FLAGS);
-        buffer[DOFFSET] = (byte)(CODE_SF | (message.length & 0xF));
-        System.arraycopy(message, 0, buffer, DOFFSET + 1, message.length);
+        final int payloadLength = message.length;
+        final int dataLength = payloadLength + SF_PCI_SIZE;
+
+        byte[] buffer = CanFrame.allocateBuffer(dataLength > MAX_DATA_LENGTH);
+        CanFrame.toBuffer(buffer, 0, id, padLength(dataLength), FD_NO_FLAGS);
+        writeSingleFramePCI(buffer, payloadLength);
+        System.arraycopy(message, 0, buffer, HEADER_LENGTH + SF_PCI_SIZE, payloadLength);
         write(buffer, 0, buffer.length);
+    }
+
+    private static void writeSingleFramePCI(byte[] buffer, int messageLength) {
+        buffer[HEADER_LENGTH] = (byte)(CODE_SF | (messageLength & 0xF));
     }
 
     int writeFirstFrame(int id, byte[] message) {
-        byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
-        buffer[DOFFSET] = (byte)(CODE_FF | ((message.length >> Byte.SIZE) & 0xF));
-        buffer[DOFFSET + 1] = (byte)(message.length & 0xFF);
-        final int len = Math.min(DLEN - 2, message.length);
-        System.arraycopy(message, 0, buffer, DOFFSET + 2, len);
+        final int payloadLength = Math.min(maxDataLength - FF_PCI_SIZE, message.length);
+        final int dataLength = payloadLength + FF_PCI_SIZE;
+
+        byte[] buffer = CanFrame.allocateBuffer(dataLength > MAX_DATA_LENGTH);
+        CanFrame.toBuffer(buffer, 0, id, padLength(dataLength), FD_NO_FLAGS);
+        writeFirstFramePCI(buffer, message.length);
+        System.arraycopy(message, 0, buffer, HEADER_LENGTH + FF_PCI_SIZE, payloadLength);
         write(buffer, 0, buffer.length);
-        return len;
+
+        return payloadLength;
     }
 
-    int writeConsecutiveFrame(int id, byte[] message, int offset, int sn) {
-        byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
-        buffer[DOFFSET] = (byte)(CODE_CF | (sn & 0xF));
-        final int len = Math.min(DLEN - 1, message.length - offset);
-        System.arraycopy(message, offset, buffer, DOFFSET + 1, len);
+    private static void writeFirstFramePCI(byte[] buffer, int messageLength) {
+        buffer[HEADER_LENGTH] = (byte)(CODE_FF | ((messageLength >> Byte.SIZE) & 0xF));
+        buffer[HEADER_LENGTH + 1] = (byte)(messageLength & 0xFF);
+    }
+
+    int writeConsecutiveFrame(int id, byte[] message, int offset, int sequenceNumber) {
+        final int payloadLength = Math.min(maxDataLength - CF_PCI_SIZE, message.length - offset);
+        final int dataLength = payloadLength + CF_PCI_SIZE;
+
+        byte[] buffer = CanFrame.allocateBuffer(dataLength > MAX_DATA_LENGTH);
+        CanFrame.toBuffer(buffer, 0, id, padLength(dataLength), FD_NO_FLAGS);
+        writeConsecutiveFramePCI(buffer, sequenceNumber);
+        System.arraycopy(message, offset, buffer, HEADER_LENGTH + CF_PCI_SIZE, payloadLength);
         write(buffer, 0, buffer.length);
-        return len;
+
+        return payloadLength;
+    }
+
+    private static void writeConsecutiveFramePCI(byte[] buffer, int sequenceNumber) {
+        buffer[HEADER_LENGTH] = (byte)(CODE_CF | (sequenceNumber & 0xF));
     }
 
     void writeFlowControlFrame(int id, int flag, byte blockSize, byte separationTime) {
-        byte[] buffer = CanFrame.allocateBuffer(false);
-        CanFrame.toBuffer(buffer, 0, id, 8, FD_NO_FLAGS);
-        buffer[DOFFSET] = (byte)(CODE_FC | (flag & 0xF));
-        buffer[DOFFSET + 1] = blockSize;
-        buffer[DOFFSET + 2] = separationTime;
+        byte[] buffer = CanFrame.allocateBuffer(false); // FC frames are always standard size
+        CanFrame.toBuffer(buffer, 0, id, MAX_DATA_LENGTH, FD_NO_FLAGS);
+        buffer[HEADER_LENGTH] = (byte)(CODE_FC | (flag & 0xF));
+        buffer[HEADER_LENGTH + 1] = blockSize;
+        buffer[HEADER_LENGTH + 2] = separationTime;
         write(buffer, 0, buffer.length);
     }
 
@@ -321,4 +346,31 @@ public class ISOTPBroker implements AutoCloseable {
         }
     }
 
+    /**
+     * Taken from the can-isotp kernel module
+     * @param length the non-padded payload length
+     * @return the padded payload length
+     */
+    private static byte padLength(int length)
+    {
+        final byte[] paddedLengthLookup = {
+                8,                              /*       0  */
+                8,  8,  8,  8,  8,  8,  8,  8,  /*  1 -  8 */
+                12, 12, 12, 12,                 /*  9 - 12 */
+                16, 16, 16, 16,                 /* 13 - 16 */
+                20, 20, 20, 20,                 /* 17 - 20 */
+                24, 24, 24, 24,                 /* 21 - 24 */
+                32, 32, 32, 32, 32, 32, 32, 32, /* 25 - 32 */
+                48, 48, 48, 48, 48, 48, 48, 48, /* 33 - 40 */
+                48, 48, 48, 48, 48, 48, 48, 48, /* 41 - 48 */
+                64, 64, 64, 64, 64, 64, 64, 64, /* 49 - 56 */
+                64, 64, 64, 64, 64, 64, 64, 64  /* 57 - 64 */
+        };
+
+        if (length > MAX_FD_DATA_LENGTH) {
+            throw new IllegalArgumentException();
+        }
+
+        return paddedLengthLookup[length];
+    }
 }

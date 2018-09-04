@@ -31,7 +31,9 @@ public class ProtocolParameters {
     private static final int SEPARATION_TIME_MICROS_FACTOR = 100;
     private static final int BLOCK_SIZE_MAX = 0xFF;
 
-    public static final ProtocolParameters DEFAULT = new ProtocolParameters(0, 0);
+    public static final ProtocolParameters DEFAULT = new ProtocolParameters(false, 0, 0);
+
+    public final boolean sendFDFrames;
 
     public final int inboundBlockSize;
     public final long inboundSeparationTime;
@@ -39,10 +41,13 @@ public class ProtocolParameters {
     public final byte inboundSeparationTimeByte;
     public final byte inboundBlockSizeByte;
 
-    public ProtocolParameters(int inboundBlockSize, long inboundSeparationTimeNanos) {
+    public ProtocolParameters(boolean sendFDFrames, int inboundBlockSize, long inboundSeparationTimeNanos) {
         if (inboundBlockSize > BLOCK_SIZE_MAX) {
             throw new IllegalArgumentException("The block size can be no more than " + BLOCK_SIZE_MAX + "!");
         }
+
+        this.sendFDFrames = sendFDFrames;
+
         this.inboundBlockSize = inboundBlockSize;
         this.inboundSeparationTime = inboundSeparationTimeNanos;
 
@@ -50,12 +55,16 @@ public class ProtocolParameters {
         this.inboundSeparationTimeByte = nanosToSeparationTimeByte(inboundSeparationTimeNanos);
     }
 
+    public ProtocolParameters withSendingFDFrames(boolean sendFDFrames) {
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, inboundSeparationTime);
+    }
+
     public ProtocolParameters withBlockSize(int blockSize) {
-        return new ProtocolParameters(blockSize, inboundSeparationTime);
+        return new ProtocolParameters(sendFDFrames, blockSize, inboundSeparationTime);
     }
 
     public ProtocolParameters withSeparationTime(long separationTime) {
-        return new ProtocolParameters(inboundBlockSize, separationTime);
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, separationTime);
     }
 
     public static byte nanosToSeparationTimeByte(long nanos) {

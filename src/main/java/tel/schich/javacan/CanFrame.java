@@ -25,7 +25,6 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.util.Objects;
 
-import static tel.schich.javacan.RawCanSocket.DOFFSET;
 import static tel.schich.javacan.RawCanSocket.FD_MTU;
 import static tel.schich.javacan.RawCanSocket.MTU;
 
@@ -35,6 +34,7 @@ public class CanFrame {
     public static final byte FD_FLAG_BRS = 0b01;
     public static final byte FD_FLAG_ESI = 0b10;
 
+    public static final int HEADER_LENGTH = 8;
     public static final int MAX_DATA_LENGTH = 8;
     public static final int MAX_FD_DATA_LENGTH = 64;
 
@@ -177,24 +177,24 @@ public class CanFrame {
         if (bytes != MTU && !fdFrame) {
             throw new IOException("Frame is incomplete!");
         }
-        final int id = Util.readInt(buffer, 0);
+        final int id = Util.readInt(buffer, offset);
         int length = buffer[4];
         byte flags = fdFrame ? buffer[5] : 0;
-        return new CanFrame(id, flags, buffer, 8, length);
+        return new CanFrame(id, flags, buffer, offset + HEADER_LENGTH, length);
     }
 
     public static void toBuffer(byte[] buffer, int offset, CanFrame frame) {
-        toBuffer(buffer, offset, frame.id, frame.dataLength,frame.isFDFrame() ? frame.flags : 0);
-        System.arraycopy(frame.payload, frame.dataOffset, buffer, offset + DOFFSET, frame.dataLength);
+        toBuffer(buffer, offset, frame.id, frame.dataLength, frame.isFDFrame() ? frame.flags : 0);
+        System.arraycopy(frame.payload, frame.dataOffset, buffer, offset + HEADER_LENGTH, frame.dataLength);
     }
 
     public static byte[] toBuffer(CanFrame frame) {
         final boolean fdFrame = frame.isFDFrame();
         final byte[] buffer;
-        if (fdFrame && frame.payload.length == FD_MTU && frame.dataOffset == DOFFSET) {
+        if (fdFrame && frame.payload.length == FD_MTU && frame.dataOffset == HEADER_LENGTH) {
             // reuse FD frame buffer
             return frame.payload;
-        } else if (!fdFrame && frame.payload.length == MTU && frame.dataOffset == DOFFSET) {
+        } else if (!fdFrame && frame.payload.length == MTU && frame.dataOffset == HEADER_LENGTH) {
             return frame.payload;
         } else {
             buffer = allocateBuffer(fdFrame);
