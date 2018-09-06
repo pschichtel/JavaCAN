@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.isotp;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -43,6 +44,8 @@ public class ISOTPChannel implements AutoCloseable {
     private final ISOTPBroker broker;
     private final BlockingQueue<OutboundMessage> outboundQueue;
 
+    private final ProtocolParameters parameters;
+
     private final int receiverAddress;
     private final CanFilter returnFilter;
     private final FrameHandler handler;
@@ -55,12 +58,13 @@ public class ISOTPChannel implements AutoCloseable {
 
     private PollingThread outboundProcessor;
 
-    ISOTPChannel(ISOTPBroker broker, int receiverAddress, CanFilter returnFilter, FrameHandler handler, QueueSettings queueLength) {
+    ISOTPChannel(ISOTPBroker broker, int receiverAddress, CanFilter returnFilter, FrameHandler handler, QueueSettings queueSettings, ProtocolParameters parameters) {
         this.broker = broker;
         this.receiverAddress = receiverAddress;
         this.returnFilter = returnFilter;
         this.handler = handler;
-        this.outboundQueue = new ArrayBlockingQueue<>(queueLength.capacity);
+        this.outboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity);
+        this.parameters = parameters;
         this.outboundProcessor = broker.makePollingThread("channel-outbound-" + String.format("%X", receiverAddress), this::processOutbound);
     }
 
@@ -135,7 +139,7 @@ public class ISOTPChannel implements AutoCloseable {
         return true;
     }
 
-    private void writeFrameCompletely(OutboundMessage message) throws NativeException, DestinationOverflown, InterruptedException {
+    private void writeFrameCompletely(OutboundMessage message) throws IOException, InterruptedException {
         byte[] payload = message.payload;
         int length = payload.length;
         int id = message.destinationId;
@@ -151,8 +155,8 @@ public class ISOTPChannel implements AutoCloseable {
             int sequenceNumber = 1;
             int blocks;
             while (bytesWritten < length) {
-                if (!waitForControlFlow()) {
-                    throw new DestinationOverflown(id);
+                if (!waitForControlFlow(message.destinationId)) {
+                    throw new DestinationOverflownException(id);
                 }
                 blocks = flowControlBlockSize;
                 if (blocks == 0) {
@@ -174,14 +178,18 @@ public class ISOTPChannel implements AutoCloseable {
         }
     }
 
-    private boolean waitForControlFlow() throws InterruptedException {
+    private boolean waitForControlFlow(int addr) throws InterruptedException, DestinationTimeoutException {
         do {
             synchronized (this) {
                 flowControlReceived = false;
             }
             synchronized (flowControlMonitor) {
+                long timeoutAt = System.currentTimeMillis() + parameters.outboundTimeout;
                 while (!flowControlReceived) {
-                    flowControlMonitor.wait();
+                    flowControlMonitor.wait(parameters.outboundTimeout);
+                    if (System.currentTimeMillis() >= timeoutAt) {
+                        throw new DestinationTimeoutException(addr);
+                    }
                 }
             }
             if (flowControlFlags == FC_OVERFLOW) {

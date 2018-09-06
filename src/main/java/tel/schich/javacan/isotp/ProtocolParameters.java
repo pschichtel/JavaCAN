@@ -24,6 +24,8 @@ package tel.schich.javacan.isotp;
 
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public class ProtocolParameters {
 
     private static final int SEPARATION_TIME_MAX_MILLIS = 127;
@@ -31,7 +33,7 @@ public class ProtocolParameters {
     private static final int SEPARATION_TIME_MICROS_FACTOR = 100;
     private static final int BLOCK_SIZE_MAX = 0xFF;
 
-    public static final ProtocolParameters DEFAULT = new ProtocolParameters(false, 0, 0);
+    public static final ProtocolParameters DEFAULT = new ProtocolParameters(false, 0, 0, SECONDS.toMillis(1), SECONDS.toMillis(1));
 
     public final boolean sendFDFrames;
 
@@ -41,7 +43,10 @@ public class ProtocolParameters {
     public final byte inboundSeparationTimeByte;
     public final byte inboundBlockSizeByte;
 
-    public ProtocolParameters(boolean sendFDFrames, int inboundBlockSize, long inboundSeparationTimeNanos) {
+    public final long outboundTimeout;
+    public final long inboundTimeout;
+
+    public ProtocolParameters(boolean sendFDFrames, int inboundBlockSize, long inboundSeparationTimeNanos, long outboundTimeout, long inboundTimeout) {
         if (inboundBlockSize > BLOCK_SIZE_MAX) {
             throw new IllegalArgumentException("The block size can be no more than " + BLOCK_SIZE_MAX + "!");
         }
@@ -53,18 +58,29 @@ public class ProtocolParameters {
 
         this.inboundBlockSizeByte = (byte)inboundBlockSize;
         this.inboundSeparationTimeByte = nanosToSeparationTimeByte(inboundSeparationTimeNanos);
+
+        this.outboundTimeout = outboundTimeout;
+        this.inboundTimeout = inboundTimeout;
     }
 
     public ProtocolParameters withSendingFDFrames(boolean sendFDFrames) {
-        return new ProtocolParameters(sendFDFrames, inboundBlockSize, inboundSeparationTime);
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, inboundSeparationTime, outboundTimeout, inboundTimeout);
     }
 
     public ProtocolParameters withBlockSize(int blockSize) {
-        return new ProtocolParameters(sendFDFrames, blockSize, inboundSeparationTime);
+        return new ProtocolParameters(sendFDFrames, blockSize, inboundSeparationTime, outboundTimeout, inboundTimeout);
     }
 
     public ProtocolParameters withSeparationTime(long separationTime) {
-        return new ProtocolParameters(sendFDFrames, inboundBlockSize, separationTime);
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, separationTime, outboundTimeout, inboundTimeout);
+    }
+
+    public ProtocolParameters withOutboundTimeout(long outboundTimeout) {
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, inboundSeparationTime, outboundTimeout, inboundTimeout);
+    }
+
+    public ProtocolParameters withInboundTimeout(long inboundTimeout) {
+        return new ProtocolParameters(sendFDFrames, inboundBlockSize, inboundSeparationTime, outboundTimeout, inboundTimeout);
     }
 
     public static byte nanosToSeparationTimeByte(long nanos) {

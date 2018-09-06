@@ -24,10 +24,10 @@ package tel.schich.javacan.isotp;
 
 import java.io.IOException;
 
-public class DestinationOverflown extends IOException {
+public class DestinationOverflownException extends IOException {
     private final int address;
 
-    public DestinationOverflown(int address) {
+    public DestinationOverflownException(int address) {
         super("Channel destination (" + String.format("%X", address) + ") signaled the overflow state, message transmission has been aborted!");
         this.address = address;
     }
