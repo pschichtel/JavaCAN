@@ -47,4 +47,9 @@ public class NoopFrameHandler implements FrameHandler {
     public void handleNonISOTPFrame(CanFrame frame) {
 
     }
+
+    @Override
+    public void checkTimeouts(long inboundTimeout) {
+
+    }
 }

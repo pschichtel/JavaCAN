@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -62,6 +64,7 @@ public class ISOTPBroker implements AutoCloseable {
 
     private final QueueSettings queueSettings;
     private final ProtocolParameters parameters;
+    private final ScheduledExecutorService timeoutClock;
     private final int maxDataLength;
 
     private PollingThread readFrames;
@@ -83,6 +86,7 @@ public class ISOTPBroker implements AutoCloseable {
         this.inboundQueue = new LinkedBlockingQueue<>(queueSettings.capacity);
         this.channels = new CopyOnWriteArrayList<>();
         this.writeLock = new ReentrantLock(queueSettings.fairBlocking);
+        this.timeoutClock = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
     public void bind(String interfaceName) {
@@ -91,6 +95,12 @@ public class ISOTPBroker implements AutoCloseable {
 
     public void setReceiveOwnMessages(boolean receiveOwnMessages) {
         socket.setReceiveOwnMessages(receiveOwnMessages);
+    }
+
+    private void checkInboundStates() {
+        for (ISOTPChannel channel : this.channels) {
+            channel.checkStates();
+        }
     }
 
     PollingThread makePollingThread(String name, PollFunction foo) {
@@ -109,6 +119,8 @@ public class ISOTPBroker implements AutoCloseable {
         readFrames.start();
         processFrames.start();
         updateSocketFilters();
+
+        this.timeoutClock.scheduleAtFixedRate(this::checkInboundStates, parameters.inboundTimeout, parameters.inboundTimeout, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() throws InterruptedException {
@@ -131,6 +143,8 @@ public class ISOTPBroker implements AutoCloseable {
             readFrames = null;
             processFrames = null;
         }
+
+        this.timeoutClock.shutdownNow();
     }
 
     private void handleException(Thread thread, Throwable t) {
@@ -145,7 +159,7 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     public ISOTPChannel createChannel(int targetAddress, CanFilter returnFilter, FrameHandler handler) {
-        ISOTPChannel ch = new ISOTPChannel(this, targetAddress, returnFilter, handler, queueSettings);
+        ISOTPChannel ch = new ISOTPChannel(this, targetAddress, returnFilter, handler, queueSettings, parameters);
         this.channels.add(ch);
         start();
         updateSocketFilters();

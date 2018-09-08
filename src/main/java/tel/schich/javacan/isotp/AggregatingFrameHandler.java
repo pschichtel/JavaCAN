@@ -24,8 +24,10 @@ package tel.schich.javacan.isotp;
 
 import java.io.ByteArrayOutputStream;
 import java.util.BitSet;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import tel.schich.javacan.CanFrame;
 
@@ -33,22 +35,24 @@ public final class AggregatingFrameHandler implements FrameHandler {
 
     private static final int FRAGMENT_BUFFER_SIZE = 16;
 
-    private final MessageHandler handler;
-    private final Map<Integer, State> senderState = new HashMap<>();
+    private final MessageHandler messageHandler;
+    private final TimeoutHandler timeoutHandler;
+    private final ConcurrentMap<Integer, State> senderState = new ConcurrentHashMap<>();
 
-    protected AggregatingFrameHandler(MessageHandler handler) {
-        this.handler = handler;
+    protected AggregatingFrameHandler(MessageHandler messageHandler, TimeoutHandler timeoutHandler) {
+        this.messageHandler = messageHandler;
+        this.timeoutHandler = timeoutHandler;
     }
 
     @Override
     public void handleSingleFrame(ISOTPChannel ch, int sender, byte[] payload) {
-        handler.handle(ch, sender, payload);
+        messageHandler.handle(ch, sender, payload);
     }
 
     @Override
     public void handleFirstFrame(ISOTPChannel ch, int sender, byte[] payload, int messageLength) {
         if (payload.length >= messageLength) {
-            handler.handle(ch, sender, payload);
+            messageHandler.handle(ch, sender, payload);
         } else {
             State s = new State(messageLength);
             s.appendFragment(payload);
@@ -75,7 +79,7 @@ public final class AggregatingFrameHandler implements FrameHandler {
             }
             if (s.missingBytes <= 0) {
                 byte[] message = s.receiveBuffer.toByteArray();
-                handler.handle(ch, sender, message);
+                messageHandler.handle(ch, sender, message);
                 senderState.remove(sender);
             }
         } else {
@@ -98,8 +102,27 @@ public final class AggregatingFrameHandler implements FrameHandler {
 
     }
 
+    @Override
+    public void checkTimeouts(long inboundTimeout) {
+        State state;
+        Map.Entry<Integer, State> next;
+        Iterator<Map.Entry<Integer, State>> it = this.senderState.entrySet().iterator();
+        while (it.hasNext()) {
+            next = it.next();
+            state = next.getValue();
+            if (System.currentTimeMillis() - state.lastActivity >= inboundTimeout) {
+                timeoutHandler.onTimeout(next.getKey());
+                it.remove();
+            }
+        }
+    }
+
     public static FrameHandler aggregateFrames(MessageHandler handler) {
-        return new AggregatingFrameHandler(handler);
+        return aggregateFrames(handler, i -> {});
+    }
+
+    public static FrameHandler aggregateFrames(MessageHandler messageHandler, TimeoutHandler timeoutHandler) {
+        return new AggregatingFrameHandler(messageHandler, timeoutHandler);
     }
 
     private static final class State {
@@ -108,9 +131,11 @@ public final class AggregatingFrameHandler implements FrameHandler {
         private BitSet filledValues = new BitSet(FRAGMENT_BUFFER_SIZE);
         private int expectedSequenceNumber;
         private int missingBytes;
+        private long lastActivity;
 
-        State(int messageLength) {
+        State(int messageLength){
             missingBytes = messageLength;
+            this.lastActivity = System.currentTimeMillis();
         }
 
         private void append(byte[] payload, int len) {

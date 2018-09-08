@@ -22,8 +22,12 @@
  */
 package tel.schich.javacan.test.isotp;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -32,9 +36,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.LoopbackRawCanSocket;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.RawCanSocket;
+import tel.schich.javacan.isotp.DestinationTimeoutException;
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.JavaCAN;
@@ -88,6 +94,26 @@ class ISOTPBrokerTest {
                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 });
             }
 
+        }
+    }
+
+    @Test
+    void testTimeouts() throws Exception {
+        LoopbackRawCanSocket sock = new LoopbackRawCanSocket();
+        try (final ISOTPBroker isotp = new ISOTPBroker(() -> sock, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+            isotp.bind(CAN_INTERFACE);
+
+            CompletableFuture<Integer> i = new CompletableFuture<>();
+            ISOTPChannel ch = isotp.createChannel(0x7E0, aggregateFrames((a, b, c) -> {}, i::complete));
+
+            ExecutionException ex = assertThrows(ExecutionException.class, () -> {
+                ch.send(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }).get();
+            });
+
+            assertEquals(DestinationTimeoutException.class, ex.getCause().getClass());
+
+            sock.write(CanFrame.create(0x7E8, new byte[] {0x10, 0x0A, 0x01, 0x01, 0x01, 0x01, 0x01, 0x02}));
+            assertEquals(0x7E8, i.get().intValue());
         }
     }
 

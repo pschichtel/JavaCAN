@@ -177,7 +177,7 @@ public class LoopbackRawCanSocket implements RawCanSocket {
 
     @Override
     public void write(CanFrame frame) throws IOException {
-        if (!isAllowFDFrames()) {
+        if (frame.isFDFrame() && !isAllowFDFrames()) {
             throw new IOException("CANFD frames not enabled!");
         }
         byte[] buf = CanFrame.allocateBuffer(frame.isFDFrame());

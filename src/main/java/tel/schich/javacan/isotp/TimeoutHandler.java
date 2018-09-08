@@ -22,12 +22,6 @@
  */
 package tel.schich.javacan.isotp;
 
-import tel.schich.javacan.CanFrame;
-
-public interface FrameHandler {
-    void handleSingleFrame(ISOTPChannel ch, int sender, byte[] payload);
-    void handleFirstFrame(ISOTPChannel ch, int sender, byte[] payload, int messageLength);
-    void handleConsecutiveFrame(ISOTPChannel ch, int sender, byte[] payload, int index);
-    void handleNonISOTPFrame(CanFrame frame);
-    void checkTimeouts(long inboundTimeout);
+public interface TimeoutHandler {
+    void onTimeout(int sender);
 }

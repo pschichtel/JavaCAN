@@ -211,6 +211,10 @@ public class ISOTPChannel implements AutoCloseable {
         }
     }
 
+    void checkStates() {
+        this.handler.checkTimeouts(parameters.inboundTimeout);
+    }
+
     public static final class OutboundMessage {
         private final int destinationId;
         private final byte[] payload;
