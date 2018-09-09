@@ -22,12 +22,10 @@
  */
 package tel.schich.javacan.test;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
-import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NativeException;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.RawCanSocket;
@@ -40,11 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
-
-    @BeforeAll
-    static void init() {
-        JavaCAN.initialize();
-    }
 
     @Test
     void testOptions() throws Exception {

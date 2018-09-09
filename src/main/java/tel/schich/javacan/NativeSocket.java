@@ -23,10 +23,14 @@
 package tel.schich.javacan;
 
 abstract class NativeSocket {
+
+    static {
+        JavaCAN.initialize();
+    }
+
     final int sockFD;
 
     protected NativeSocket(int sock) {
-        JavaCAN.initialize();
         sockFD = sock;
     }
 

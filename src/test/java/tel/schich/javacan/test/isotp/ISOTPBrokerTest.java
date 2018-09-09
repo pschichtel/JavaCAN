@@ -26,13 +26,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -41,19 +38,20 @@ import tel.schich.javacan.LoopbackRawCanSocket;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.RawCanSocket;
 import tel.schich.javacan.isotp.DestinationTimeoutException;
-import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.ISOTPBroker;
-import tel.schich.javacan.JavaCAN;
+import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.MessageHandler;
 import tel.schich.javacan.isotp.NoopFrameHandler;
 import tel.schich.javacan.isotp.ProtocolParameters;
 import tel.schich.javacan.isotp.QueueSettings;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.isotp.AggregatingFrameHandler.aggregateFrames;
 import static tel.schich.javacan.isotp.ISOTPAddress.DESTINATION_ECU_1;
-import static tel.schich.javacan.isotp.ISOTPAddress.EFF_TYPE_FUNCTIONAL_ADDRESSING;
 import static tel.schich.javacan.isotp.ISOTPAddress.DESTINATION_EFF_TEST_EQUIPMENT;
+import static tel.schich.javacan.isotp.ISOTPAddress.EFF_TYPE_FUNCTIONAL_ADDRESSING;
 import static tel.schich.javacan.isotp.ISOTPAddress.SFF_ECU_REQUEST_BASE;
 import static tel.schich.javacan.isotp.ISOTPAddress.SFF_ECU_RESPONSE_BASE;
 import static tel.schich.javacan.isotp.ISOTPAddress.SFF_FUNCTIONAL_ADDRESS;
@@ -67,11 +65,6 @@ class ISOTPBrokerTest {
     private static final QueueSettings QUEUE_SETTINGS = QueueSettings.DEFAULT;
     private static final ProtocolParameters PARAMETERS = ProtocolParameters.DEFAULT
             .withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100));
-
-    @BeforeAll
-    static void init() {
-        JavaCAN.initialize();
-    }
 
     @Test
     void testWrite() throws Exception {
