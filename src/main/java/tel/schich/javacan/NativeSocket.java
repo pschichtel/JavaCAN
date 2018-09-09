@@ -26,6 +26,7 @@ abstract class NativeSocket {
     final int sockFD;
 
     protected NativeSocket(int sock) {
+        JavaCAN.initialize();
         sockFD = sock;
     }
 
