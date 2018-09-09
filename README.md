@@ -29,12 +29,25 @@ Currently the full build process includes the following architectures:
 
 ## How to use
 
+### Raw CAN Socket
+
 1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
-2. Call `JavaCAN.initialize()` at least once (it is safe to call multiple times and from different threads)
-3. Create a `RawCanSocket` by calling `RawCanSocket.create()`
+3. Create a `NativeRawCanSocket` by calling `NativeRawCanSocket.create()`
 4. Bind the socket to an interface using the `bind(String)` method
 
 Usage example can be found in the unit tests.
+
+### ISO-TP
+
+ISO-TP is implemented over RAW sockets in a fully non-blocking way. The ISOTPBroker class takes a
+RAW socket factory, a thread factory for internal processing, queue settings for flow control and
+protocol parameters.
+
+With the broker ready you can create channels which are used for communication. A channel can send
+messages to a certain address and receive messages passing a certain CAN filter using a FrameHandler.
+If you are not interested in individual frames, which you typically are not, you can use a
+AggregatingFrameHandler with a MessageHandler and optionally a TimeoutHandler to handle fully
+aggregated messages.
 
 ## How to build
 
