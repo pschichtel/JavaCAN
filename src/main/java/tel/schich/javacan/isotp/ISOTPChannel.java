@@ -33,6 +33,7 @@ import java.util.concurrent.locks.LockSupport;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.NativeException;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static tel.schich.javacan.isotp.ISOTPBroker.FC_OVERFLOW;
 import static tel.schich.javacan.isotp.ISOTPBroker.FC_WAIT;
 
@@ -105,9 +106,25 @@ public class ISOTPChannel implements AutoCloseable {
 
     @Override
     public void close() throws NativeException, InterruptedException {
+        broker.dropChannel(this);
         this.outboundProcessor.stop();
         this.outboundProcessor.join();
+    }
+
+    public void close(long timeout, TimeUnit unit) throws InterruptedException {
         broker.dropChannel(this);
+        this.outboundProcessor.stop();
+        long millis = unit.toMillis(timeout);
+        int nanos = (int) (unit.toNanos(timeout) - MILLISECONDS.toNanos(millis));
+        if (this.outboundProcessor.join(millis, nanos)) {
+            this.outboundProcessor.kill();
+        }
+    }
+
+    public void closeNow() {
+        broker.dropChannel(this);
+        this.outboundProcessor.stop();
+        this.outboundProcessor.kill();
     }
 
     FrameHandler getHandler() {

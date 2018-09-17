@@ -45,16 +45,22 @@ final class PollingThread {
         this.poller.stop();
     }
 
-    public synchronized void join(long millis) throws InterruptedException {
+    public synchronized boolean join(long millis) throws InterruptedException {
         thread.join(millis);
+        return thread.isAlive();
     }
 
-    public synchronized void join(long millis, int nanos) throws InterruptedException {
+    public synchronized boolean join(long millis, int nanos) throws InterruptedException {
         thread.join(millis, nanos);
+        return thread.isAlive();
     }
 
     public synchronized void join() throws InterruptedException {
         thread.join();
+    }
+
+    public synchronized void kill() {
+        thread.interrupt();
     }
 
     static PollingThread create(String name, long timeout, ThreadFactory factory, PollFunction foo, Thread.UncaughtExceptionHandler exceptionHandler) {
