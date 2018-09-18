@@ -105,13 +105,13 @@ public class ISOTPChannel implements AutoCloseable {
     }
 
     @Override
-    public void close() throws NativeException, InterruptedException {
+    public synchronized void close() throws NativeException, InterruptedException {
         broker.dropChannel(this);
         this.outboundProcessor.stop();
         this.outboundProcessor.join();
     }
 
-    public void close(long timeout, TimeUnit unit) throws InterruptedException {
+    public synchronized void close(long timeout, TimeUnit unit) throws InterruptedException {
         broker.dropChannel(this);
         this.outboundProcessor.stop();
         long millis = unit.toMillis(timeout);
@@ -121,7 +121,7 @@ public class ISOTPChannel implements AutoCloseable {
         }
     }
 
-    public void closeNow() {
+    public synchronized void closeNow() {
         broker.dropChannel(this);
         this.outboundProcessor.stop();
         this.outboundProcessor.kill();
@@ -131,7 +131,7 @@ public class ISOTPChannel implements AutoCloseable {
         return handler;
     }
 
-    private void handleException(Thread thread, Throwable t) {
+    private synchronized void handleException(Thread thread, Throwable t) {
         if ((t instanceof InterruptedException)) {
             System.err.println("Polling thread failed: " + thread.getName());
             t.printStackTrace(System.err);
