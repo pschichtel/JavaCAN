@@ -66,7 +66,7 @@ public class ISOTPChannel implements AutoCloseable {
         this.handler = handler;
         this.outboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity);
         this.parameters = parameters;
-        this.outboundProcessor = broker.makePollingThread("channel-outbound-" + String.format("%X", receiverAddress), this::processOutbound);
+        this.outboundProcessor = broker.makePollingThread("channel-outbound-" + String.format("%X", receiverAddress), this::processOutbound, this::handleException);
     }
 
     public int getReceiverAddress() {
@@ -131,6 +131,13 @@ public class ISOTPChannel implements AutoCloseable {
         return handler;
     }
 
+    private void handleException(Thread thread, Throwable t) {
+        if ((t instanceof InterruptedException)) {
+            System.err.println("Polling thread failed: " + thread.getName());
+            t.printStackTrace(System.err);
+        }
+    }
+
     void updateFlowControlState(int flags, int blockSize, long separationTimeNanos) {
         synchronized (this) {
             flowControlFlags = flags;
@@ -151,6 +158,7 @@ public class ISOTPChannel implements AutoCloseable {
                 message.promise.complete(null);
             } catch (Exception e) {
                 message.promise.completeExceptionally(e);
+                throw e;
             }
         }
         return true;

@@ -103,8 +103,8 @@ public class ISOTPBroker implements AutoCloseable {
         }
     }
 
-    PollingThread makePollingThread(String name, PollFunction foo) {
-        return PollingThread.create(name, queueSettings.pollingTimeout, threadFactory, foo, this::handleException);
+    PollingThread makePollingThread(String name, PollFunction f, Thread.UncaughtExceptionHandler exceptionHandler) {
+        return PollingThread.create(name, queueSettings.pollingTimeout, threadFactory, f, exceptionHandler);
     }
 
     public void start() {
@@ -113,8 +113,8 @@ public class ISOTPBroker implements AutoCloseable {
             return;
         }
 
-        readFrames = makePollingThread("read-frames", this::readFrame);
-        processFrames = makePollingThread("process-frames", this::processInbound);
+        readFrames = makePollingThread("read-frames", this::readFrame, this::handleException);
+        processFrames = makePollingThread("process-frames", this::processInbound, this::handleException);
 
         readFrames.start();
         processFrames.start();
