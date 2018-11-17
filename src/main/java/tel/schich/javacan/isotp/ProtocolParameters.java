@@ -84,10 +84,10 @@ public class ProtocolParameters {
     }
 
     public static byte nanosToSeparationTimeByte(long nanos) {
-        long micros = TimeUnit.NANOSECONDS.toMicros(nanos);
         if (nanos == 0) {
             return 0;
         }
+        long micros = TimeUnit.NANOSECONDS.toMicros(nanos);
         if (micros > 1000) {
             long millis = TimeUnit.MICROSECONDS.toMillis(micros);
             if (millis > SEPARATION_TIME_MAX_MILLIS) {
