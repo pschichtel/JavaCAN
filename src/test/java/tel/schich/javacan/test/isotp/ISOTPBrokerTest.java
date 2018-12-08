@@ -68,7 +68,7 @@ class ISOTPBrokerTest {
 
     @Test
     void testWrite() throws Exception {
-        try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket::create, threadFactory, QUEUE_SETTINGS,
+        try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket.create(), threadFactory, QUEUE_SETTINGS,
                 PARAMETERS)) {
             isotp.bind(CAN_INTERFACE);
 
@@ -93,7 +93,7 @@ class ISOTPBrokerTest {
     @Test
     void testTimeouts() throws Exception {
         LoopbackRawCanSocket sock = new LoopbackRawCanSocket();
-        try (final ISOTPBroker isotp = new ISOTPBroker(() -> sock, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(sock, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
             isotp.bind(CAN_INTERFACE);
 
             CompletableFuture<Integer> i = new CompletableFuture<>();
@@ -123,7 +123,7 @@ class ISOTPBrokerTest {
     }
 
     void testBrokerWith(Supplier<RawCanSocket> socket) throws Exception {
-        try (final ISOTPBroker isotp = new ISOTPBroker(socket, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(socket.get(), threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 

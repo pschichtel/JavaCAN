@@ -75,11 +75,11 @@ public class ISOTPBroker implements AutoCloseable {
 
     private boolean highPressure = false;
 
-    public ISOTPBroker(Supplier<RawCanSocket> socketFactory, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
+    public ISOTPBroker(RawCanSocket socket, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
         this.queueSettings = queueSettings;
         this.parameters = parameters;
         this.maxDataLength = parameters.sendFDFrames ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
-        this.socket = socketFactory.get();
+        this.socket = socket;
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
 //        this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity, queueSettings.fairBlocking);
