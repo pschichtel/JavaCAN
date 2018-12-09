@@ -24,16 +24,13 @@ package tel.schich.javacan.isotp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
@@ -54,28 +51,21 @@ public class ISOTPBroker implements AutoCloseable {
     private static final int FF_PCI_SIZE = 2;
     private static final int CF_PCI_SIZE = 1;
 
-    static final int FC_CONTINUE = 0x00;
-    static final int FC_WAIT     = 0x01;
-    static final int FC_OVERFLOW = 0x02;
-
     private final RawCanSocket socket;
     private final ThreadFactory threadFactory;
-    private final BlockingQueue<CanFrame> inboundQueue;
 
     private final QueueSettings queueSettings;
     private final ProtocolParameters parameters;
+    private final FlowController flowController;
     private final ScheduledExecutorService timeoutClock;
     private final int maxDataLength;
 
-    private PollingThread readFrames;
     private PollingThread processFrames;
 
     private final List<ISOTPChannel> channels;
     private final Lock writeLock;
 
-    private boolean highPressure = false;
-
-    public ISOTPBroker(RawCanSocket socket, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters) {
+    public ISOTPBroker(RawCanSocket socket, ThreadFactory threadFactory, QueueSettings queueSettings, ProtocolParameters parameters, FlowController flowController) {
         this.queueSettings = queueSettings;
         this.parameters = parameters;
         this.maxDataLength = parameters.sendFDFrames ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
@@ -83,8 +73,8 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
 //        this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity, queueSettings.fairBlocking);
-        this.inboundQueue = new LinkedBlockingQueue<>(queueSettings.capacity);
         this.channels = new CopyOnWriteArrayList<>();
+        this.flowController = flowController;
         this.writeLock = new ReentrantLock(queueSettings.fairBlocking);
         this.timeoutClock = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
@@ -108,15 +98,13 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     public void start() {
-        if (readFrames != null || processFrames != null) {
+        if (processFrames != null) {
             // already running
             return;
         }
 
-        readFrames = makePollingThread("read-frames", this::readFrame, this::handleException);
         processFrames = makePollingThread("process-frames", this::processInbound, this::handleException);
 
-        readFrames.start();
         processFrames.start();
         updateSocketFilters();
 
@@ -124,7 +112,7 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     public void shutdown() throws InterruptedException {
-        if (readFrames == null || processFrames == null) {
+        if (processFrames == null) {
             // already stopped
             return;
         }
@@ -134,13 +122,10 @@ public class ISOTPBroker implements AutoCloseable {
             System.err.println("Failed to clear the filter before stopping!");
             e.printStackTrace(System.err);
         }
-        readFrames.stop();
         processFrames.stop();
         try {
-            readFrames.join();
             processFrames.join();
         } finally {
-            readFrames = null;
             processFrames = null;
         }
 
@@ -270,16 +255,12 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket.close();
     }
 
-    private boolean readFrame(long timeout) throws Exception {
-        if (socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
-            CanFrame frame = socket.read();
-             inboundQueue.put(frame);
-        }
-        return true;
-    }
-
     private boolean processInbound(long timeout) throws Exception {
-        CanFrame frame = inboundQueue.poll(timeout, TimeUnit.MILLISECONDS);
+        if (!socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
+            return true;
+        }
+
+        final CanFrame frame = socket.read();
         if (frame != null) {
             List<ISOTPChannel> receivers = new ArrayList<>(channels.size());
             for (int i = 0; i < channels.size(); i++) {
@@ -339,21 +320,12 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     private void returnFlowControlFrame(int id) {
-        int flowControlFlag;
-        if (this.inboundQueue.remainingCapacity() == 0) {
-            flowControlFlag = FC_OVERFLOW;
-        } else {
-            int queueUsage = queueSettings.capacity - inboundQueue.remainingCapacity();
-            if ((!highPressure && queueUsage > queueSettings.highWaterMark) || (highPressure && queueUsage > queueSettings.lowerWaterMark)) {
-                highPressure = true;
-                flowControlFlag = FC_WAIT;
-            } else {
-                highPressure = true;
-                flowControlFlag = FC_CONTINUE;
-            }
-        }
         try {
-            writeFlowControlFrame(id, flowControlFlag, parameters.inboundBlockSizeByte, parameters.inboundSeparationTimeByte);
+            final byte flowControlFlag = flowController.getState().value;
+            final byte blockSize = parameters.inboundBlockSizeByte;
+            final byte separationTime = parameters.inboundSeparationTimeByte;
+
+            writeFlowControlFrame(id, flowControlFlag, blockSize, separationTime);
         } catch (NativeException e) {
             System.err.println("Failed to respond with a flow control frame!");
             e.printStackTrace(System.err);

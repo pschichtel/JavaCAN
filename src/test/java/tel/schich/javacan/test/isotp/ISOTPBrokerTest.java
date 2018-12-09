@@ -38,12 +38,14 @@ import tel.schich.javacan.LoopbackRawCanSocket;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.RawCanSocket;
 import tel.schich.javacan.isotp.DestinationTimeoutException;
+import tel.schich.javacan.isotp.FlowController;
 import tel.schich.javacan.isotp.ISOTPBroker;
 import tel.schich.javacan.isotp.ISOTPChannel;
 import tel.schich.javacan.isotp.MessageHandler;
 import tel.schich.javacan.isotp.NoopFrameHandler;
 import tel.schich.javacan.isotp.ProtocolParameters;
 import tel.schich.javacan.isotp.QueueSettings;
+import tel.schich.javacan.isotp.TestDeviceFlowController;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -65,11 +67,12 @@ class ISOTPBrokerTest {
     private static final QueueSettings QUEUE_SETTINGS = QueueSettings.DEFAULT;
     private static final ProtocolParameters PARAMETERS = ProtocolParameters.DEFAULT
             .withSeparationTime(TimeUnit.MICROSECONDS.toNanos(100));
+    private static final FlowController FC_HANDLER = TestDeviceFlowController.INSTANCE;
 
     @Test
     void testWrite() throws Exception {
         try (final ISOTPBroker isotp = new ISOTPBroker(NativeRawCanSocket.create(), threadFactory, QUEUE_SETTINGS,
-                PARAMETERS)) {
+                PARAMETERS, FC_HANDLER)) {
             isotp.bind(CAN_INTERFACE);
 
             try (final ISOTPChannel eff = isotp.createChannel(effAddress(0x18,
@@ -93,7 +96,7 @@ class ISOTPBrokerTest {
     @Test
     void testTimeouts() throws Exception {
         LoopbackRawCanSocket sock = new LoopbackRawCanSocket();
-        try (final ISOTPBroker isotp = new ISOTPBroker(sock, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(sock, threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT, FC_HANDLER)) {
             isotp.bind(CAN_INTERFACE);
 
             CompletableFuture<Integer> i = new CompletableFuture<>();
@@ -123,7 +126,7 @@ class ISOTPBrokerTest {
     }
 
     void testBrokerWith(Supplier<RawCanSocket> socket) throws Exception {
-        try (final ISOTPBroker isotp = new ISOTPBroker(socket.get(), threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT)) {
+        try (final ISOTPBroker isotp = new ISOTPBroker(socket.get(), threadFactory, QUEUE_SETTINGS, ProtocolParameters.DEFAULT, FC_HANDLER)) {
             isotp.bind(CAN_INTERFACE);
             isotp.setReceiveOwnMessages(true);
 
@@ -175,6 +178,7 @@ class ISOTPBrokerTest {
             newMessage[payload.length] = (byte)(Math.random() * 255);
             ch.send(newMessage).whenComplete((nothing, t) -> {
                 if (t != null) {
+                    assertEquals(IllegalArgumentException.class, t.getClass());
                     System.err.println("Failed to send message:");
                     t.printStackTrace(System.err);
                     lock.lock();
