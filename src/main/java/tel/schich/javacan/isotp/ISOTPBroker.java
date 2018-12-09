@@ -102,7 +102,7 @@ public class ISOTPBroker implements AutoCloseable {
             return;
         }
 
-        processFrames = makePollingThread("process-frames", this::processInbound, this::handleException);
+        processFrames = makePollingThread("read-frames", this::readFrames, this::handleException);
 
         processFrames.start();
         updateSocketFilters();
@@ -254,7 +254,7 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket.close();
     }
 
-    private boolean processInbound(long timeout) throws Exception {
+    private boolean readFrames(long timeout) throws Exception {
         if (!socket.awaitReadable(timeout, TimeUnit.MILLISECONDS)) {
             return true;
         }
