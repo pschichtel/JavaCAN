@@ -72,7 +72,6 @@ public class ISOTPBroker implements AutoCloseable {
         this.socket = socket;
         this.socket.setBlockingMode(false);
         this.threadFactory = threadFactory;
-//        this.inboundQueue = new ArrayBlockingQueue<>(queueSettings.capacity, queueSettings.fairBlocking);
         this.channels = new CopyOnWriteArrayList<>();
         this.flowController = flowController;
         this.writeLock = new ReentrantLock(queueSettings.fairBlocking);
