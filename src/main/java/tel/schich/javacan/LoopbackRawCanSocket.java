@@ -211,12 +211,10 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
-    public boolean awaitReadable(long timeout, TimeUnit unit) {
+    public boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException {
         if (queue.isEmpty()) {
             synchronized (queueReadMonitor) {
-                try {
-                    queueReadMonitor.wait(unit.toMillis(timeout));
-                } catch (InterruptedException ignored) {}
+                queueReadMonitor.wait(unit.toMillis(timeout));
                 return !queue.isEmpty();
             }
         } else {
@@ -225,12 +223,10 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
-    public boolean awaitWritable(long timeout, TimeUnit unit) {
+    public boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException {
         if (queue.remainingCapacity() == 0) {
             synchronized (queueWriteMonitor) {
-                try {
-                    queueWriteMonitor.wait(unit.toMillis(timeout));
-                } catch (InterruptedException ignored) {}
+                queueWriteMonitor.wait(unit.toMillis(timeout));
                 return !(queue.remainingCapacity() == 0);
             }
         } else {

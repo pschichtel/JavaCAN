@@ -60,6 +60,6 @@ public interface RawCanSocket extends AutoCloseable {
     long read(byte[] buffer, int offset, int length);
     void write(CanFrame frame) throws IOException;
     long write(byte[] buffer, int offset, int length);
-    boolean awaitReadable(long timeout, TimeUnit unit);
-    boolean awaitWritable(long timeout, TimeUnit unit);
+    boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException;
+    boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException;
 }
