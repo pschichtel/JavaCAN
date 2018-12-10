@@ -120,7 +120,6 @@ class ISOTPBrokerTest {
 
 
     @Test
-    @Disabled("CAN kernel module seems to be flaky, needs debugging")
     void testKernelPolling() throws Exception {
         testBrokerWith(NativeRawCanSocket::create);
     }
