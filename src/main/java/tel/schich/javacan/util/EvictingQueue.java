@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.isotp;
+package tel.schich.javacan.util;
 
 /**
  * This queue scales very badly with increasing capacities. It is implemented this way to be easily viewable within a debugging
@@ -28,7 +28,7 @@ package tel.schich.javacan.isotp;
  * for this queue!
  * @param <T> The element type, should provide a good toString() implementation for debug purposes
  */
-final class EvictingQueue<T> {
+public final class EvictingQueue<T> {
     private int i;
     private final T[] buf;
 
