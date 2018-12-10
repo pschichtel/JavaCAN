@@ -4,3 +4,4 @@ CMakeLists.txt
 *.iml
 target/
 *.log
+.attach_pid*

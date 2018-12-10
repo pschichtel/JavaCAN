@@ -63,24 +63,26 @@ final class PollingThread {
         thread.interrupt();
     }
 
-    static PollingThread create(String name, long timeout, ThreadFactory factory, PollFunction foo, Thread.UncaughtExceptionHandler exceptionHandler) {
-        Poller p = new Poller(name, timeout, foo);
+    static PollingThread create(String name, long timeout, ThreadFactory factory, PollFunction foo, PollExceptionHandler exceptionHandler) {
+        Poller p = new Poller(name, timeout, foo, exceptionHandler);
         Thread t = factory.newThread(p);
-        t.setUncaughtExceptionHandler(exceptionHandler);
+        t.setUncaughtExceptionHandler(p);
         return new PollingThread(p, t);
     }
 
-    private final static class Poller implements Runnable {
+    private final static class Poller implements Runnable, Thread.UncaughtExceptionHandler {
         private final String name;
         private final long timeout;
         private final PollFunction foo;
+        private final PollExceptionHandler exceptionHandler;
 
         private volatile boolean keepPolling = true;
 
-        Poller(String name, long timeout, PollFunction foo) {
+        Poller(String name, long timeout, PollFunction foo, PollExceptionHandler eh) {
             this.name = name;
             this.timeout = timeout;
             this.foo = foo;
+            exceptionHandler = eh;
         }
 
         void stop() {
@@ -94,14 +96,24 @@ final class PollingThread {
                     if (!foo.poll(timeout)) {
                         break;
                     }
-                } catch (NativeException e) {
-                    if (!e.mayTryAgain()) {
+                } catch (Exception e) {
+                    if (!mayRetry(e) && !exceptionHandler.handle(Thread.currentThread(), e, false)) {
                         throw new RuntimeException("Polling failed", e);
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException("Polling failed", e);
                 }
             }
+        }
+
+        @Override
+        public void uncaughtException(Thread thread, Throwable t) {
+            exceptionHandler.handle(thread, t, true);
+        }
+
+        private boolean mayRetry(Exception e) {
+            if (e instanceof NativeException) {
+                return ((NativeException) e).mayTryAgain();
+            }
+            return false;
         }
 
         @Override

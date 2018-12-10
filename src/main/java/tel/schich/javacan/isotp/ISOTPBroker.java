@@ -92,7 +92,7 @@ public class ISOTPBroker implements AutoCloseable {
         }
     }
 
-    PollingThread makePollingThread(String name, PollFunction f, Thread.UncaughtExceptionHandler exceptionHandler) {
+    PollingThread makePollingThread(String name, PollFunction f, PollExceptionHandler exceptionHandler) {
         return PollingThread.create(name, queueSettings.pollingTimeout, threadFactory, f, exceptionHandler);
     }
 
@@ -131,7 +131,7 @@ public class ISOTPBroker implements AutoCloseable {
         this.timeoutClock.shutdownNow();
     }
 
-    private void handleException(Thread thread, Throwable t) {
+    private boolean handleException(Thread thread, Throwable t, boolean terminal) {
         System.err.println("Polling thread failed: " + thread.getName());
         t.printStackTrace(System.err);
         System.err.println("Terminating other threads.");
@@ -140,6 +140,7 @@ public class ISOTPBroker implements AutoCloseable {
         } catch (InterruptedException e) {
             System.err.println("Got interrupted while stopping the threads");
         }
+        return true;
     }
 
     public ISOTPChannel createChannel(int targetAddress, CanFilter returnFilter, FrameHandler handler) {

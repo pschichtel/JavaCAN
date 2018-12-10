@@ -129,11 +129,12 @@ public class ISOTPChannel implements AutoCloseable {
         return handler;
     }
 
-    private synchronized void handleException(Thread thread, Throwable t) {
+    private synchronized boolean handleException(Thread thread, Throwable t, boolean terminal) {
         if (!(t instanceof InterruptedException)) {
             System.err.println("Polling thread failed: " + thread.getName());
             t.printStackTrace(System.err);
         }
+        return true;
     }
 
     void updateFlowControlState(int flags, int blockSize, long separationTimeNanos) {

@@ -30,7 +30,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanFrame;
