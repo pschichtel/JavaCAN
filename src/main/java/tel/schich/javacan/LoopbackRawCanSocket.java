@@ -23,11 +23,14 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,16 +44,20 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     private volatile boolean joinFilters;
     private volatile int errorFilter;
 
-    private final BlockingQueue<byte[]> queue;
-    private final Object queueReadMonitor = new Object[0];
-    private final Object queueWriteMonitor = new Object[0];
+    private final Queue<byte[]> queue;
+    private final int capacity;
+
+    private final Lock lock = new ReentrantLock(true);
+    private final Condition nonEmpty = lock.newCondition();
+    private final Condition nonFull = lock.newCondition();
 
     public LoopbackRawCanSocket() {
         this(10000);
     }
 
     public LoopbackRawCanSocket(int capacity) {
-        this.queue = new LinkedBlockingQueue<>(capacity);
+        this.queue = new ArrayDeque<>(capacity);
+        this.capacity = capacity;
     }
 
     @Override
@@ -60,18 +67,33 @@ public class LoopbackRawCanSocket implements RawCanSocket {
 
     @Override
     public void setBlockingMode(boolean block) {
-        this.blocking = block;
+        lock.lock();
+        try {
+            this.blocking = block;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public boolean isBlocking() {
-        return blocking;
+        lock.lock();
+        try {
+            return blocking;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setTimeouts(long read, long write) {
-        this.readTimeout = read;
-        this.writeTimeout = write;
+        lock.lock();
+        try {
+            this.readTimeout = read;
+            this.writeTimeout = write;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -94,153 +116,220 @@ public class LoopbackRawCanSocket implements RawCanSocket {
 
     @Override
     public void setAllowFDFrames(boolean allowFDFrames) {
-        this.fd = allowFDFrames;
+        lock.lock();
+        try {
+            this.fd = allowFDFrames;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public boolean isAllowFDFrames() {
-        return this.fd;
+        lock.lock();
+        try {
+            return this.fd;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setJoinFilters(boolean joinFilters) {
-        this.joinFilters = joinFilters;
+        lock.lock();
+        try {
+            this.joinFilters = joinFilters;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public boolean isJoiningFilters() {
-        return joinFilters;
+        lock.lock();
+        try {
+            return joinFilters;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setErrorFilter(int mask) {
-        this.errorFilter = mask;
+        lock.lock();
+        try {
+            this.errorFilter = mask;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public int getErrorFilter() {
-        return errorFilter;
+        lock.lock();
+        try {
+            return errorFilter;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setFilters(Stream<CanFilter> filters) {
-        this.filters = filters.collect(Collectors.toList());
+        lock.lock();
+        try {
+            this.filters = filters.collect(Collectors.toList());
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setFilters(Collection<CanFilter> filters) {
-        this.filters = filters;
+        lock.lock();
+        try {
+            this.filters = filters;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public <A> void setFilters(Collection<A> filters, Function<A, CanFilter> f) {
-        this.filters = filters.stream().map(f).collect(Collectors.toList());
+        lock.lock();
+        try {
+            this.filters = filters.stream().map(f).collect(Collectors.toList());
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void setFilters(CanFilter... filters) {
-        this.filters = Arrays.asList(filters);
+        lock.lock();
+        try {
+            this.filters = Arrays.asList(filters);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public CanFilter[] getFilters() {
-        return this.filters.toArray(new CanFilter[0]);
+        lock.lock();
+        try {
+            return this.filters.toArray(new CanFilter[0]);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public CanFrame read() throws IOException {
-        byte[] bytes = CanFrame.allocateBuffer(fd);
-        long bytesRead = read(bytes, 0, bytes.length);
-        return CanFrame.fromBuffer(bytes, 0, bytesRead);
+        lock.lock();
+        try {
+            byte[] bytes = CanFrame.allocateBuffer(fd);
+            long bytesRead = read(bytes, 0, bytes.length);
+            return CanFrame.fromBuffer(bytes, 0, bytesRead);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public long read(byte[] buffer, int offset, int length) {
-        byte[] msg = null;
-        if (isBlocking()) {
-            try {
-                msg = queue.poll(readTimeout, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ignored) {
+        lock.lock();
+        try {
+            if (isBlocking()) {
+                try {
+                    awaitReadable(readTimeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignored) {
+                }
             }
-        } else {
-            msg = queue.poll();
+            byte[] msg = queue.poll();
+            if (msg == null) {
+                return -1;
+            }
+            nonFull.signal();
+            System.arraycopy(msg, 0, buffer, offset, Math.min(length, msg.length));
+            return msg.length;
+        } finally {
+            lock.unlock();
         }
-        if (msg == null) {
-            return -1;
-        }
-        synchronized (queueWriteMonitor) {
-            queueWriteMonitor.notifyAll();
-        }
-        System.arraycopy(msg, 0, buffer, offset, Math.min(length, msg.length));
-        return msg.length;
     }
 
     @Override
     public void write(CanFrame frame) throws IOException {
-        if (frame.isFDFrame() && !isAllowFDFrames()) {
-            throw new IOException("CANFD frames not enabled!");
-        }
-        byte[] buf = CanFrame.allocateBuffer(frame.isFDFrame());
-        CanFrame.toBuffer(buf, 0, frame);
-        if (write(buf, 0, buf.length) == -1) {
-            throw new IOException("Failed to write the frame, the queue is probably full!");
+        lock.lock();
+        try {
+            if (frame.isFDFrame() && !isAllowFDFrames()) {
+                throw new IOException("CANFD frames not enabled!");
+            }
+            byte[] buf = CanFrame.allocateBuffer(frame.isFDFrame());
+            CanFrame.toBuffer(buf, 0, frame);
+            if (write(buf, 0, buf.length) == -1) {
+                throw new IOException("Failed to write the frame, the queue is probably full!");
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     public long write(byte[] buffer, int offset, int length) {
-        byte[] msg = new byte[length];
-        System.arraycopy(buffer, offset, msg, 0, length);
-        if (isBlocking()) {
-            try {
-                if (!queue.offer(msg, writeTimeout, TimeUnit.MILLISECONDS)) {
+        lock.lock();
+        try {
+            byte[] msg = new byte[length];
+            System.arraycopy(buffer, offset, msg, 0, length);
+            if (isBlocking()) {
+                try {
+                    awaitWritable(writeTimeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
                     return -1;
                 }
-            } catch (InterruptedException e) {
+            }
+            if (queue.size() == capacity) {
                 return -1;
             }
-        } else {
-            if (!queue.offer(msg)) {
-                return -1;
-            }
+            queue.offer(msg);
+            nonEmpty.signal();
+            return length;
+        } finally {
+            lock.unlock();
         }
-        synchronized (queueReadMonitor) {
-            queueReadMonitor.notifyAll();
-        }
-        return length;
     }
 
     @Override
     public boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException {
-        if (queue.isEmpty()) {
-            synchronized (queueReadMonitor) {
-                queueReadMonitor.wait(unit.toMillis(timeout));
+        lock.lock();
+        try {
+            if (queue.isEmpty()) {
+                nonEmpty.await(timeout, unit);
                 return !queue.isEmpty();
+            } else {
+                return true;
             }
-        } else {
-            return true;
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     public boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException {
-        if (queue.remainingCapacity() == 0) {
-            synchronized (queueWriteMonitor) {
-                queueWriteMonitor.wait(unit.toMillis(timeout));
-                return !(queue.remainingCapacity() == 0);
+        lock.lock();
+        try {
+            if (queue.size() == capacity) {
+                nonFull.await(timeout, unit);
+                return queue.size() < capacity;
+            } else {
+                return true;
             }
-        } else {
-            return true;
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     public void close() {
-        synchronized (queueReadMonitor) {
-            queueReadMonitor.notifyAll();
-        }
-        synchronized (queueWriteMonitor) {
-            queueWriteMonitor.notifyAll();
-        }
     }
 }
