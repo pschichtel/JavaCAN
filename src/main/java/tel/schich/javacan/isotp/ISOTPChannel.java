@@ -130,7 +130,7 @@ public class ISOTPChannel implements AutoCloseable {
     }
 
     private synchronized void handleException(Thread thread, Throwable t) {
-        if ((t instanceof InterruptedException)) {
+        if (!(t instanceof InterruptedException)) {
             System.err.println("Polling thread failed: " + thread.getName());
             t.printStackTrace(System.err);
         }
@@ -143,7 +143,7 @@ public class ISOTPChannel implements AutoCloseable {
             flowControlSeparationTimeNanos = separationTimeNanos;
             flowControlReceived = true;
             synchronized (flowControlMonitor) {
-                flowControlMonitor.notifyAll();
+                flowControlMonitor.notify();
             }
         }
     }
@@ -173,6 +173,8 @@ public class ISOTPChannel implements AutoCloseable {
             if (ISOTPAddress.isFunctional(id)) {
                 throw new IllegalArgumentException("Functional addresses do not support fragmented messages!");
             }
+
+            flowControlReceived = false;
             int bytesWritten = broker.writeFirstFrame(id, payload);
 
             int sequenceNumber = 1;
@@ -203,9 +205,6 @@ public class ISOTPChannel implements AutoCloseable {
 
     private boolean waitForControlFlow(int addr) throws InterruptedException, DestinationTimeoutException {
         do {
-            synchronized (this) {
-                flowControlReceived = false;
-            }
             synchronized (flowControlMonitor) {
                 long timeoutAt = System.currentTimeMillis() + parameters.outboundTimeout;
                 while (!flowControlReceived) {

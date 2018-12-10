@@ -79,8 +79,8 @@ public final class AggregatingFrameHandler implements FrameHandler {
             }
             if (s.missingBytes <= 0) {
                 byte[] message = s.receiveBuffer.toByteArray();
-                messageHandler.handle(ch, sender, message);
                 senderState.remove(sender);
+                messageHandler.handle(ch, sender, message);
             }
         } else {
             System.out.println(Thread.currentThread().getName() + ": Frame out of order: expected=" + s.expectedSequenceNumber + " was=" + sequenceNumber);
