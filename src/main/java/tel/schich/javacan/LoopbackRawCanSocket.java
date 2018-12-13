@@ -86,7 +86,7 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
-    public void setReadTimeout(long timeout) {
+    public void setReadTimeout(long timeout, TimeUnit unit) {
         this.readTimeout = timeout;
     }
 
@@ -96,7 +96,7 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
-    public void setWriteTimeout(long timeout) {
+    public void setWriteTimeout(long timeout, TimeUnit unit) {
         this.writeTimeout = timeout;
     }
 

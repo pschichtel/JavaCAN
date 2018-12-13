@@ -49,8 +49,8 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         }
     }
 
-    public void setReadTimeout(long timeout) {
-        if (NativeInterface.setReadTimeout(sockFD, timeout) == -1) {
+    public void setReadTimeout(long timeout, TimeUnit unit) {
+        if (NativeInterface.setReadTimeout(sockFD, unit.toMicros(timeout)) == -1) {
             throw new NativeException("Unable to set read timeout!");
         }
     }
@@ -63,8 +63,8 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         return timeout;
     }
 
-    public void setWriteTimeout(long timeout) {
-        if (NativeInterface.setWriteTimeout(sockFD, timeout) == -1) {
+    public void setWriteTimeout(long timeout, TimeUnit unit) {
+        if (NativeInterface.setWriteTimeout(sockFD, unit.toMicros(timeout)) == -1) {
             throw new NativeException("Unable to set write timeout!");
         }
     }

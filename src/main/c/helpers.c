@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 unsigned int interface_name_to_index(const char *name) {
     return if_nametoindex(name);
@@ -52,8 +53,14 @@ int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
 }
 
 void micros_to_timeval(struct timeval *t, uint64_t micros) {
-    t->tv_sec = micros / MICROS_PER_SECOND;
-    t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
+    if (micros < MICROS_PER_SECOND) {
+        t->tv_sec = 0;
+        t->tv_usec = micros;
+    } else {
+        ldiv_t r = ldiv(micros, MICROS_PER_SECOND);
+        t->tv_sec = r.quot;
+        t->tv_usec = r.rem;
+    }
 }
 
 uint64_t micros_from_timeval(struct timeval *t) {

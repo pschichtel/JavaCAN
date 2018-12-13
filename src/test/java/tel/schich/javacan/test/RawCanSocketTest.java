@@ -30,6 +30,8 @@ import tel.schich.javacan.NativeException;
 import tel.schich.javacan.NativeRawCanSocket;
 import tel.schich.javacan.RawCanSocket;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -72,6 +74,15 @@ class RawCanSocketTest {
             assertEquals(0, socket.getErrorFilter(), "No error filters by default");
             socket.setErrorFilter(0xFF);
             assertEquals(0xFF, socket.getErrorFilter(), "Newly set error filter should be available");
+
+            long readTimeout = 1;
+            socket.setReadTimeout(readTimeout, SECONDS);
+            assertEquals(readTimeout, socket.getReadTimeout(SECONDS), "Read timeout was not as set");
+
+            // precision below seconds is not guaranteed
+            long writeTimeout = 1100;
+            socket.setWriteTimeout(writeTimeout, MILLISECONDS);
+            assertEquals(1, socket.getWriteTimeout(SECONDS), "Write timeout was not as set");
         }
     }
 
@@ -118,7 +129,7 @@ class RawCanSocketTest {
 
             {
                 long timeout = 3L;
-                socket.setReadTimeout(timeout * 1000000);
+                socket.setReadTimeout(timeout, SECONDS);
                 final long start = System.currentTimeMillis();
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
@@ -129,8 +140,8 @@ class RawCanSocketTest {
             {
                 long rtimeout = 1;
                 long wtimeout = 10;
-                socket.setReadTimeout(rtimeout * 1000000);
-                socket.setWriteTimeout(wtimeout * 1000000);
+                socket.setReadTimeout(rtimeout, SECONDS);
+                socket.setWriteTimeout(wtimeout, SECONDS);
                 final long start = System.currentTimeMillis();
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
