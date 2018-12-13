@@ -69,6 +69,25 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         }
     }
 
+    @Override
+    public void setReceiveBufferSize(int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("Buffer size must be positive!");
+        }
+        if (NativeInterface.setReceiveBufferSize(sockFD, size) != 0) {
+            throw new NativeException("Unable to set receive buffer size!");
+        }
+    }
+
+    @Override
+    public int getReceiveBufferSize() {
+        final int size = NativeInterface.getReceiveBufferSize(sockFD);
+        if (size < 0) {
+            throw new NativeException("Unable to get receive buffer size!");
+        }
+        return size;
+    }
+
     public long getWriteTimeout() {
         final long timeout = NativeInterface.getWriteTimeout(sockFD);
         if (timeout < 0) {

@@ -106,6 +106,15 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
+    public void setReceiveBufferSize(int size) {
+    }
+
+    @Override
+    public int getReceiveBufferSize() {
+        return 0;
+    }
+
+    @Override
     public void setLoopback(boolean loopback) {
     }
 

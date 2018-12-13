@@ -109,6 +109,21 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEn
     return setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len);
 }
 
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveBufferSize(JNIEnv *env, jclass class, jint sock, jint size) {
+    socklen_t size_size = sizeof(size);
+    return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, size_size);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveBufferSize(JNIEnv *env, jclass class, jint sock) {
+    int size = 0;
+    socklen_t size_size = sizeof(size);
+    int result = getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, &size_size);
+    if (result != 0) {
+        return -result;
+    }
+    return size;
+}
+
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
     void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
     void *data_start = raw_buf + offset;

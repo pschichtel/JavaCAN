@@ -48,6 +48,10 @@ class NativeInterface {
 
     public static native long getWriteTimeout(int sock);
 
+    public static native int setReceiveBufferSize(int sock, int size);
+
+    public static native int getReceiveBufferSize(int sock);
+
     public static native long write(int sock, byte[] buf, int offset, int len);
 
     public static native long read(int sock, byte[] buf, int offset, int len);

@@ -83,6 +83,13 @@ class RawCanSocketTest {
             long writeTimeout = 1100;
             socket.setWriteTimeout(writeTimeout, MILLISECONDS);
             assertEquals(1, socket.getWriteTimeout(SECONDS), "Write timeout was not as set");
+
+            int newReceiveBufferSize = 2048;
+            int oldReceiveBufferSize = socket.getReceiveBufferSize() / 2;
+            socket.setReceiveBufferSize(newReceiveBufferSize);
+            assertEquals(newReceiveBufferSize * 2, socket.getReceiveBufferSize());
+            socket.setReceiveBufferSize(oldReceiveBufferSize);
+            assertEquals(oldReceiveBufferSize * 2, socket.getReceiveBufferSize());
         }
     }
 

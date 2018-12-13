@@ -59,6 +59,10 @@ public interface RawCanSocket extends AutoCloseable {
         return unit.convert(getWriteTimeout(), TimeUnit.MICROSECONDS);
     }
 
+    void setReceiveBufferSize(int size);
+
+    int getReceiveBufferSize();
+
     void setLoopback(boolean loopback);
 
     boolean isLoopback();
