@@ -56,6 +56,31 @@ void micros_to_timeval(struct timeval *t, uint64_t micros) {
     t->tv_usec = micros - (t->tv_sec * MICROS_PER_SECOND);
 }
 
+uint64_t micros_from_timeval(struct timeval *t) {
+    return ((uint64_t)t->tv_sec) * MICROS_PER_SECOND + t->tv_usec;
+}
+
+int set_timeout(int sock, int type, uint64_t t) {
+    socklen_t timeout_len = sizeof(struct timeval);
+    struct timeval timeout;
+
+    micros_to_timeval(&timeout, t);
+    return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
+}
+
+int get_timeout(int sock, int type, uint64_t* micros) {
+    socklen_t timeout_len = sizeof(struct timeval);
+    struct timeval timeout;
+
+    int result = getsockopt(sock, SOL_SOCKET, type, &timeout, &timeout_len);
+    if (result != 0) {
+        return result;
+    }
+
+    *micros = micros_from_timeval(&timeout);
+    return 0;
+}
+
 int set_blocking_mode(int sock, bool block) {
     int old_flags = fcntl(sock, F_GETFL, 0);
     if (old_flags == -1) {

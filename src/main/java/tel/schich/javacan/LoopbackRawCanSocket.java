@@ -86,14 +86,23 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     }
 
     @Override
-    public void setTimeouts(long read, long write) {
-        lock.lock();
-        try {
-            this.readTimeout = read;
-            this.writeTimeout = write;
-        } finally {
-            lock.unlock();
-        }
+    public void setReadTimeout(long timeout) {
+        this.readTimeout = timeout;
+    }
+
+    @Override
+    public long getReadTimeout() {
+        return this.readTimeout;
+    }
+
+    @Override
+    public void setWriteTimeout(long timeout) {
+        this.writeTimeout = timeout;
+    }
+
+    @Override
+    public long getWriteTimeout() {
+        return this.writeTimeout;
     }
 
     @Override

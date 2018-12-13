@@ -49,10 +49,32 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         }
     }
 
-    public void setTimeouts(long read, long write) {
-        if (NativeInterface.setTimeouts(sockFD, read, write) == -1) {
-            throw new NativeException("Unable to set timeouts!");
+    public void setReadTimeout(long timeout) {
+        if (NativeInterface.setReadTimeout(sockFD, timeout) == -1) {
+            throw new NativeException("Unable to set read timeout!");
         }
+    }
+
+    public long getReadTimeout() {
+        final long timeout = NativeInterface.getReadTimeout(sockFD);
+        if (timeout < 0) {
+            throw new NativeException("Unable to get read timeout!");
+        }
+        return timeout;
+    }
+
+    public void setWriteTimeout(long timeout) {
+        if (NativeInterface.setWriteTimeout(sockFD, timeout) == -1) {
+            throw new NativeException("Unable to set write timeout!");
+        }
+    }
+
+    public long getWriteTimeout() {
+        final long timeout = NativeInterface.getWriteTimeout(sockFD);
+        if (timeout < 0) {
+            throw new NativeException("Unable to get write timeout!");
+        }
+        return timeout;
     }
 
     public void setLoopback(boolean loopback) {

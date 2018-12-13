@@ -70,6 +70,32 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getBlockingMode(J
     return is_blocking(sock);
 }
 
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReadTimeout(JNIEnv *env, jclass class, jint sock, jlong timeout) {
+    return set_timeout(sock, SO_RCVTIMEO, (uint64_t) timeout);
+}
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_getReadTimeout(JNIEnv *env, jclass class, jint sock) {
+    uint64_t timeout;
+    int result = get_timeout(sock, SO_RCVTIMEO, &timeout);
+    if (result != 0) {
+        return -result;
+    }
+    return timeout;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setWriteTimeout(JNIEnv *env, jclass class, jint sock, jlong timeout) {
+    return set_timeout(sock, SO_SNDTIMEO, (uint64_t) timeout);
+}
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_getWriteTimeout(JNIEnv *env, jclass class, jint sock) {
+    uint64_t timeout;
+    int result = get_timeout(sock, SO_SNDTIMEO, &timeout);
+    if (result != 0) {
+        return -result;
+    }
+    return timeout;
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint sock, jlong read, jlong write) {
     static const size_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;

@@ -40,7 +40,13 @@ class NativeInterface {
 
     public static native int getBlockingMode(int sock);
 
-    public static native int setTimeouts(int sock, long read, long write);
+    public static native int setReadTimeout(int sock, long timeout);
+
+    public static native long getReadTimeout(int sock);
+
+    public static native int setWriteTimeout(int sock, long timeout);
+
+    public static native long getWriteTimeout(int sock);
 
     public static native long write(int sock, byte[] buf, int offset, int len);
 

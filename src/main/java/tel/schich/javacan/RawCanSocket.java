@@ -40,7 +40,10 @@ public interface RawCanSocket extends AutoCloseable {
     void bind(String interfaceName);
     void setBlockingMode(boolean block);
     boolean isBlocking();
-    void setTimeouts(long read, long write);
+    void setReadTimeout(long timeout);
+    long getReadTimeout();
+    void setWriteTimeout(long timeout);
+    long getWriteTimeout();
     void setLoopback(boolean loopback);
     boolean isLoopback();
     void setReceiveOwnMessages(boolean receiveOwnMessages);
