@@ -6,10 +6,11 @@ The implementation is loosely based on the [socketcan-rs](https://github.com/mbr
 
 ## What works?
 
-* Creating and binding CAN_RAW and CAN_ISOTP sockets
+* Creating and binding CAN_RAW
 * Sending and receiving standard CAN and CAN-FD frames with and without EFF
 * Setting filters
 * Getting and setting all supported socket options
+* Reactive ISO-TP communication
 * Rough test coverage
 
 ## What is missing?
