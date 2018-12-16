@@ -97,6 +97,10 @@ public class ISOTPBroker implements AutoCloseable {
     }
 
     public void start() {
+        if (!socket.isBound()) {
+            throw new IllegalStateException("The backing socket is not bound!");
+        }
+
         if (processFrames != null) {
             // already running
             return;

@@ -33,11 +33,17 @@ import static tel.schich.javacan.PollEvent.POLLOUT;
 
 public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
 
+    private boolean bound;
+
     private NativeRawCanSocket(int sock) {
         super(sock);
+        this.bound = false;
     }
 
-    public void bind(String interfaceName) {
+    public synchronized void bind(String interfaceName) {
+        if (isBound()) {
+            throw new IllegalStateException("Socket already bound!");
+        }
         final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
         if (ifindex == 0) {
             throw new NativeException("Unknown interface: " + interfaceName);
@@ -47,6 +53,11 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         if (result == -1) {
             throw new NativeException("Unable to bind!");
         }
+        this.bound = true;
+    }
+
+    public synchronized boolean isBound() {
+        return this.bound;
     }
 
     public void setReadTimeout(long timeout, TimeUnit unit) {

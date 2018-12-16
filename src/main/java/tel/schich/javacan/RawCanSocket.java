@@ -39,6 +39,8 @@ public interface RawCanSocket extends AutoCloseable {
 
     void bind(String interfaceName);
 
+    boolean isBound();
+
     void setBlockingMode(boolean block);
 
     boolean isBlocking();

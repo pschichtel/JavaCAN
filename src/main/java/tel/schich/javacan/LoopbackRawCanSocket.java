@@ -50,6 +50,7 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     private final Lock lock = new ReentrantLock(true);
     private final Condition nonEmpty = lock.newCondition();
     private final Condition nonFull = lock.newCondition();
+    private boolean bound;
 
     public LoopbackRawCanSocket() {
         this(10000);
@@ -58,11 +59,17 @@ public class LoopbackRawCanSocket implements RawCanSocket {
     public LoopbackRawCanSocket(int capacity) {
         this.queue = new ArrayDeque<>(capacity);
         this.capacity = capacity;
+        this.bound = false;
     }
 
     @Override
-    public void bind(String interfaceName) {
+    public synchronized void bind(String interfaceName) {
+        this.bound = true;
+    }
 
+    @Override
+    public synchronized boolean isBound() {
+        return this.bound;
     }
 
     @Override
