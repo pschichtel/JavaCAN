@@ -20,32 +20,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.isotp;
+package tel.schich.javacan;
 
-public class QueueSettings {
+public class NativeIsotpCanSocket extends NativeCanSocket implements IsotpCanSocket {
+    public static final int MAXIMUM_MESSAGE_SIZE = 4095;
 
-    public static final QueueSettings DEFAULT = new QueueSettings(true, 5000, 100, 70, 90);
+    private final int rx;
+    private final int tx;
 
-    public final boolean fairBlocking;
-    public final long pollingTimeout;
-    public final int capacity;
-    public final int lowerWaterMark;
-    public final int highWaterMark;
+    private NativeIsotpCanSocket(int sock, int rx, int tx) {
+        super(sock);
+        this.rx = rx;
+        this.tx = tx;
+    }
 
-    public QueueSettings(boolean fairBlocking, long pollingTimeoutMillis, int capacity, int lowerWaterMark, int highWaterMark) {
-        if (highWaterMark >= capacity) {
-            throw new IllegalArgumentException("High water mark must be smaller than the queue capacity!");
+    @Override
+    protected void bind(long interfaceIndex, int socket) {
+        if (NativeInterface.bindSocket(socket, interfaceIndex, rx, tx) != 0) {
+            throw new NativeException("Unable to bind ISOTP socket!");
         }
-        if (lowerWaterMark >= highWaterMark) {
-            throw new IllegalArgumentException("low water mark must be smaller than the high water mark!");
+    }
+
+    public static IsotpCanSocket create(int rx, int tx) {
+        int fd = NativeInterface.createIsotpSocket();
+        if (fd == -1) {
+            throw new NativeException("Unable to create ISOTP socket!");
         }
-        if (pollingTimeoutMillis <= 0) {
-            throw new IllegalArgumentException("The polling timeout must be greater than 0");
-        }
-        this.fairBlocking = fairBlocking;
-        this.pollingTimeout = pollingTimeoutMillis;
-        this.capacity = capacity;
-        this.lowerWaterMark = lowerWaterMark;
-        this.highWaterMark = highWaterMark;
+        return new NativeIsotpCanSocket(fd, rx, tx);
     }
 }

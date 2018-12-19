@@ -22,11 +22,51 @@
  */
 package tel.schich.javacan;
 
-/**
- * Make unsafe operations very explicit!
- */
-public class CanUnsafe {
-    public static int getRawFileDescriptor(NativeCanSocket sock) {
-        return sock.sockFD;
+import java.util.concurrent.TimeUnit;
+
+public interface CanSocket extends AutoCloseable {
+
+    void bind(String interfaceName);
+
+    boolean isBound();
+
+    void setBlockingMode(boolean block);
+
+    boolean isBlocking();
+
+    void setReadTimeout(long timeout, TimeUnit unit);
+
+    long getReadTimeout();
+
+    default long getReadTimeout(TimeUnit unit) {
+        return unit.convert(getReadTimeout(), TimeUnit.MICROSECONDS);
     }
+
+    void setWriteTimeout(long timeout, TimeUnit unit);
+
+    long getWriteTimeout();
+
+    default long getWriteTimeout(TimeUnit unit) {
+        return unit.convert(getWriteTimeout(), TimeUnit.MICROSECONDS);
+    }
+
+    void setReceiveBufferSize(int size);
+
+    int getReceiveBufferSize();
+
+    void setLoopback(boolean loopback);
+
+    boolean isLoopback();
+
+    void setReceiveOwnMessages(boolean receiveOwnMessages);
+
+    boolean isReceivingOwnMessages();
+
+    boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException;
+
+    boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException;
+
+    long read(byte[] buffer, int offset, int length);
+
+    long write(byte[] buffer, int offset, int length);
 }

@@ -31,110 +31,17 @@ import java.util.stream.Stream;
 import static tel.schich.javacan.PollEvent.POLLIN;
 import static tel.schich.javacan.PollEvent.POLLOUT;
 
-public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
-
-    private boolean bound;
+public class NativeRawCanSocket extends NativeCanSocket implements RawCanSocket {
 
     private NativeRawCanSocket(int sock) {
         super(sock);
-        this.bound = false;
     }
 
-    public synchronized void bind(String interfaceName) {
-        if (isBound()) {
-            throw new IllegalStateException("Socket already bound!");
-        }
-        final long ifindex = NativeInterface.resolveInterfaceName(interfaceName);
-        if (ifindex == 0) {
-            throw new NativeException("Unknown interface: " + interfaceName);
-        }
-
-        final int result = NativeInterface.bindSocket(sockFD, ifindex, 0, 0);
+    protected void bind(long interfaceIndex, int socket) {
+        final int result = NativeInterface.bindSocket(socket, interfaceIndex, 0, 0);
         if (result == -1) {
             throw new NativeException("Unable to bind!");
         }
-        this.bound = true;
-    }
-
-    public synchronized boolean isBound() {
-        return this.bound;
-    }
-
-    public void setReadTimeout(long timeout, TimeUnit unit) {
-        if (NativeInterface.setReadTimeout(sockFD, unit.toMicros(timeout)) == -1) {
-            throw new NativeException("Unable to set read timeout!");
-        }
-    }
-
-    public long getReadTimeout() {
-        final long timeout = NativeInterface.getReadTimeout(sockFD);
-        if (timeout < 0) {
-            throw new NativeException("Unable to get read timeout!");
-        }
-        return timeout;
-    }
-
-    public void setWriteTimeout(long timeout, TimeUnit unit) {
-        if (NativeInterface.setWriteTimeout(sockFD, unit.toMicros(timeout)) == -1) {
-            throw new NativeException("Unable to set write timeout!");
-        }
-    }
-
-    @Override
-    public void setReceiveBufferSize(int size) {
-        if (size <= 0) {
-            throw new IllegalArgumentException("Buffer size must be positive!");
-        }
-        if (NativeInterface.setReceiveBufferSize(sockFD, size) != 0) {
-            throw new NativeException("Unable to set receive buffer size!");
-        }
-    }
-
-    @Override
-    public int getReceiveBufferSize() {
-        final int size = NativeInterface.getReceiveBufferSize(sockFD);
-        if (size < 0) {
-            throw new NativeException("Unable to get receive buffer size!");
-        }
-        return size;
-    }
-
-    public long getWriteTimeout() {
-        final long timeout = NativeInterface.getWriteTimeout(sockFD);
-        if (timeout < 0) {
-            throw new NativeException("Unable to get write timeout!");
-        }
-        return timeout;
-    }
-
-    public void setLoopback(boolean loopback) {
-        final int result = NativeInterface.setLoopback(sockFD, loopback);
-        if (result == -1) {
-            throw new NativeException("Unable to set loopback state!");
-        }
-    }
-
-    public boolean isLoopback() {
-        final int result = NativeInterface.getLoopback(sockFD);
-        if (result == -1) {
-            throw new NativeException("Unable to get loopback state!");
-        }
-        return result != 0;
-    }
-
-    public void setReceiveOwnMessages(boolean receiveOwnMessages) {
-        final int result = NativeInterface.setReceiveOwnMessages(sockFD, receiveOwnMessages);
-        if (result == -1) {
-            throw new NativeException("Unable to set receive own messages state!");
-        }
-    }
-
-    public boolean isReceivingOwnMessages() {
-        final int result = NativeInterface.getReceiveOwnMessages(sockFD);
-        if (result == -1) {
-            throw new NativeException("Unable to get receive own messages state!");
-        }
-        return result != 0;
     }
 
     public void setAllowFDFrames(boolean allowFDFrames) {
@@ -253,14 +160,6 @@ public class NativeRawCanSocket extends NativeSocket implements RawCanSocket {
         if (written != buffer.length) {
             throw new IOException("Frame written incompletely!");
         }
-    }
-
-    public boolean awaitReadable(long timeout, TimeUnit unit) {
-        return poll(POLLIN, (int)unit.toMillis(timeout)) != 0;
-    }
-
-    public boolean awaitWritable(long timeout, TimeUnit unit) {
-        return poll(POLLOUT, (int)unit.toMillis(timeout)) != 0;
     }
 
     public static RawCanSocket create() {

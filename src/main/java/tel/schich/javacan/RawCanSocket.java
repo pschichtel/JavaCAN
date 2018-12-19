@@ -32,46 +32,10 @@ import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
 
-public interface RawCanSocket extends AutoCloseable {
+public interface RawCanSocket extends CanSocket {
 
     int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
     int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
-
-    void bind(String interfaceName);
-
-    boolean isBound();
-
-    void setBlockingMode(boolean block);
-
-    boolean isBlocking();
-
-    void setReadTimeout(long timeout, TimeUnit unit);
-
-    long getReadTimeout();
-
-    default long getReadTimeout(TimeUnit unit) {
-        return unit.convert(getReadTimeout(), TimeUnit.MICROSECONDS);
-    }
-
-    void setWriteTimeout(long timeout, TimeUnit unit);
-
-    long getWriteTimeout();
-
-    default long getWriteTimeout(TimeUnit unit) {
-        return unit.convert(getWriteTimeout(), TimeUnit.MICROSECONDS);
-    }
-
-    void setReceiveBufferSize(int size);
-
-    int getReceiveBufferSize();
-
-    void setLoopback(boolean loopback);
-
-    boolean isLoopback();
-
-    void setReceiveOwnMessages(boolean receiveOwnMessages);
-
-    boolean isReceivingOwnMessages();
 
     void setAllowFDFrames(boolean allowFDFrames);
 
@@ -97,13 +61,5 @@ public interface RawCanSocket extends AutoCloseable {
 
     CanFrame read() throws IOException;
 
-    long read(byte[] buffer, int offset, int length);
-
     void write(CanFrame frame) throws IOException;
-
-    long write(byte[] buffer, int offset, int length);
-
-    boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException;
-
-    boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException;
 }

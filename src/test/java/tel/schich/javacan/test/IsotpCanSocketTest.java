@@ -20,14 +20,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.isotp;
+package tel.schich.javacan.test;
 
-final public class TestDeviceFlowController implements FlowController {
+import org.junit.jupiter.api.Test;
 
-    public static final TestDeviceFlowController INSTANCE = new TestDeviceFlowController();
+import tel.schich.javacan.IsotpCanSocket;
+import tel.schich.javacan.NativeIsotpCanSocket;
 
-    @Override
-    public FlowControlState getState() {
-        return FlowControlState.CONTINUE;
+import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
+
+public class IsotpCanSocketTest {
+
+    @Test
+    void testOptions() throws Exception {
+        try (final IsotpCanSocket socket = NativeIsotpCanSocket.create(0x7DF, 0x7E0)) {
+            socket.bind(CAN_INTERFACE);
+        }
     }
 }

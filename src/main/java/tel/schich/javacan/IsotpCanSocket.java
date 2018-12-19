@@ -20,8 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.isotp;
+package tel.schich.javacan;
 
-public interface TimeoutHandler {
-    void onTimeout(int sender);
+public interface IsotpCanSocket extends CanSocket {
 }

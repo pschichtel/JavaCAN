@@ -31,6 +31,7 @@
 
 unsigned int interface_name_to_index(const char *);
 int create_can_raw_socket();
+int create_can_isotp_socket();
 int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
 void micros_to_timeval(struct timeval *, uint64_t);
 int set_timeout(int, int, uint64_t);

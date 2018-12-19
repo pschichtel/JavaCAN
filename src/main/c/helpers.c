@@ -41,6 +41,10 @@ inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
 }
 
+inline int create_can_isotp_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP);
+}
+
 int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr;
     addr.can_family = AF_CAN;
