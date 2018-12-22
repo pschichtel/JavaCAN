@@ -24,8 +24,7 @@ package tel.schich.javacan;
 
 import java.util.concurrent.TimeUnit;
 
-import static tel.schich.javacan.PollEvent.POLLIN;
-import static tel.schich.javacan.PollEvent.POLLOUT;
+import sun.nio.ch.Net;
 
 abstract class NativeCanSocket implements CanSocket {
 
@@ -163,11 +162,11 @@ abstract class NativeCanSocket implements CanSocket {
     }
 
     public boolean awaitReadable(long timeout, TimeUnit unit) {
-        return poll(POLLIN, (int)unit.toMillis(timeout)) != 0;
+        return poll(Net.POLLIN, (int)unit.toMillis(timeout)) != 0;
     }
 
     public boolean awaitWritable(long timeout, TimeUnit unit) {
-        return poll(POLLOUT, (int)unit.toMillis(timeout)) != 0;
+        return poll(Net.POLLOUT, (int)unit.toMillis(timeout)) != 0;
     }
 
     public long read(byte[] buffer, int offset, int length) {

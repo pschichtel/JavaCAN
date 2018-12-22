@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import java.nio.ByteOrder;
-
 public class CanId {
     public static final int EFF_FLAG  = 0b10000000_00000000_00000000_00000000;
     public static final int RTR_FLAG  = 0b01000000_00000000_00000000_00000000;
