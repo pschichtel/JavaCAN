@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import java.io.IOException;
+
 public class CanDevice {
     private final String name;
     private final long index;
@@ -39,10 +41,10 @@ public class CanDevice {
         return index;
     }
 
-    public static CanDevice lookup(String name) {
+    public static CanDevice lookup(String name) throws IOException {
         long index = NativeInterface.resolveInterfaceName(name);
         if (index == 0) {
-            throw new NativeException("Failed to resolve the interface: " + name);
+            throw new CanNativeOperationException("Failed to resolve the interface: " + name);
         }
         return new CanDevice(name, index);
     }

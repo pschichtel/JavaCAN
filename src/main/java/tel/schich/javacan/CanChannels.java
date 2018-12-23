@@ -22,21 +22,23 @@
  */
 package tel.schich.javacan;
 
+import java.io.IOException;
+
 public class CanChannels {
     private CanChannels() {}
 
-    public static RawCanChannel newRawChannel() {
+    public static RawCanChannel newRawChannel() throws IOException {
         int fd = NativeInterface.createRawSocket();
         if (fd == -1) {
-            throw new NativeException("Unable to create socket!");
+            throw new CanNativeOperationException("Unable to create socket!");
         }
         return new RawCanChannelImpl(fd);
     }
 
-    public static IsotpCanChannel newIsotpChannel() {
+    public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = NativeInterface.createIsotpSocket();
         if (fd == -1) {
-            throw new NativeException("Unable to create ISOTP socket!");
+            throw new CanNativeOperationException("Unable to create ISOTP socket!");
         }
         return new IsotpCanChannelImpl(fd);
     }

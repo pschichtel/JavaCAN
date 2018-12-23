@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 class IsotpCanChannelImpl extends AbstractCanChannel implements IsotpCanChannel {
@@ -30,9 +31,9 @@ class IsotpCanChannelImpl extends AbstractCanChannel implements IsotpCanChannel 
     }
 
     @Override
-    public IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) {
+    public IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (NativeInterface.bindSocket(getSocket(), device.getIndex(), rx.getId(), tx.getId()) != 0) {
-            throw new NativeException("Unable to bind ISOTP socket!");
+            throw new CanNativeOperationException("Unable to bind ISOTP socket!");
         }
         return this;
     }

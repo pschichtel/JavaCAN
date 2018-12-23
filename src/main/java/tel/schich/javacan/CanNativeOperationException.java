@@ -22,14 +22,16 @@
  */
 package tel.schich.javacan;
 
-public class NativeException extends RuntimeException {
+import java.io.IOException;
+
+public class CanNativeOperationException extends IOException {
     private final OSError error;
 
-    public NativeException(String message) {
+    public CanNativeOperationException(String message) {
         this(message, OSError.getLast());
     }
 
-    public NativeException(String message, OSError error) {
+    public CanNativeOperationException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;
     }

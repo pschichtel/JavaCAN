@@ -32,7 +32,16 @@ import java.nio.ByteBuffer;
 import static tel.schich.javacan.RawCanChannel.FD_MTU;
 
 public class CanTestHelper {
-    public static final CanDevice CAN_INTERFACE = CanDevice.lookup("vcan0");
+    public static final CanDevice CAN_INTERFACE = lookupDev();
+
+    private static CanDevice lookupDev() {
+        try {
+            return CanDevice.lookup("vcan0");
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+        }
+        return null;
+    }
 
     public static void sendFrameViaUtils(CanDevice device, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();

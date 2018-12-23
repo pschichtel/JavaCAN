@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.option;
 
+import java.io.IOException;
 import java.net.SocketOption;
 
 public class CanSocketOption<T> implements SocketOption<T> {
@@ -50,7 +51,7 @@ public class CanSocketOption<T> implements SocketOption<T> {
     }
 
     public interface Handler<T> {
-        void set(int sock, T val);
-        T get(int sock);
+        void set(int sock, T val) throws IOException;
+        T get(int sock) throws IOException;
     }
 }

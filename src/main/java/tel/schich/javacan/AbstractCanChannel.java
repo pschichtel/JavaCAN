@@ -54,14 +54,14 @@ public abstract class AbstractCanChannel implements CanChannel {
 
     public final void setBlocking(boolean block) throws IOException {
         if (NativeInterface.setBlockingMode(sock, block) == -1) {
-            throw new NativeException("Unable to set the blocking mode!");
+            throw new CanNativeOperationException("Unable to set the blocking mode!");
         }
     }
 
     public final boolean isBlocking() throws IOException {
         final int result = NativeInterface.getBlockingMode(sock);
         if (result == -1) {
-            throw new NativeException("Unable to get blocking mode!");
+            throw new CanNativeOperationException("Unable to get blocking mode!");
         }
         return result == 1;
     }
@@ -103,7 +103,7 @@ public abstract class AbstractCanChannel implements CanChannel {
         buffer.order(ByteOrder.nativeOrder());
         long bytesRead = NativeInterface.read(sock, buffer, offset, length);
         if (bytesRead == -1) {
-            throw new NativeException("Unable to read from the socket!");
+            throw new CanNativeOperationException("Unable to read from the socket!");
         }
         return bytesRead;
     }
@@ -114,7 +114,7 @@ public abstract class AbstractCanChannel implements CanChannel {
         }
         long bytesWritten = NativeInterface.write(sock, buffer, offset, length);
         if (bytesWritten == -1) {
-            throw new NativeException("Unable to write to the socket!");
+            throw new CanNativeOperationException("Unable to write to the socket!");
         }
         return bytesWritten;
     }

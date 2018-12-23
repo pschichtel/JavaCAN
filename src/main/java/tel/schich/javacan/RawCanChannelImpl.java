@@ -35,10 +35,10 @@ public class RawCanChannelImpl extends AbstractCanChannel implements RawCanChann
     }
 
     @Override
-    public RawCanChannel bind(CanDevice device) {
+    public RawCanChannel bind(CanDevice device) throws IOException {
         final int result = NativeInterface.bindSocket(getSocket(), device.getIndex(), 0, 0);
         if (result == -1) {
-            throw new NativeException("Unable to bind!");
+            throw new CanNativeOperationException("Unable to bind!");
         }
         return this;
     }
