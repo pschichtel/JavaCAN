@@ -22,20 +22,38 @@
  */
 package tel.schich.javacan.test;
 
+import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.IsotpCanChannel;
+import tel.schich.javacan.IsotpSocketAddress;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 public class IsotpCanSocketTest {
-
     @Test
     void testOptions() throws Exception {
-        try (final IsotpCanChannel socket = CanChannels.newIsotpChannel()) {
-            socket.bind(CAN_INTERFACE, isotpAddress(0x7DF), isotpAddress(0x7E0));
+        IsotpSocketAddress src = isotpAddress(0x7DF);
+        IsotpSocketAddress dst = isotpAddress(0x7E0);
+        try (final IsotpCanChannel a = CanChannels.newIsotpChannel()) {
+            try (final IsotpCanChannel b = CanChannels.newIsotpChannel()) {
+                a.bind(CAN_INTERFACE, src, dst);
+                b.bind(CAN_INTERFACE, dst, src);
+
+                byte[] in = { 1, 2, 3, 4 };
+                ByteBuffer buf = ByteBuffer.allocateDirect(10);
+                buf.put(in);
+                a.write(buf);
+                buf.rewind();
+                b.read(buf);
+                byte[] out = new byte[in.length];
+                buf.get(out);
+
+                assertArrayEquals(in, out, "What goes in must come out!");
+            }
         }
     }
 }
