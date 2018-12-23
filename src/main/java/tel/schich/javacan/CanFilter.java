@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import static tel.schich.javacan.CanId.ERR_FLAG;
@@ -80,14 +81,14 @@ public class CanFilter {
         return (isInverted() ? "~" : "") +  String.format("CanFilter(id=%X, mask=%X)", id, mask);
     }
 
-    static CanFilter fromBuffer(byte[] buffer, int offset) {
-        int id = Util.readInt(buffer, offset);
-        int mask = Util.readInt(buffer, offset + Integer.BYTES);
+    static CanFilter fromBuffer(ByteBuffer buffer) {
+        int id = buffer.getInt();
+        int mask = buffer.getInt();
         return new CanFilter(id, mask);
     }
 
-    static void toBuffer(CanFilter filter, byte[] buffer, int offset) {
-        Util.writeInt(buffer, offset, filter.id);
-        Util.writeInt(buffer, offset + Integer.BYTES, filter.mask);
+    static void toBuffer(CanFilter filter, ByteBuffer buffer) {
+        buffer.putInt(filter.id);
+        buffer.putInt(filter.mask);
     }
 }

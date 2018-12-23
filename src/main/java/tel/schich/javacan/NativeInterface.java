@@ -22,7 +22,13 @@
  */
 package tel.schich.javacan;
 
+import java.nio.ByteBuffer;
+
 class NativeInterface {
+
+    static {
+        JavaCAN.initialize();
+    }
 
     public static native long resolveInterfaceName(String interfaceName);
 
@@ -54,14 +60,14 @@ class NativeInterface {
 
     public static native int getReceiveBufferSize(int sock);
 
-    public static native long write(int sock, byte[] buf, int offset, int len);
+    public static native long write(int sock, ByteBuffer buf, int offset, int len);
 
-    public static native long read(int sock, byte[] buf, int offset, int len);
+    public static native long read(int sock, ByteBuffer buf, int offset, int len);
 
-    public static native int setFilters(int sock, byte[] data);
+    public static native int setFilters(int sock, ByteBuffer data);
 
     @Deprecated
-    public static native byte[] getFilters(int sock);
+    public static native ByteBuffer getFilters(int sock);
 
     public static native int setLoopback(int sock, boolean enable);
 
@@ -82,6 +88,4 @@ class NativeInterface {
     public static native int setErrorFilter(int sock, int mask);
 
     public static native int getErrorFilter(int sock);
-
-    public static native short poll(int sockFD, int events, int timeout);
 }

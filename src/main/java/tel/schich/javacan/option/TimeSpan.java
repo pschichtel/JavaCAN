@@ -20,20 +20,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.option;
 
-import java.net.SocketAddress;
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-public class IsotpSocketAddress extends SocketAddress {
-    private final int id;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-    private IsotpSocketAddress(int id) {
-        this.id = id;
+public class TimeSpan {
+    private final long time;
+    private final TimeUnit unit;
+
+    public TimeSpan(long time, TimeUnit unit) {
+        this.time = time;
+        this.unit = unit;
     }
 
-    public int getId() {
-        return id;
+    public long getTime() {
+        return time;
+    }
+
+    public long getTime(TimeUnit unit) {
+        return unit.convert(this.time, this.unit);
+    }
+
+    public TimeUnit getUnit() {
+        return unit;
     }
 
     @Override
@@ -42,21 +53,30 @@ public class IsotpSocketAddress extends SocketAddress {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        IsotpSocketAddress that = (IsotpSocketAddress) o;
-        return id == that.id;
+        TimeSpan other = (TimeSpan) o;
+
+        if (this.unit.equals(other.unit)) {
+            return this.time == other.time;
+        } else {
+            return this.get(NANOSECONDS) == other.get(NANOSECONDS);
+        }
+    }
+
+    public TimeSpan to(TimeUnit newUnit) {
+        return new TimeSpan(newUnit.convert(this.time, this.unit), newUnit);
+    }
+
+    public long get(TimeUnit unit) {
+        return unit.convert(this.time, this.unit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Long.hashCode(this.get(NANOSECONDS));
     }
 
     @Override
     public String toString() {
-        return "IsotpSocketAddress{" + "id=" + id + '}';
-    }
-
-    public static IsotpSocketAddress isotpAddress(int id) {
-        return new IsotpSocketAddress(id);
+        return "TimeSpan{" + "time=" + time + ", unit=" + unit + '}';
     }
 }

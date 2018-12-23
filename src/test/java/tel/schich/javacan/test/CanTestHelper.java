@@ -22,17 +22,25 @@
  */
 package tel.schich.javacan.test;
 
+import tel.schich.javacan.AbstractCanChannel;
+import tel.schich.javacan.CanDevice;
 import tel.schich.javacan.CanFrame;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static tel.schich.javacan.RawCanChannel.FD_MTU;
 
 public class CanTestHelper {
-    public static final String CAN_INTERFACE = "vcan0";
+    public static final CanDevice CAN_INTERFACE = CanDevice.lookup("vcan0");
 
-    public static void sendFrameViaUtils(String iface, CanFrame frame) throws IOException, InterruptedException {
+    public static void sendFrameViaUtils(CanDevice device, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();
-        for (byte b : frame.getPayload()) {
-            data.append(String.format("%02X", b));
+        ByteBuffer buf = AbstractCanChannel.allocate(FD_MTU);
+        frame.getData(buf);
+        buf.flip();
+        while (buf.hasRemaining()) {
+            data.append(String.format("%02X", buf.get()));
         }
 
         String textFrame;
@@ -41,7 +49,7 @@ public class CanTestHelper {
         } else {
             textFrame = String.format("%X#%s", frame.getId(), data);
         }
-        final ProcessBuilder cansend = new ProcessBuilder("cansend", iface, textFrame);
+        final ProcessBuilder cansend = new ProcessBuilder("cansend", device.getName(), textFrame);
         cansend.redirectError(ProcessBuilder.Redirect.INHERIT);
         cansend.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         cansend.redirectInput(ProcessBuilder.Redirect.INHERIT);

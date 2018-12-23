@@ -24,11 +24,12 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
 
+import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.NativeException;
-import tel.schich.javacan.NativeRawCanSocket;
-import tel.schich.javacan.RawCanSocket;
+import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.option.TimeSpan;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -37,75 +38,85 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
+import static tel.schich.javacan.CanSocketOptions.ERR_FILTER;
+import static tel.schich.javacan.CanSocketOptions.FD_FRAMES;
+import static tel.schich.javacan.CanSocketOptions.FILTER;
+import static tel.schich.javacan.CanSocketOptions.JOIN_FILTERS;
+import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
+import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
+import static tel.schich.javacan.CanSocketOptions.SO_RCVBUF;
+import static tel.schich.javacan.CanSocketOptions.SO_RCVTIMEO;
+import static tel.schich.javacan.CanSocketOptions.SO_SNDTIMEO;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
 
     @Test
     void testOptions() throws Exception {
-        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
 
-            assertTrue(socket.isLoopback(), "loopback defaults to true");
-            socket.setLoopback(false);
-            assertFalse(socket.isLoopback(), "loopback is off after setting it so");
-            socket.setLoopback(true);
-            assertTrue(socket.isLoopback(), "loopback is on after setting on again");
+            assertTrue(socket.getOption(LOOPBACK), "loopback defaults to true");
+            socket.setOption(LOOPBACK, false);
+            assertFalse(socket.getOption(LOOPBACK), "loopback is off after setting it so");
+            socket.setOption(LOOPBACK, true);
+            assertTrue(socket.getOption(LOOPBACK), "loopback is on after setting on again");
 
-            socket.setLoopback(true);
-            assertFalse(socket.isReceivingOwnMessages(), "not receiving own messages by default");
-            socket.setReceiveOwnMessages(true);
-            assertTrue(socket.isReceivingOwnMessages(), "receiving own messages after enabling");
-            socket.setReceiveOwnMessages(false);
-            assertFalse(socket.isReceivingOwnMessages(), "not receiving own messages after setting it off again");
+            socket.setOption(LOOPBACK, true);
+            assertFalse(socket.getOption(RECV_OWN_MSGS), "not receiving own messages by default");
+            socket.setOption(RECV_OWN_MSGS, true);
+            assertTrue(socket.getOption(RECV_OWN_MSGS), "receiving own messages after enabling");
+            socket.setOption(RECV_OWN_MSGS, false);
+            assertFalse(socket.getOption(RECV_OWN_MSGS), "not receiving own messages after setting it off again");
 
-            assertFalse(socket.isAllowFDFrames(), "FD frames not supported by default");
-            socket.setAllowFDFrames(true);
-            assertTrue(socket.isAllowFDFrames(), "FD frames supported after enabling");
-            socket.setAllowFDFrames(false);
-            assertFalse(socket.isAllowFDFrames(), "FD frames not supported after setting them off again");
+            assertFalse(socket.getOption(FD_FRAMES), "FD frames not supported by default");
+            socket.setOption(FD_FRAMES, true);
+            assertTrue(socket.getOption(FD_FRAMES), "FD frames supported after enabling");
+            socket.setOption(FD_FRAMES, false);
+            assertFalse(socket.getOption(FD_FRAMES), "FD frames not supported after setting them off again");
 
-            assertFalse(socket.isJoiningFilters(), "Filters are not joined by default");
-            socket.setJoinFilters(true);
-            assertTrue(socket.isJoiningFilters(), "Filters are joined after enabling it");
-            socket.setJoinFilters(false);
-            assertFalse(socket.isJoiningFilters(), "Filters are not joined after disabling it");
+            assertFalse(socket.getOption(JOIN_FILTERS), "Filters are not joined by default");
+            socket.setOption(JOIN_FILTERS, true);
+            assertTrue(socket.getOption(JOIN_FILTERS), "Filters are joined after enabling it");
+            socket.setOption(JOIN_FILTERS, false);
+            assertFalse(socket.getOption(JOIN_FILTERS), "Filters are not joined after disabling it");
 
-            assertEquals(0, socket.getErrorFilter(), "No error filters by default");
-            socket.setErrorFilter(0xFF);
-            assertEquals(0xFF, socket.getErrorFilter(), "Newly set error filter should be available");
+            assertEquals(0, socket.getOption(ERR_FILTER).intValue(), "No error filters by default");
+            socket.setOption(ERR_FILTER, 0xFF);
+            assertEquals(0xFF, socket.getOption(ERR_FILTER).intValue(), "Newly set error filter should be available");
 
-            long readTimeout = 1;
-            socket.setReadTimeout(readTimeout, SECONDS);
-            assertEquals(readTimeout, socket.getReadTimeout(SECONDS), "Read timeout was not as set");
+            final TimeSpan readTimeout = new TimeSpan(1, SECONDS);
+            socket.setOption(SO_RCVTIMEO, readTimeout);
+            assertEquals(readTimeout, socket.getOption(SO_RCVTIMEO), "Read timeout was not as set");
 
             // precision below seconds is not guaranteed
-            long writeTimeout = 1100;
-            socket.setWriteTimeout(writeTimeout, MILLISECONDS);
-            assertEquals(1, socket.getWriteTimeout(SECONDS), "Write timeout was not as set");
+            TimeSpan writeTimeout = new TimeSpan(1100, MILLISECONDS);
+            socket.setOption(SO_SNDTIMEO, writeTimeout);
+            assertEquals(new TimeSpan(1, SECONDS), socket.getOption(SO_SNDTIMEO).to(SECONDS), "Write timeout was not as set");
 
             int newReceiveBufferSize = 2048;
-            int oldReceiveBufferSize = socket.getReceiveBufferSize() / 2;
-            socket.setReceiveBufferSize(newReceiveBufferSize);
-            assertEquals(newReceiveBufferSize * 2, socket.getReceiveBufferSize());
-            socket.setReceiveBufferSize(oldReceiveBufferSize);
-            assertEquals(oldReceiveBufferSize * 2, socket.getReceiveBufferSize());
+            int oldReceiveBufferSize = socket.getOption(SO_RCVBUF) / 2;
+            socket.setOption(SO_RCVBUF, newReceiveBufferSize);
+            assertEquals(newReceiveBufferSize * 2, socket.getOption(SO_RCVBUF).intValue());
+            socket.setOption(SO_RCVBUF, oldReceiveBufferSize);
+            assertEquals(oldReceiveBufferSize * 2, socket.getOption(SO_RCVBUF).intValue());
         }
     }
 
     @Test
     @SuppressWarnings("deprecated")
     void testFilters() throws Exception {
-        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
 
             CanFilter[] input = {
                     new CanFilter(0x123, 0x234)
             };
 
-            socket.setFilters(input);
+            socket.setOption(FILTER, input);
 
-            CanFilter[] output = socket.getFilters();
+            CanFilter[] output = socket.getOption(FILTER);
 
             assertArrayEquals(input, output, "What comes in should come out");
         }
@@ -113,12 +124,12 @@ class RawCanSocketTest {
 
     @Test
     void testNonBlockingRead() throws Exception {
-        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
             assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
-            final CanFrame input = CanFrame.create(0x7EA, new byte[] { 0x34, 0x52, 0x34 });
-            socket.setBlockingMode(false);
+            final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+            socket.setBlocking(false);
             assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
@@ -129,30 +140,30 @@ class RawCanSocketTest {
 
     @Test
     void testBlockingRead() throws Exception {
-        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
-            socket.setBlockingMode(true);
-            socket.setFilters(CanFilter.NONE);
+            socket.setBlocking(true);
+            socket.setOption(FILTER, new CanFilter[] {CanFilter.NONE});
 
             {
-                long timeout = 3L;
-                socket.setReadTimeout(timeout, SECONDS);
+                TimeSpan timeout = new TimeSpan(3L, SECONDS);
+                socket.setOption(SO_RCVTIMEO, timeout);
                 final long start = System.currentTimeMillis();
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
-                assertEquals(timeout, delta);
+                assertEquals(timeout, new TimeSpan(delta, SECONDS));
                 assertTrue(err.mayTryAgain());
             }
 
             {
-                long rtimeout = 1;
-                long wtimeout = 10;
-                socket.setReadTimeout(rtimeout, SECONDS);
-                socket.setWriteTimeout(wtimeout, SECONDS);
+                TimeSpan rtimeout = new TimeSpan(1, SECONDS);
+                TimeSpan wtimeout = new TimeSpan(10, SECONDS);
+                socket.setOption(SO_RCVTIMEO, rtimeout);
+                socket.setOption(SO_SNDTIMEO, wtimeout);
                 final long start = System.currentTimeMillis();
                 final NativeException err = assertThrows(NativeException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
-                assertEquals(rtimeout, delta);
+                assertEquals(rtimeout, new TimeSpan(delta, SECONDS));
                 assertTrue(err.mayTryAgain());
             }
         }
@@ -160,37 +171,37 @@ class RawCanSocketTest {
 
     @Test
     void testLoopback() throws Exception {
-        try (final RawCanSocket a = NativeRawCanSocket.create()) {
+        try (final RawCanChannel a = CanChannels.newRawChannel()) {
             a.bind(CAN_INTERFACE);
 
-            try (final RawCanSocket b = NativeRawCanSocket.create()) {
+            try (final RawCanChannel b = CanChannels.newRawChannel()) {
                 b.bind(CAN_INTERFACE);
-                b.setBlockingMode(false);
+                b.setBlocking(false);
 
-                final CanFrame input = CanFrame.create(0x7EB, new byte[] { 0x20, 0x33 });
+                final CanFrame input = CanFrame.create(0x7EB, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
                 a.write(input);
                 final CanFrame output = b.read();
                 assertEquals(input, output);
 
-                a.setLoopback(false);
+                a.setOption(LOOPBACK, false);
             }
         }
     }
 
     @Test
     void testOwnMessage() throws Exception {
-        try (final RawCanSocket socket = NativeRawCanSocket.create()) {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
 
-            socket.setBlockingMode(false);
-            socket.setReceiveOwnMessages(true);
+            socket.setBlocking(false);
+            socket.setOption(RECV_OWN_MSGS, true);
 
-            final CanFrame input = CanFrame.create(0x7EC, new byte[] { 0x20, 0x33 });
+            final CanFrame input = CanFrame.create(0x7EC, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
             socket.write(input);
             final CanFrame output = socket.read();
             assertEquals(input, output);
 
-            socket.setReceiveOwnMessages(false);
+            socket.setOption(RECV_OWN_MSGS, false);
             socket.write(input);
             assertThrows(NativeException.class, socket::read);
         }
@@ -198,17 +209,17 @@ class RawCanSocketTest {
 
     @Test
     void testFDFrame() throws Exception {
-        try (final RawCanSocket sock = NativeRawCanSocket.create()) {
-            sock.bind(CAN_INTERFACE);
-            sock.setAllowFDFrames(true);
-            sock.setBlockingMode(false);
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
+            socket.bind(CAN_INTERFACE);
+            socket.setOption(FD_FRAMES, true);
+            socket.setBlocking(false);
 
             // more than 8 data bytes
-            final CanFrame input = CanFrame.create(0x7ED,
-                    new byte[] { 0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22 });
+            byte[] data = { 0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22 };
+            final CanFrame input = CanFrame.create(0x7ED, FD_NO_FLAGS, data);
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
-            final CanFrame output = sock.read();
+            final CanFrame output = socket.read();
 
             assertEquals(input, output, "what comes in should come out");
         }

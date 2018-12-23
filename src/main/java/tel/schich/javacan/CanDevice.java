@@ -22,51 +22,28 @@
  */
 package tel.schich.javacan;
 
-import java.util.concurrent.TimeUnit;
+public class CanDevice {
+    private final String name;
+    private final long index;
 
-public interface CanSocket extends AutoCloseable {
-
-    void bind(String interfaceName);
-
-    boolean isBound();
-
-    void setBlockingMode(boolean block);
-
-    boolean isBlocking();
-
-    void setReadTimeout(long timeout, TimeUnit unit);
-
-    long getReadTimeout();
-
-    default long getReadTimeout(TimeUnit unit) {
-        return unit.convert(getReadTimeout(), TimeUnit.MICROSECONDS);
+    private CanDevice(String name, long index) {
+        this.name = name;
+        this.index = index;
     }
 
-    void setWriteTimeout(long timeout, TimeUnit unit);
-
-    long getWriteTimeout();
-
-    default long getWriteTimeout(TimeUnit unit) {
-        return unit.convert(getWriteTimeout(), TimeUnit.MICROSECONDS);
+    public String getName() {
+        return name;
     }
 
-    void setReceiveBufferSize(int size);
+    public long getIndex() {
+        return index;
+    }
 
-    int getReceiveBufferSize();
-
-    void setLoopback(boolean loopback);
-
-    boolean isLoopback();
-
-    void setReceiveOwnMessages(boolean receiveOwnMessages);
-
-    boolean isReceivingOwnMessages();
-
-    boolean awaitReadable(long timeout, TimeUnit unit) throws InterruptedException;
-
-    boolean awaitWritable(long timeout, TimeUnit unit) throws InterruptedException;
-
-    long read(byte[] buffer, int offset, int length);
-
-    long write(byte[] buffer, int offset, int length);
+    public static CanDevice lookup(String name) {
+        long index = NativeInterface.resolveInterfaceName(name);
+        if (index == 0) {
+            throw new NativeException("Failed to resolve the interface: " + name);
+        }
+        return new CanDevice(name, index);
+    }
 }

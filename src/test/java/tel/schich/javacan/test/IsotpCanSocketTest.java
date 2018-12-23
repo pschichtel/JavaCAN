@@ -24,17 +24,18 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
 
-import tel.schich.javacan.IsotpCanSocket;
-import tel.schich.javacan.NativeIsotpCanSocket;
+import tel.schich.javacan.CanChannels;
+import tel.schich.javacan.IsotpCanChannel;
 
+import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 public class IsotpCanSocketTest {
 
     @Test
     void testOptions() throws Exception {
-        try (final IsotpCanSocket socket = NativeIsotpCanSocket.create(0x7DF, 0x7E0)) {
-            socket.bind(CAN_INTERFACE);
+        try (final IsotpCanChannel socket = CanChannels.newIsotpChannel()) {
+            socket.bind(CAN_INTERFACE, isotpAddress(0x7DF), isotpAddress(0x7E0));
         }
     }
 }

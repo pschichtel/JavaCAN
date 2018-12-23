@@ -20,13 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.option;
 
-/**
- * Make unsafe operations very explicit!
- */
-public class CanUnsafe {
-    public static int getRawFileDescriptor(NativeCanSocket sock) {
-        return sock.sockFD;
-    }
+public class IsotpCanSocketOptions{
 }

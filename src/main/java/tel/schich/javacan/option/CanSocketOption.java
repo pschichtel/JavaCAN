@@ -20,7 +20,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.option;
 
-public interface IsotpCanSocket extends CanSocket {
+import java.net.SocketOption;
+
+public class CanSocketOption<T> implements SocketOption<T> {
+    private final String name;
+    private final Class<T> type;
+    private final Handler<T> handler;
+
+    public CanSocketOption(String name, Class<T> type, Handler<T> handler) {
+        this.name = name;
+        this.type = type;
+        this.handler = handler;
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public Class<T> type() {
+        return type;
+    }
+
+    public Handler<T> getHandler() {
+        return handler;
+    }
+
+    public interface Handler<T> {
+        void set(int sock, T val);
+        T get(int sock);
+    }
 }

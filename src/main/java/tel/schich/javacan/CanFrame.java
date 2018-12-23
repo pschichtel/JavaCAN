@@ -22,11 +22,10 @@
  */
 package tel.schich.javacan;
 
-import java.io.IOException;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Objects;
-
-import static tel.schich.javacan.RawCanSocket.FD_MTU;
-import static tel.schich.javacan.RawCanSocket.MTU;
 
 public class CanFrame {
 
@@ -38,64 +37,74 @@ public class CanFrame {
     public static final int MAX_DATA_LENGTH = 8;
     public static final int MAX_FD_DATA_LENGTH = 64;
 
-    private final int id;
-    private final byte flags;
-    private final byte[] payload;
-    private final int dataOffset;
-    private final int dataLength;
+    private static final int OFFSET_ID = 0;
+    private static final int OFFSET_DATA_LENGTH = OFFSET_ID + Integer.BYTES;
+    private static final int OFFSET_FLAGS = OFFSET_DATA_LENGTH + 1;
+    private static final int OFFSET_DATA = HEADER_LENGTH;
 
-    CanFrame(int id, byte flags, byte[] payload, int dataOffset, int dataLength) {
-        this.id = id;
-        this.flags = flags;
-        this.payload = payload;
-        this.dataOffset = dataOffset;
-        this.dataLength = dataLength;
+    private final ByteBuffer payload;
+    private final int base;
+    private final int size;
+
+    CanFrame(ByteBuffer buffer, int base, int size) {
+        this.payload = buffer;
+        this.base = base;
+        this.size = size;
     }
 
     public int getId() {
-        return CanId.getId(id);
+        return CanId.getId(this.payload.getInt(base + OFFSET_ID));
     }
 
     public byte getFlags() {
-        return flags;
+        return this.payload.get(base + OFFSET_FLAGS);
     }
 
-    public byte[] getPayload() {
-        return getPayload(0, dataLength);
+    public ByteBuffer getBuffer() {
+        return this.payload;
     }
 
-    public byte[] getPayload(int offset, int length) {
-        byte[] copy = new byte[length];
-        System.arraycopy(payload, dataOffset + offset, copy, 0, length);
-        return copy;
+    public int getBase() {
+        return this.base;
     }
 
-    public int getLength() {
-        return dataLength;
+    int getDataOffset() {
+        return this.base + HEADER_LENGTH;
     }
 
-    public int read(int offset) {
-        return this.payload[this.dataOffset + offset];
+    public int getDataLength() {
+        return this.payload.get(this.base + OFFSET_DATA_LENGTH);
+    }
+
+    public int getSize() {
+        return this.size;
+    }
+
+    public void getData(ByteBuffer dest) {
+        int offset = getDataOffset();
+        this.payload.position(offset);
+        this.payload.limit(offset + getDataLength());
+        dest.put(this.payload);
     }
 
     public boolean isFDFrame() {
-        return this.flags != 0 || this.dataLength > MAX_DATA_LENGTH;
+        return this.getFlags() != 0 || getDataLength() > MAX_DATA_LENGTH;
     }
 
     public boolean isExtended() {
-        return CanId.isExtended(id);
+        return CanId.isExtended(getId());
     }
 
     public boolean isError() {
-        return CanId.isError(id);
+        return CanId.isError(getId());
     }
 
     public int getError() {
-        return CanId.getError(id);
+        return CanId.getError(getId());
     }
 
     public boolean isRemoveTransmissionRequest() {
-        return CanId.isRemoveTransmissionRequest(id);
+        return CanId.isRemoveTransmissionRequest(getId());
     }
 
     @Override
@@ -104,6 +113,8 @@ public class CanFrame {
         if (isFDFrame()) {
             sb.append("FD");
         }
+        final int length = getDataLength();
+        final int dataOffset = getDataOffset();
         sb.append("Frame(")
                 .append("ID=")
                 .append(String.format("%02X", getId()))
@@ -112,12 +123,12 @@ public class CanFrame {
                 .append(String.format("%X", getFlags()))
                 .append(", ")
                 .append("LEN=")
-                .append(dataLength)
+                .append(length)
                 .append(", DATA=[");
-        if (dataLength > 0) {
-            sb.append(String.format("%02X", payload[dataOffset]));
-            for (int i = 1; i < dataLength; ++i) {
-                sb.append(", ").append(String.format("%02X", payload[dataOffset + i]));
+        if (length > 0) {
+            sb.append(String.format("%02X", payload.get(dataOffset)));
+            for (int i = 1; i < length; ++i) {
+                sb.append(", ").append(String.format("%02X", payload.get(dataOffset + i)));
             }
         }
         return sb.append("])").toString();
@@ -128,14 +139,18 @@ public class CanFrame {
         if (this == o) return true;
         if (!(o instanceof CanFrame)) return false;
         CanFrame b = (CanFrame) o;
-        if (id != b.id) {
+        if (getId() != b.getId()) {
             return false;
         }
-        if (dataLength != b.dataLength) {
+        final int dataLength = getDataLength();
+        final int dataOffset = getDataOffset();
+        final int otherDataOffset = b.getDataOffset();
+
+        if (dataLength != b.getDataLength()) {
             return false;
         }
         for (int i = 0; i < dataLength; ++i) {
-            if (payload[dataOffset + i] != b.payload[b.dataOffset + i]) {
+            if (payload.get(dataOffset + i) != b.payload.get(otherDataOffset + i)) {
                 return false;
             }
         }
@@ -144,69 +159,52 @@ public class CanFrame {
 
     private int payloadHashCode() {
         int result = 1;
-        for (int i = 0; i < dataLength; ++i) {
-            result = 31 * result + payload[dataOffset + i];
+        final int length = getDataLength();
+        final int dataOffset = getDataOffset();
+
+        for (int i = 0; i < length; ++i) {
+            result = 31 * result + payload.get(dataOffset + i);
         }
         return result;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id);
+        int result = Objects.hash(getId());
         result = 31 * result + payloadHashCode();
         return result;
     }
 
-    public static CanFrame create(int id, byte[] payload) {
-        return create(id, FD_NO_FLAGS, payload);
+    public static CanFrame create(int id, byte flags, byte[] data) {
+        int bufSize;
+        if (data.length <= CanFrame.MAX_DATA_LENGTH) {
+            bufSize = RawCanChannel.MTU;
+        } else {
+            bufSize = RawCanChannel.FD_MTU;
+        }
+        ByteBuffer buf = AbstractCanChannel.allocate(bufSize);
+        buf.putInt(id);
+        buf.put((byte)data.length);
+        buf.put(flags);
+        buf.position(HEADER_LENGTH);
+        buf.put(data);
+        return CanFrame.create(buf, 0, bufSize);
     }
 
-    public static CanFrame create(int id, byte flags, byte[] payload) {
-        if (payload.length > MAX_FD_DATA_LENGTH) {
+    public static CanFrame create(ByteBuffer payload, int offset, int length) {
+        if (offset + length > payload.capacity()) {
+            throw new BufferOverflowException();
+        }
+        if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
+            throw new IllegalArgumentException("length must be either MTU or FD_MTU!");
+        }
+        CanFrame frame = new CanFrame(payload, offset, length);
+        if (frame.getDataLength() > MAX_FD_DATA_LENGTH) {
             throw new IllegalArgumentException("payload must fit in " + MAX_FD_DATA_LENGTH + " bytes!");
         }
-        return new CanFrame(id, flags, payload, 0, payload.length);
-    }
-
-    public static byte[] allocateBuffer(boolean fd) {
-        return new byte[fd ? FD_MTU : MTU];
-    }
-
-    public static CanFrame fromBuffer(byte[] buffer, int offset, long bytes) throws IOException {
-        boolean fdFrame = bytes == RawCanSocket.FD_MTU;
-        if (bytes != MTU && !fdFrame) {
-            throw new IOException("Frame is incomplete!");
+        if (frame.getBase() + frame.getDataLength() >= length) {
+            throw new BufferOverflowException();
         }
-        final int id = Util.readInt(buffer, offset);
-        int length = buffer[4];
-        byte flags = fdFrame ? buffer[5] : 0;
-        return new CanFrame(id, flags, buffer, offset + HEADER_LENGTH, length);
-    }
-
-    public static void toBuffer(byte[] buffer, int offset, CanFrame frame) {
-        toBuffer(buffer, offset, frame.id, frame.dataLength, frame.isFDFrame() ? frame.flags : 0);
-        System.arraycopy(frame.payload, frame.dataOffset, buffer, offset + HEADER_LENGTH, frame.dataLength);
-    }
-
-    public static byte[] toBuffer(CanFrame frame) {
-        final boolean fdFrame = frame.isFDFrame();
-        final byte[] buffer;
-        if (fdFrame && frame.payload.length == FD_MTU && frame.dataOffset == HEADER_LENGTH) {
-            // reuse FD frame buffer
-            return frame.payload;
-        } else if (!fdFrame && frame.payload.length == MTU && frame.dataOffset == HEADER_LENGTH) {
-            return frame.payload;
-        } else {
-            buffer = allocateBuffer(fdFrame);
-        }
-        toBuffer(buffer, 0, frame);
-        return buffer;
-    }
-
-    public static void toBuffer(byte[] buffer, int offset, int id, int dataLength, byte flags) {
-        Util.writeInt(buffer, offset, id);
-
-        buffer[offset + Integer.BYTES] = (byte)(dataLength & 0xFF);
-        buffer[offset + Integer.BYTES + 1] = flags;
+        return frame;
     }
 }

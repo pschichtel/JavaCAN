@@ -100,19 +100,6 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_getWriteTimeout(
     return timeout;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setTimeouts(JNIEnv *env, jclass class, jint sock, jlong read, jlong write) {
-    static const size_t timeout_len = sizeof(struct timeval);
-    struct timeval timeout;
-
-    micros_to_timeval(&timeout, (uint64_t) read);
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, timeout_len) != 0) {
-        return false;
-    }
-
-    micros_to_timeval(&timeout, (uint64_t) write);
-    return setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &timeout, timeout_len);
-}
-
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setReceiveBufferSize(JNIEnv *env, jclass class, jint sock, jint size) {
     socklen_t size_size = sizeof(size);
     return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, size_size);
@@ -128,31 +115,28 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_getReceiveBufferS
     return size;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
-    void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_write(JNIEnv *env, jclass class, jint sock, jobject buf, jint offset, jint length) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
     void *data_start = raw_buf + offset;
     ssize_t bytes_written = write(sock, data_start, (size_t) length);
-    (*env)->ReleasePrimitiveArrayCritical(env, buf, raw_buf, 0);
     return bytes_written;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint sock, jbyteArray buf, jint offset, jint length) {
-    void *raw_buf = (*env)->GetPrimitiveArrayCritical(env, buf, false);
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_NativeInterface_read(JNIEnv *env, jclass class, jint sock, jobject buf, jint offset, jint length) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
     void *data_start = raw_buf + offset;
     ssize_t bytes_read = read(sock, data_start, (size_t) length);
-    (*env)->ReleasePrimitiveArrayCritical(env, buf, raw_buf, 0);
     return bytes_read;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilters(JNIEnv *env, jclass class, jint sock, jbyteArray data) {
-    void *rawData = (*env)->GetPrimitiveArrayCritical(env, data, false);
-    int result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, rawData, (socklen_t) (*env)->GetArrayLength(env, data));
-    (*env)->ReleasePrimitiveArrayCritical(env, data, rawData, 0);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setFilters(JNIEnv *env, jclass class, jint sock, jobject data) {
+    void *rawData = (*env)->GetDirectBufferAddress(env, data);
+    int result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, rawData, (socklen_t) (*env)->GetDirectBufferCapacity(env, data));
 
     return result;
 }
 
-JNIEXPORT jbyteArray JNICALL Java_tel_schich_javacan_NativeInterface_getFilters(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_NativeInterface_getFilters(JNIEnv *env, jclass class, jint sock) {
     // assign the signed integer max value to an unsigned integer, socketcan's getsockopt implementation uses int's
     // instead of uint's and resets the size to the actual size only if the given size is larger.
     socklen_t size = INT_MAX;
@@ -163,14 +147,19 @@ JNIEXPORT jbyteArray JNICALL Java_tel_schich_javacan_NativeInterface_getFilters(
     if (filters == NULL) {
         return NULL;
     }
+
     int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
     if (result == -1) {
         return NULL;
     }
-    jbyteArray array = (*env)->NewByteArray(env, size);
-    (*env)->SetByteArrayRegion(env, array, 0, size, (const jbyte *) filters);
-    free(filters);
-    return array;
+
+    void* filters_out = malloc(size);
+    if (filters_out == NULL) {
+        return NULL;
+    }
+
+    memcpy(filters_out, filters, size);
+    return (*env)->NewDirectByteBuffer(env, filters_out, size);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_NativeInterface_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean enable) {
