@@ -24,7 +24,6 @@ package tel.schich.javacan;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Objects;
 
 public class CanFrame {

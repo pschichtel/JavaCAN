@@ -27,9 +27,8 @@ import java.net.SocketOption;
 import java.nio.channels.Channel;
 
 public interface CanChannel extends Channel {
-    int getSocket();
-    void setBlocking(boolean blocking);
-    boolean isBlocking();
+    void setBlocking(boolean blocking) throws IOException;
+    boolean isBlocking() throws IOException;
     <T> CanChannel setOption(SocketOption<T> option, T value) throws IOException;
     <T> T getOption(SocketOption<T> option) throws IOException;
 }

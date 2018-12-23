@@ -32,10 +32,7 @@ import java.nio.channels.ClosedChannelException;
 
 import tel.schich.javacan.option.CanSocketOption;
 
-import static tel.schich.javacan.RawCanChannel.FD_MTU;
-import static tel.schich.javacan.RawCanChannel.MTU;
-
-public class AbstractCanChannel implements CanChannel {
+public abstract class AbstractCanChannel implements CanChannel {
 
     static {
         JavaCAN.initialize();
@@ -51,18 +48,17 @@ public class AbstractCanChannel implements CanChannel {
         this.closed = false;
     }
 
-    @Override
     public int getSocket() {
         return sock;
     }
 
-    public final void setBlocking(boolean block) {
+    public final void setBlocking(boolean block) throws IOException {
         if (NativeInterface.setBlockingMode(sock, block) == -1) {
             throw new NativeException("Unable to set the blocking mode!");
         }
     }
 
-    public final boolean isBlocking() {
+    public final boolean isBlocking() throws IOException {
         final int result = NativeInterface.getBlockingMode(sock);
         if (result == -1) {
             throw new NativeException("Unable to get blocking mode!");

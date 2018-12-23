@@ -23,10 +23,7 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
-import java.net.NetworkInterface;
 import java.nio.ByteBuffer;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 
 public interface IsotpCanChannel extends CanChannel {
     IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
