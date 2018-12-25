@@ -34,10 +34,6 @@ import tel.schich.javacan.option.CanSocketOption;
 
 public abstract class AbstractCanChannel implements CanChannel {
 
-    static {
-        JavaCAN.initialize();
-    }
-
     private final int sock;
 
     private final Object stateLock = new Object();
