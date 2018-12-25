@@ -35,17 +35,24 @@ import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.option.CanSocketOption;
 
-public abstract class AbstractCanChannel extends AbstractSelectableChannel {
+public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
 
     private final int sock;
+    private final LinuxFileDescriptor fileDescriptor;
 
     public AbstractCanChannel(SelectorProvider provider, int sock) {
         super(provider);
         this.sock = sock;
+        this.fileDescriptor = new LinuxFileDescriptor(sock);
     }
 
-    public int getSocket() {
+    protected int getSocket() {
         return sock;
+    }
+
+    @Override
+    public NativeHandle getHandle() {
+        return fileDescriptor;
     }
 
     @Override
