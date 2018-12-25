@@ -25,9 +25,10 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.net.SocketOption;
 import java.nio.channels.Channel;
+import java.nio.channels.SelectableChannel;
 
 public interface CanChannel extends Channel {
-    void setBlocking(boolean blocking) throws IOException;
+    SelectableChannel configureBlocking(boolean block) throws IOException;
     boolean isBlocking() throws IOException;
     <T> CanChannel setOption(SocketOption<T> option, T value) throws IOException;
     <T> T getOption(SocketOption<T> option) throws IOException;

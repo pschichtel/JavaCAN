@@ -24,10 +24,11 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.spi.SelectorProvider;
 
 class IsotpCanChannelImpl extends AbstractCanChannel implements IsotpCanChannel {
-    public IsotpCanChannelImpl(int sock) {
-        super(sock);
+    public IsotpCanChannelImpl(SelectorProvider provider, int sock) {
+        super(provider, sock);
     }
 
     @Override
@@ -37,6 +38,8 @@ class IsotpCanChannelImpl extends AbstractCanChannel implements IsotpCanChannel 
         }
         return this;
     }
+
+
 
     @Override
     public int read(ByteBuffer buffer) {

@@ -129,7 +129,7 @@ class RawCanSocketTest {
             assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
             final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
-            socket.setBlocking(false);
+            socket.configureBlocking(false);
             assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
@@ -142,7 +142,7 @@ class RawCanSocketTest {
     void testBlockingRead() throws Exception {
         try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
-            socket.setBlocking(true);
+            socket.configureBlocking(true);
             socket.setOption(FILTER, new CanFilter[] {CanFilter.NONE});
 
             {
@@ -176,7 +176,7 @@ class RawCanSocketTest {
 
             try (final RawCanChannel b = CanChannels.newRawChannel()) {
                 b.bind(CAN_INTERFACE);
-                b.setBlocking(false);
+                b.configureBlocking(false);
 
                 final CanFrame input = CanFrame.create(0x7EB, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
                 a.write(input);
@@ -193,7 +193,7 @@ class RawCanSocketTest {
         try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
 
-            socket.setBlocking(false);
+            socket.configureBlocking(false);
             socket.setOption(RECV_OWN_MSGS, true);
 
             final CanFrame input = CanFrame.create(0x7EC, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
@@ -212,7 +212,7 @@ class RawCanSocketTest {
         try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
             socket.setOption(FD_FRAMES, true);
-            socket.setBlocking(false);
+            socket.configureBlocking(false);
 
             // more than 8 data bytes
             byte[] data = { 0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22 };

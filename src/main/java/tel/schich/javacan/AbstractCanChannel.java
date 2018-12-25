@@ -29,42 +29,47 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.option.CanSocketOption;
 
-public abstract class AbstractCanChannel implements CanChannel {
+public abstract class AbstractCanChannel extends AbstractSelectableChannel implements CanChannel {
 
     private final int sock;
 
-    private final Object stateLock = new Object();
-    private volatile boolean closed;
-
-    public AbstractCanChannel(int sock) {
+    public AbstractCanChannel(SelectorProvider provider, int sock) {
+        super(provider);
         this.sock = sock;
-        this.closed = false;
     }
 
     public int getSocket() {
         return sock;
     }
 
-    public final void setBlocking(boolean block) throws IOException {
+    @Override
+    protected void implCloseSelectableChannel() throws IOException {
+        if (NativeInterface.close(sock) != 0) {
+            throw new CanNativeOperationException("Unable to close socket!");
+        }
+
+    }
+
+    @Override
+    protected void implConfigureBlocking(boolean block) throws IOException {
         if (NativeInterface.setBlockingMode(sock, block) == -1) {
             throw new CanNativeOperationException("Unable to set the blocking mode!");
         }
     }
 
-    public final boolean isBlocking() throws IOException {
-        final int result = NativeInterface.getBlockingMode(sock);
-        if (result == -1) {
-            throw new CanNativeOperationException("Unable to get blocking mode!");
-        }
-        return result == 1;
+    @Override
+    public int validOps() {
+        return 0;
     }
 
     @Override
     public <T> CanChannel setOption(SocketOption<T> option, T value) throws IOException {
-        if (this.closed) {
+        if (!isOpen()) {
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
@@ -77,7 +82,7 @@ public abstract class AbstractCanChannel implements CanChannel {
 
     @Override
     public <T> T getOption(SocketOption<T> option) throws IOException {
-        if (this.closed) {
+        if (!isOpen()) {
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
@@ -85,11 +90,6 @@ public abstract class AbstractCanChannel implements CanChannel {
         } else {
             throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
         }
-    }
-
-    @Override
-    public boolean isOpen() {
-        return !this.closed;
     }
 
     protected long readSocket(ByteBuffer buffer, int offset, int length) throws IOException {
@@ -114,19 +114,6 @@ public abstract class AbstractCanChannel implements CanChannel {
         }
         return bytesWritten;
     }
-
-    @Override
-    public void close() throws IOException {
-        synchronized (stateLock) {
-            if (this.closed) {
-                throw new ClosedChannelException();
-            }
-            NativeInterface.close(sock);
-            this.closed = true;
-        }
-    }
-
-
 
     public static ByteBuffer allocate(int size) {
         return ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());

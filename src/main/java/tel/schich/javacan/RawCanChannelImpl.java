@@ -24,14 +24,15 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.spi.SelectorProvider;
 
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
  */
 public class RawCanChannelImpl extends AbstractCanChannel implements RawCanChannel {
 
-    RawCanChannelImpl(int sock) {
-        super(sock);
+    RawCanChannelImpl(SelectorProvider provider, int sock) {
+        super(provider, sock);
     }
 
     @Override
