@@ -24,10 +24,16 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.spi.SelectorProvider;
 
-public interface IsotpCanChannel extends CanChannel {
-    IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
+public abstract class IsotpCanChannel extends AbstractCanChannel {
 
-    int read(ByteBuffer buffer) throws IOException;
-    int write(ByteBuffer buffer) throws IOException;
+    public IsotpCanChannel(SelectorProvider provider, int sock) {
+        super(provider, sock);
+    }
+
+    public abstract IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
+
+    public abstract int read(ByteBuffer buffer) throws IOException;
+    public abstract int write(ByteBuffer buffer) throws IOException;
 }

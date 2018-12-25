@@ -24,18 +24,23 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.spi.SelectorProvider;
 
 import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
 
-public interface RawCanChannel extends CanChannel {
-    int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
-    int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
+public abstract class RawCanChannel extends AbstractCanChannel {
+    public RawCanChannel(SelectorProvider provider, int sock) {
+        super(provider, sock);
+    }
 
-    RawCanChannel bind(CanDevice device) throws IOException;
+    public static final int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
+    public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
 
-    CanFrame read() throws IOException;
-    CanFrame read(ByteBuffer buffer, int offset, int length) throws IOException;
-    RawCanChannel write(CanFrame frame) throws IOException;
+    public abstract RawCanChannel bind(CanDevice device) throws IOException;
+
+    public abstract CanFrame read() throws IOException;
+    public abstract CanFrame read(ByteBuffer buffer, int offset, int length) throws IOException;
+    public abstract RawCanChannel write(CanFrame frame) throws IOException;
 }

@@ -34,7 +34,7 @@ import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.option.CanSocketOption;
 
-public abstract class AbstractCanChannel extends AbstractSelectableChannel implements CanChannel {
+public abstract class AbstractCanChannel extends AbstractSelectableChannel {
 
     private final int sock;
 
@@ -67,8 +67,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         return 0;
     }
 
-    @Override
-    public <T> CanChannel setOption(SocketOption<T> option, T value) throws IOException {
+    public <T> AbstractCanChannel setOption(SocketOption<T> option, T value) throws IOException {
         if (!isOpen()) {
             throw new ClosedChannelException();
         }
@@ -80,7 +79,6 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         }
     }
 
-    @Override
     public <T> T getOption(SocketOption<T> option) throws IOException {
         if (!isOpen()) {
             throw new ClosedChannelException();

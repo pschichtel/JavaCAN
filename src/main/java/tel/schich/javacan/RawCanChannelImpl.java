@@ -29,7 +29,7 @@ import java.nio.channels.spi.SelectorProvider;
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
  */
-public class RawCanChannelImpl extends AbstractCanChannel implements RawCanChannel {
+public class RawCanChannelImpl extends RawCanChannel {
 
     RawCanChannelImpl(SelectorProvider provider, int sock) {
         super(provider, sock);

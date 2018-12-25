@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.spi.SelectorProvider;
 
-class IsotpCanChannelImpl extends AbstractCanChannel implements IsotpCanChannel {
+class IsotpCanChannelImpl extends IsotpCanChannel {
     public IsotpCanChannelImpl(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
