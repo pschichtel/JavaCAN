@@ -38,12 +38,12 @@ import tel.schich.javacan.option.CanSocketOption;
 public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
 
     private final int sock;
-    private final LinuxFileDescriptor fileDescriptor;
+    private final UnixFileDescriptor fileDescriptor;
 
     public AbstractCanChannel(SelectorProvider provider, int sock) {
         super(provider);
         this.sock = sock;
-        this.fileDescriptor = new LinuxFileDescriptor(sock);
+        this.fileDescriptor = new UnixFileDescriptor(sock);
     }
 
     protected int getSocket() {

@@ -23,19 +23,21 @@
 package tel.schich.javacan.test;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.IsotpCanChannel;
 import tel.schich.javacan.IsotpSocketAddress;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 public class IsotpCanSocketTest {
     @Test
-    void testOptions() throws Exception {
+    void testWriteRead() throws Exception {
         IsotpSocketAddress src = isotpAddress(0x7DF);
         IsotpSocketAddress dst = isotpAddress(0x7E0);
         try (final IsotpCanChannel a = CanChannels.newIsotpChannel()) {
@@ -46,12 +48,15 @@ public class IsotpCanSocketTest {
                 byte[] in = { 1, 2, 3, 4 };
                 ByteBuffer buf = ByteBuffer.allocateDirect(10);
                 buf.put(in);
-                a.write(buf);
                 buf.rewind();
-                b.read(buf);
+                final int bytesWritten = a.write(buf);
+                buf.rewind();
+                final int bytesRead = b.read(buf);
                 byte[] out = new byte[in.length];
+                buf.rewind();
                 buf.get(out);
 
+                assertEquals(bytesWritten, bytesRead, "Written amount of bytes should be readable");
                 assertArrayEquals(in, out, "What goes in must come out!");
             }
         }

@@ -37,7 +37,7 @@ public class RawCanChannelImpl extends RawCanChannel {
 
     @Override
     public RawCanChannel bind(CanDevice device) throws IOException {
-        final int result = NativeInterface.bindSocket(getHandle(), device.getIndex(), 0, 0);
+        final int result = NativeInterface.bindSocket(getSocket(), device.getIndex(), 0, 0);
         if (result == -1) {
             throw new CanNativeOperationException("Unable to bind!");
         }
@@ -59,10 +59,6 @@ public class RawCanChannelImpl extends RawCanChannel {
 
     @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
-        if (frame == null) {
-            throw new NullPointerException("The frame may not be null!");
-        }
-
         long written = writeSocket(frame.getBuffer(), frame.getBase(), frame.getSize());
         if (written != frame.getSize()) {
             throw new IOException("Frame written incompletely!");

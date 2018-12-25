@@ -42,12 +42,14 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
 
 
     @Override
-    public int read(ByteBuffer buffer) {
-        return 0;
+    public int read(ByteBuffer buffer, int offset, int length) throws IOException {
+        long bytesRead = readSocket(buffer, offset, length);
+        return (int) bytesRead;
     }
 
     @Override
-    public int write(ByteBuffer buffer) {
-        return 0;
+    public int write(ByteBuffer buffer, int offset, int length) throws IOException {
+        long bytesRead = writeSocket(buffer, offset, length);
+        return (int) bytesRead;
     }
 }

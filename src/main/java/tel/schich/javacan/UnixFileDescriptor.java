@@ -22,5 +22,14 @@
  */
 package tel.schich.javacan;
 
-public interface NativeHandle {
+public class UnixFileDescriptor implements NativeHandle {
+    private final int fd;
+
+    public UnixFileDescriptor(int fd) {
+        this.fd = fd;
+    }
+
+    public int getFD() {
+        return fd;
+    }
 }
