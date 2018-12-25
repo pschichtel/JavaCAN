@@ -29,6 +29,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
@@ -64,7 +65,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel {
 
     @Override
     public int validOps() {
-        return 0;
+        return SelectionKey.OP_READ | SelectionKey.OP_WRITE;
     }
 
     public <T> AbstractCanChannel setOption(SocketOption<T> option, T value) throws IOException {
