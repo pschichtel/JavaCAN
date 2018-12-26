@@ -20,7 +20,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.select;
 
-public interface NativeHandle {
+public class UnixFileDescriptor implements NativeHandle {
+    private final int fd;
+
+    public UnixFileDescriptor(int fd) {
+        this.fd = fd;
+    }
+
+    public int getFD() {
+        return fd;
+    }
 }

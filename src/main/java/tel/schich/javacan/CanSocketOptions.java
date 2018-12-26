@@ -36,7 +36,7 @@ public class CanSocketOptions {
     public static final SocketOption<Boolean> JOIN_FILTERS = new CanSocketOption<>("JOIN_FILTERS", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
-            final int result = NativeInterface.setJoinFilters(sock, val);
+            final int result = SocketCAN.setJoinFilters(sock, val);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to set the filter joining mode!");
             }
@@ -44,7 +44,7 @@ public class CanSocketOptions {
 
         @Override
         public Boolean get(int sock) throws IOException {
-            final int result = NativeInterface.getJoinFilters(sock);
+            final int result = SocketCAN.getJoinFilters(sock);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to get the filter joining mode!");
             }
@@ -54,7 +54,7 @@ public class CanSocketOptions {
     public static final SocketOption<Boolean> LOOPBACK = new CanSocketOption<>("LOOPBACK", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
-            final int result = NativeInterface.setLoopback(sock, val);
+            final int result = SocketCAN.setLoopback(sock, val);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to set loopback state!");
             }
@@ -62,7 +62,7 @@ public class CanSocketOptions {
 
         @Override
         public Boolean get(int sock) throws IOException {
-            final int result = NativeInterface.getLoopback(sock);
+            final int result = SocketCAN.getLoopback(sock);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to get loopback state!");
             }
@@ -72,7 +72,7 @@ public class CanSocketOptions {
     public static final SocketOption<Boolean> RECV_OWN_MSGS = new CanSocketOption<>("RECV_OWN_MSGS", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
-            final int result = NativeInterface.setReceiveOwnMessages(sock, val);
+            final int result = SocketCAN.setReceiveOwnMessages(sock, val);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to set receive own messages state!");
             }
@@ -80,7 +80,7 @@ public class CanSocketOptions {
 
         @Override
         public Boolean get(int sock) throws IOException {
-            final int result = NativeInterface.getReceiveOwnMessages(sock);
+            final int result = SocketCAN.getReceiveOwnMessages(sock);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to get receive own messages state!");
             }
@@ -90,7 +90,7 @@ public class CanSocketOptions {
     public static final SocketOption<Boolean> FD_FRAMES = new CanSocketOption<>("FD_FRAMES", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
-            final int result = NativeInterface.setAllowFDFrames(sock, val);
+            final int result = SocketCAN.setAllowFDFrames(sock, val);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to set FD frame support!");
             }
@@ -98,7 +98,7 @@ public class CanSocketOptions {
 
         @Override
         public Boolean get(int sock) throws IOException {
-            final int result = NativeInterface.getAllowFDFrames(sock);
+            final int result = SocketCAN.getAllowFDFrames(sock);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to get FD frame support!");
             }
@@ -108,7 +108,7 @@ public class CanSocketOptions {
     public static final SocketOption<Integer> ERR_FILTER = new CanSocketOption<>("ERR_FILTER", Integer.class, new CanSocketOption.Handler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
-            final int result = NativeInterface.setErrorFilter(sock, val);
+            final int result = SocketCAN.setErrorFilter(sock, val);
             if (result == -1) {
                 throw new CanNativeOperationException("Unable to set the error filter!");
             }
@@ -116,7 +116,7 @@ public class CanSocketOptions {
 
         @Override
         public Integer get(int sock) throws IOException {
-            final int mask = NativeInterface.getErrorFilter(sock);
+            final int mask = SocketCAN.getErrorFilter(sock);
             if (mask == -1) {
                 throw new CanNativeOperationException("Unable to get the error filter!");
             }
@@ -131,7 +131,7 @@ public class CanSocketOptions {
                 CanFilter.toBuffer(f, filterData);
             }
 
-            if (NativeInterface.setFilters(sock, filterData) == -1) {
+            if (SocketCAN.setFilters(sock, filterData) == -1) {
                 throw new CanNativeOperationException("Unable to set the filters!");
             }
         }
@@ -141,7 +141,7 @@ public class CanSocketOptions {
          */
         @Override
         public CanFilter[] get(int sock) throws IOException {
-            ByteBuffer filterData = NativeInterface.getFilters(sock);
+            ByteBuffer filterData = SocketCAN.getFilters(sock);
             if (filterData == null) {
                 throw new CanNativeOperationException("Unable to get the filters!");
             }
@@ -159,14 +159,14 @@ public class CanSocketOptions {
     public static final SocketOption<TimeSpan> SO_SNDTIMEO = new CanSocketOption<>("SO_SNDTIMEO", TimeSpan.class, new CanSocketOption.Handler<TimeSpan>() {
         @Override
         public void set(int sock, TimeSpan val) throws IOException {
-            if (NativeInterface.setWriteTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
+            if (SocketCAN.setWriteTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
                 throw new CanNativeOperationException("Unable to set write timeout!");
             }
         }
 
         @Override
         public TimeSpan get(int sock) throws IOException {
-            final long timeout = NativeInterface.getWriteTimeout(sock);
+            final long timeout = SocketCAN.getWriteTimeout(sock);
             if (timeout < 0) {
                 throw new CanNativeOperationException("Unable to get write timeout!");
             }
@@ -176,14 +176,14 @@ public class CanSocketOptions {
     public static final SocketOption<TimeSpan> SO_RCVTIMEO = new CanSocketOption<>("SO_RCVTIMEO", TimeSpan.class, new CanSocketOption.Handler<TimeSpan>() {
         @Override
         public void set(int sock, TimeSpan val) throws IOException {
-            if (NativeInterface.setReadTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
+            if (SocketCAN.setReadTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
                 throw new CanNativeOperationException("Unable to set read timeout!");
             }
         }
 
         @Override
         public TimeSpan get(int sock) throws IOException {
-            final long timeout = NativeInterface.getReadTimeout(sock);
+            final long timeout = SocketCAN.getReadTimeout(sock);
             if (timeout < 0) {
                 throw new CanNativeOperationException("Unable to get read timeout!");
             }
@@ -196,14 +196,14 @@ public class CanSocketOptions {
             if (val <= 0) {
                 throw new IllegalArgumentException("Buffer size must be positive!");
             }
-            if (NativeInterface.setReceiveBufferSize(sock, val) != 0) {
+            if (SocketCAN.setReceiveBufferSize(sock, val) != 0) {
                 throw new CanNativeOperationException("Unable to set receive buffer size!");
             }
         }
 
         @Override
         public Integer get(int sock) throws IOException {
-            final int size = NativeInterface.getReceiveBufferSize(sock);
+            final int size = SocketCAN.getReceiveBufferSize(sock);
             if (size < 0) {
                 throw new CanNativeOperationException("Unable to get receive buffer size!");
             }

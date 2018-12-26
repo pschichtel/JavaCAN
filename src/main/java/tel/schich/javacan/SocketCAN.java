@@ -24,7 +24,7 @@ package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
 
-class NativeInterface {
+class SocketCAN {
 
     static {
         JavaCAN.initialize();

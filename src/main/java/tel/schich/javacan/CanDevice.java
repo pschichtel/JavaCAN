@@ -42,7 +42,7 @@ public class CanDevice {
     }
 
     public static CanDevice lookup(String name) throws IOException {
-        long index = NativeInterface.resolveInterfaceName(name);
+        long index = SocketCAN.resolveInterfaceName(name);
         if (index == 0) {
             throw new CanNativeOperationException("Failed to resolve the interface: " + name);
         }

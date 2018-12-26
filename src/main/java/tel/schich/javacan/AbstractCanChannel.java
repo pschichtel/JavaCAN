@@ -34,6 +34,9 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.option.CanSocketOption;
+import tel.schich.javacan.select.NativeChannel;
+import tel.schich.javacan.select.NativeHandle;
+import tel.schich.javacan.select.UnixFileDescriptor;
 
 public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
 
@@ -57,7 +60,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
 
     @Override
     protected void implCloseSelectableChannel() throws IOException {
-        if (NativeInterface.close(sock) != 0) {
+        if (SocketCAN.close(sock) != 0) {
             throw new CanNativeOperationException("Unable to close socket!");
         }
 
@@ -65,7 +68,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
 
     @Override
     protected void implConfigureBlocking(boolean block) throws IOException {
-        if (NativeInterface.setBlockingMode(sock, block) == -1) {
+        if (SocketCAN.setBlockingMode(sock, block) == -1) {
             throw new CanNativeOperationException("Unable to set the blocking mode!");
         }
     }
@@ -103,7 +106,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             throw new BufferOverflowException();
         }
         buffer.order(ByteOrder.nativeOrder());
-        long bytesRead = NativeInterface.read(sock, buffer, offset, length);
+        long bytesRead = SocketCAN.read(sock, buffer, offset, length);
         if (bytesRead == -1) {
             throw new CanNativeOperationException("Unable to read from the socket!");
         }
@@ -114,7 +117,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         if (offset + length > buffer.capacity()) {
             throw new BufferUnderflowException();
         }
-        long bytesWritten = NativeInterface.write(sock, buffer, offset, length);
+        long bytesWritten = SocketCAN.write(sock, buffer, offset, length);
         if (bytesWritten == -1) {
             throw new CanNativeOperationException("Unable to write to the socket!");
         }

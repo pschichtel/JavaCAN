@@ -29,7 +29,7 @@ public class CanChannels {
     private CanChannels() {}
 
     public static RawCanChannel newRawChannel() throws IOException {
-        int fd = NativeInterface.createRawSocket();
+        int fd = SocketCAN.createRawSocket();
         if (fd == -1) {
             throw new CanNativeOperationException("Unable to create socket!");
         }
@@ -37,7 +37,7 @@ public class CanChannels {
     }
 
     public static IsotpCanChannel newIsotpChannel() throws IOException {
-        int fd = NativeInterface.createIsotpSocket();
+        int fd = SocketCAN.createIsotpSocket();
         if (fd == -1) {
             throw new CanNativeOperationException("Unable to create ISOTP socket!");
         }

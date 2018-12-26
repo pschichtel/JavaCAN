@@ -20,45 +20,68 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.select;
 
-import java.nio.channels.SelectableChannel;
+import java.io.IOException;
+import java.nio.channels.IllegalSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.spi.AbstractSelectionKey;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.AbstractSelector;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.Set;
 
-public class EPollSelectionKey extends AbstractSelectionKey {
-
-    private final Selector selector;
-    private final SelectableChannel channel;
-
-    public EPollSelectionKey(Selector selector, SelectableChannel channel) {
-        this.selector = selector;
-        this.channel = channel;
+public class EPollSelector extends AbstractSelector {
+    public EPollSelector(SelectorProvider provider) {
+        super(provider);
     }
 
     @Override
-    public SelectableChannel channel() {
-        return channel;
+    protected void implCloseSelector() throws IOException {
+
     }
 
     @Override
-    public Selector selector() {
-        return selector;
-    }
+    protected SelectionKey register(AbstractSelectableChannel ch, int ops, Object att) {
+        if (!(ch instanceof NativeChannel)) {
+            throw new IllegalSelectorException();
+        }
+        final NativeHandle nativeHandle = ((NativeChannel) ch).getHandle();
+        if (!(nativeHandle instanceof UnixFileDescriptor)) {
+            throw new IllegalSelectorException();
+        }
+        int socket = ((UnixFileDescriptor) nativeHandle).getFD();
 
-    @Override
-    public int interestOps() {
         throw new UnsupportedOperationException("TODO");
     }
 
     @Override
-    public SelectionKey interestOps(int ops) {
+    public Set<SelectionKey> keys() {
         throw new UnsupportedOperationException("TODO");
     }
 
     @Override
-    public int readyOps() {
+    public Set<SelectionKey> selectedKeys() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public int selectNow() throws IOException {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public int select(long timeout) throws IOException {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public int select() throws IOException {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public Selector wakeup() {
         throw new UnsupportedOperationException("TODO");
     }
 }

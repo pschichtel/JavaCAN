@@ -39,12 +39,12 @@ public class OSError {
     }
 
     public static OSError getLast() {
-        int lastErrno = NativeInterface.errno();
+        int lastErrno = SocketCAN.errno();
         if (lastErrno == 0) {
             return null;
         }
 
-        return new OSError(lastErrno, NativeInterface.errstr(lastErrno));
+        return new OSError(lastErrno, SocketCAN.errstr(lastErrno));
     }
 
     private static boolean isTemporary(int errno) {
@@ -61,6 +61,6 @@ public class OSError {
     }
 
     public static boolean wasTemporaryError() {
-        return isTemporary(NativeInterface.errno());
+        return isTemporary(SocketCAN.errno());
     }
 }
