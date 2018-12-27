@@ -25,7 +25,6 @@ package tel.schich.javacan.test.select;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelector;
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -34,7 +33,7 @@ import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.select.JavaCANSelectorProvider;
 
-import static java.time.Duration.ofSeconds;
+import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
@@ -61,10 +60,10 @@ public class EPollSelectorTest {
                 ch.register(selector, SelectionKey.OP_READ);
 
                 CanFrame inputFrame = CanFrame.create(0x7EF, FD_NO_FLAGS, new byte[] { 1, 2, 3, 4 });
-                runDelayed(ofSeconds(2), () -> {
+                runDelayed(ofMillis(200), () -> {
                     ch.write(inputFrame);
                 });
-                assertTimeoutPreemptively(ofSeconds(4), () -> {
+                assertTimeoutPreemptively(ofMillis(3000000), () -> {
                     selector.select();
                     CanFrame outputFrame = ch.read();
                     assertEquals(inputFrame, outputFrame, "What goes in should come out!");
@@ -75,11 +74,10 @@ public class EPollSelectorTest {
 
     @Test
     public void testWakeup() throws IOException {
-        Duration timeout = ofSeconds(1);
         JavaCANSelectorProvider provider = new JavaCANSelectorProvider();
         try (AbstractSelector selector = provider.openSelector()) {
-            runDelayed(timeout, selector::wakeup);
-            assertTimeoutPreemptively(timeout, (Executable) selector::select);
+            runDelayed(ofMillis(100), selector::wakeup);
+            assertTimeoutPreemptively(ofMillis(200), (Executable) selector::select);
         }
     }
 }

@@ -24,7 +24,6 @@ package tel.schich.javacan.select;
 
 import java.io.IOException;
 import java.nio.channels.IllegalSelectorException;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
@@ -36,9 +35,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import sun.nio.ch.SelChImpl;
-import sun.nio.ch.SelectionKeyImpl;
-import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.JavaCANNativeOperationException;
 
 public class EPollSelector extends AbstractSelector {
@@ -120,7 +116,6 @@ public class EPollSelector extends AbstractSelector {
 
         EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
         key.attach(att);
-        key.cancel();
         synchronized (keyCollectionsLock) {
             this.keys.add(key);
             this.fdToKey.put(socket, key);
