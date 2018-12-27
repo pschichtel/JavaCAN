@@ -106,22 +106,34 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             throw new BufferOverflowException();
         }
         buffer.order(ByteOrder.nativeOrder());
-        long bytesRead = SocketCAN.read(sock, buffer, offset, length);
-        if (bytesRead == -1) {
-            throw new JavaCANNativeOperationException("Unable to read from the socket!");
+        long bytesRead = 0;
+        begin();
+        try {
+            bytesRead = SocketCAN.read(sock, buffer, offset, length);
+            if (bytesRead == -1) {
+                throw new JavaCANNativeOperationException("Unable to read from the socket!");
+            }
+            return bytesRead;
+        } finally {
+            end(bytesRead > 0);
         }
-        return bytesRead;
     }
 
     protected long writeSocket(ByteBuffer buffer, int offset, int length) throws IOException {
         if (offset + length > buffer.capacity()) {
             throw new BufferUnderflowException();
         }
-        long bytesWritten = SocketCAN.write(sock, buffer, offset, length);
-        if (bytesWritten == -1) {
-            throw new JavaCANNativeOperationException("Unable to write to the socket!");
+        long bytesWritten = 0;
+        begin();
+        try {
+            bytesWritten = SocketCAN.write(sock, buffer, offset, length);
+            if (bytesWritten == -1) {
+                throw new JavaCANNativeOperationException("Unable to write to the socket!");
+            }
+            return bytesWritten;
+        } finally {
+            end(bytesWritten > 0);
         }
-        return bytesWritten;
     }
 
     public static ByteBuffer allocate(int size) {
