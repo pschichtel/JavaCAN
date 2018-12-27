@@ -23,6 +23,7 @@
 package tel.schich.javacan.select;
 
 import java.io.IOException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.IllegalSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -92,6 +93,11 @@ public class EPollSelector extends AbstractSelector {
         }
     }
 
+    private void ensureOpen() {
+        if (!isOpen())
+            throw new ClosedSelectorException();
+    }
+
     void updateOps(EPollSelectionKey key, int ops) throws IOException {
         if (EPoll.updateFileDescriptor(epollfd, key.getFd(), ops) != 0) {
             throw new JavaCANNativeOperationException("Unable to modify FD!");
@@ -100,6 +106,7 @@ public class EPollSelector extends AbstractSelector {
 
     @Override
     protected SelectionKey register(AbstractSelectableChannel ch, int ops, Object att) {
+        ensureOpen();
         if (!(ch instanceof NativeChannel)) {
             throw new IllegalSelectorException();
         }
@@ -148,11 +155,13 @@ public class EPollSelector extends AbstractSelector {
 
     @Override
     public Set<SelectionKey> keys() {
+        ensureOpen();
         return keys;
     }
 
     @Override
     public Set<SelectionKey> selectedKeys() {
+        ensureOpen();
         return selectionKeys;
     }
 
@@ -187,6 +196,8 @@ public class EPollSelector extends AbstractSelector {
     }
 
     private int poll(long timeout) throws IOException {
+        ensureOpen();
+
         processDeregisterQueue();
         int n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
         if (n == -1) {
@@ -240,6 +251,7 @@ public class EPollSelector extends AbstractSelector {
 
     @Override
     public Selector wakeup() {
+        ensureOpen();
         if (EPoll.signalEvent(eventfd, 1) < 0) {
             throw new RuntimeException(new JavaCANNativeOperationException("Unable to signal the eventfd!"));
         }

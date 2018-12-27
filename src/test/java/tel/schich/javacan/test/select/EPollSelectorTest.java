@@ -36,7 +36,6 @@ import tel.schich.javacan.select.JavaCANSelectorProvider;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
