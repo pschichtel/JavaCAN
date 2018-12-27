@@ -39,7 +39,11 @@ public class IsotpCanSocketOptions {
 
         @Override
         public IsotpOptions get(int sock) throws IOException {
-            throw new UnsupportedOperationException("TODO");
+            IsotpOptions opts = SocketCAN.getIsotpOpts(sock);
+            if (opts == null) {
+                throw new JavaCANNativeOperationException("Unable to get the ISOTP options!");
+            }
+            return opts;
         }
     });
     public static final SocketOption<IsotpFlowControlOptions> RECV_FC = new CanSocketOption<>("RECV_FC", IsotpFlowControlOptions.class, new CanSocketOption.Handler<IsotpFlowControlOptions>() {
@@ -53,7 +57,11 @@ public class IsotpCanSocketOptions {
 
         @Override
         public IsotpFlowControlOptions get(int sock) throws IOException {
-            throw new UnsupportedOperationException("TODO");
+            IsotpFlowControlOptions opts = SocketCAN.getIsotpRecvFc(sock);
+            if (opts == null) {
+                throw new JavaCANNativeOperationException("Unable to get the ISOTP flow control options!");
+            }
+            return opts;
         }
     });
     public static final SocketOption<Integer> TX_STMIN = new CanSocketOption<>("TX_STMIN", Integer.class, new CanSocketOption.Handler<Integer>() {
@@ -103,7 +111,11 @@ public class IsotpCanSocketOptions {
 
         @Override
         public IsotpLinkLayerOptions get(int sock) throws IOException {
-            throw new UnsupportedOperationException("TODO");
+            IsotpLinkLayerOptions opts = SocketCAN.getIsotpLlOpts(sock);
+            if (opts == null) {
+                throw new JavaCANNativeOperationException("Unable to get the ISOTP link layer options!");
+            }
+            return opts;
         }
     });
 }

@@ -226,6 +226,26 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpOpts(JNIEnv *en
     return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_OPTS, &opts, sizeof(opts));
 }
 
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpOpts(JNIEnv *env, jclass class, jint sock) {
+    jclass cls = (*env)->FindClass(env, "tel/schich/javacan/IsotpOptions");
+    if (cls == NULL) {
+        return NULL;
+    }
+
+    jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>", "(IIBBBB)V");
+    if (ctor == NULL) {
+        return NULL;
+    }
+
+    struct can_isotp_options opts;
+    socklen_t len = sizeof(opts);
+    if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_OPTS, &opts, &len) != 0) {
+        return NULL;
+    }
+
+    return (*env)->NewObject(env, cls, ctor, opts.flags, opts.frame_txtime, opts.ext_address, opts.txpad_content, opts.rxpad_content, opts.rx_ext_address);
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *env, jclass class, jint sock, jbyte bs, jbyte stmin, jbyte wftmax) {
     struct can_isotp_fc_options opts;
     opts.bs = (uint8_t) bs;
@@ -234,6 +254,27 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *
 
     return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RECV_FC, &opts, sizeof(opts));
 }
+
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRecvFc(JNIEnv *env, jclass class, jint sock) {
+    jclass cls = (*env)->FindClass(env, "tel/schich/javacan/IsotpFlowControlOptions");
+    if (cls == NULL) {
+        return NULL;
+    }
+
+    jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>", "(BBB)V");
+    if (ctor == NULL) {
+        return NULL;
+    }
+
+    struct can_isotp_fc_options opts;
+    socklen_t len = sizeof(opts);
+    if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RECV_FC, &opts, &len) != 0) {
+        return NULL;
+    }
+
+    return (*env)->NewObject(env, cls, ctor, opts.bs, opts.stmin, opts.wftmax);
+}
+
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpTxStmin(JNIEnv *env, jclass class, jint sock, jint tx_stmin) {
     return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &tx_stmin, sizeof(tx_stmin));
@@ -250,7 +291,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpTxStmin(JNIEnv 
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRxStmin(JNIEnv *env, jclass class, jint sock, jint rx_stmin) {
-    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &rx_stmin, sizeof(rx_stmin));
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RX_STMIN, &rx_stmin, sizeof(rx_stmin));
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRxStmin(JNIEnv *env, jclass class, jint sock) {
@@ -270,4 +311,24 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpLlOpts(JNIEnv *
     opts.tx_flags = (uint8_t) tx_flags;
 
     return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_LL_OPTS, &opts, sizeof(opts));
+}
+
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEnv *env, jclass class, jint sock) {
+    jclass cls = (*env)->FindClass(env, "tel/schich/javacan/IsotpLinkLayerOptions");
+    if (cls == NULL) {
+        return NULL;
+    }
+
+    jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>", "(BBB)V");
+    if (ctor == NULL) {
+        return NULL;
+    }
+
+    struct can_isotp_ll_options opts;
+    socklen_t len = sizeof(opts);
+    if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_LL_OPTS, &opts, &len) != 0) {
+        return NULL;
+    }
+
+    return (*env)->NewObject(env, cls, ctor, opts.mtu, opts.tx_dl, opts.tx_flags);
 }
