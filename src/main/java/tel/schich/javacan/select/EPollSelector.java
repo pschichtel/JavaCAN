@@ -31,12 +31,16 @@ import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import tel.schich.javacan.JavaCANNativeOperationException;
+import tel.schich.javacan.util.UngrowableSet;
+
+import static java.util.Collections.newSetFromMap;
+import static java.util.Collections.unmodifiableSet;
 
 public class EPollSelector extends AbstractSelector {
 
@@ -52,6 +56,9 @@ public class EPollSelector extends AbstractSelector {
     private final Set<SelectionKey> selectionKeys;
     private final Map<Integer, EPollSelectionKey> fdToKey;
     private final Object keyCollectionsLock = new Object();
+
+    private final Set<SelectionKey> publicKeys;
+    private final Set<SelectionKey> publicSelectionKeys;
 
     public EPollSelector(SelectorProvider provider) throws JavaCANNativeOperationException {
         this(provider, 100);
@@ -69,9 +76,12 @@ public class EPollSelector extends AbstractSelector {
             throw new JavaCANNativeOperationException("Unable to register the eventfd to epoll!");
         }
 
-        this.keys = new HashSet<>();
-        this.selectionKeys = new HashSet<>();
+        this.keys = newSetFromMap(new IdentityHashMap<>());
+        this.selectionKeys = newSetFromMap(new IdentityHashMap<>());
         this.fdToKey = new HashMap<>();
+
+        this.publicKeys = unmodifiableSet(keys);
+        this.publicSelectionKeys = new UngrowableSet<>(keys);
     }
 
     @Override
@@ -155,13 +165,13 @@ public class EPollSelector extends AbstractSelector {
     @Override
     public Set<SelectionKey> keys() {
         ensureOpen();
-        return keys;
+        return publicKeys;
     }
 
     @Override
     public Set<SelectionKey> selectedKeys() {
         ensureOpen();
-        return selectionKeys;
+        return publicSelectionKeys;
     }
 
     private void deregisterKey(EPollSelectionKey key) throws IOException {
@@ -217,7 +227,6 @@ public class EPollSelector extends AbstractSelector {
         }
 
         synchronized (keyCollectionsLock) {
-            selectionKeys.clear();
             int fd;
             for (int i = 0; i < n; ++i) {
                 fd = fds[i];
@@ -226,7 +235,13 @@ public class EPollSelector extends AbstractSelector {
                 } else {
                     EPollSelectionKey key = fdToKey.get(fd);
                     if (key != null) {
-                        selectionKeys.add(key.readyOps(translateInterestsFromEPoll(events[i])));
+                        int ops = translateInterestsFromEPoll(events[i]);
+                        boolean added = selectionKeys.add(key);
+                        if (added) {
+                            key.setReadyOps(ops);
+                        } else {
+                            key.mergeReadyOps(ops);
+                        }
                     }
                 }
             }

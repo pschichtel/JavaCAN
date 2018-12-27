@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectionKey;
-import java.util.Objects;
 
 public class EPollSelectionKey extends AbstractSelectionKey {
 
@@ -34,18 +33,14 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     private final SelectableChannel channel;
     private final int fd;
     private volatile int interestOps;
-    private final int readyOps;
+    private volatile int readyOps;
 
     public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps) {
-        this(selector, channel, fd, interestOps, 0);
-    }
-
-    public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps, int readyOps) {
         this.selector = selector;
         this.channel = channel;
         this.fd = fd;
         this.interestOps = interestOps;
-        this.readyOps = readyOps;
+        this.readyOps = 0;
     }
 
     public int getFd() {
@@ -71,10 +66,10 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     public synchronized SelectionKey interestOps(int ops) {
         try {
             selector.updateOps(this, ops);
+            interestOps = ops;
         } catch (IOException e) {
             throw new RuntimeException("Interest change could not be propagated to the kernel!", e);
         }
-        interestOps = ops;
         return this;
     }
 
@@ -83,11 +78,13 @@ public class EPollSelectionKey extends AbstractSelectionKey {
         return readyOps;
     }
 
-    SelectionKey readyOps(int ops) {
-        return new EPollSelectionKey(selector, channel, interestOps, ops);
+    synchronized void setReadyOps(int ops) {
+        this.readyOps = ops;
     }
 
-
+    synchronized void mergeReadyOps(int newOps) {
+        this.readyOps = this.readyOps | newOps;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -95,12 +92,11 @@ public class EPollSelectionKey extends AbstractSelectionKey {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        EPollSelectionKey t = (EPollSelectionKey) o;
-        return fd == t.fd && interestOps == t.interestOps && selector.equals(t.selector) && channel.equals(t.channel);
+        return fd == ((EPollSelectionKey) o).fd;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fd, interestOps);
+        return fd;
     }
 }
