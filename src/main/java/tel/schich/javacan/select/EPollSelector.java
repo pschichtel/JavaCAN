@@ -177,6 +177,8 @@ public class EPollSelector extends AbstractSelector {
 
     private void processDeregisterQueue() throws IOException {
         Set<SelectionKey> cancelled = cancelledKeys();
+        // synchronization on the set is demanded by the interface
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (cancelled) {
             if (!cancelled.isEmpty()) {
                 Iterator<SelectionKey> i = cancelled.iterator();
