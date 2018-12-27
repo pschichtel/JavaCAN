@@ -75,8 +75,8 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBlockingMode(JNIEnv 
     return is_blocking(sock);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReadTimeout(JNIEnv *env, jclass class, jint sock, jlong timeout) {
-    return set_timeout(sock, SO_RCVTIMEO, (uint64_t) timeout);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReadTimeout(JNIEnv *env, jclass class, jint sock, jlong seconds, jlong nanos) {
+    return set_timeout(sock, SO_RCVTIMEO, (uint64_t) seconds, (uint64_t) nanos);
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv *env, jclass class, jint sock) {
@@ -88,8 +88,8 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv 
     return timeout;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv *env, jclass class, jint sock, jlong timeout) {
-    return set_timeout(sock, SO_SNDTIMEO, (uint64_t) timeout);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv *env, jclass class, jint sock, jlong seconds, jlong nanos) {
+    return set_timeout(sock, SO_SNDTIMEO, (uint64_t) seconds, (uint64_t) nanos);
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv *env, jclass class, jint sock) {

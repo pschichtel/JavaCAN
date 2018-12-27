@@ -26,11 +26,12 @@ import java.io.IOException;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.Duration;
 
 import tel.schich.javacan.option.CanSocketOption;
-import tel.schich.javacan.option.TimeSpan;
 
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.time.temporal.ChronoUnit.MICROS;
+import static java.time.temporal.ChronoUnit.NANOS;
 
 public class CanSocketOptions {
     public static final SocketOption<Boolean> JOIN_FILTERS = new CanSocketOption<>("JOIN_FILTERS", Boolean.class, new CanSocketOption.Handler<Boolean>() {
@@ -156,38 +157,38 @@ public class CanSocketOptions {
             return filters;
         }
     });
-    public static final SocketOption<TimeSpan> SO_SNDTIMEO = new CanSocketOption<>("SO_SNDTIMEO", TimeSpan.class, new CanSocketOption.Handler<TimeSpan>() {
+    public static final SocketOption<Duration> SO_SNDTIMEO = new CanSocketOption<>("SO_SNDTIMEO", Duration.class, new CanSocketOption.Handler<Duration>() {
         @Override
-        public void set(int sock, TimeSpan val) throws IOException {
-            if (SocketCAN.setWriteTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
+        public void set(int sock, Duration val) throws IOException {
+            if (SocketCAN.setWriteTimeout(sock, val.getSeconds(), val.getNano()) == -1) {
                 throw new JavaCANNativeOperationException("Unable to set write timeout!");
             }
         }
 
         @Override
-        public TimeSpan get(int sock) throws IOException {
+        public Duration get(int sock) throws IOException {
             final long timeout = SocketCAN.getWriteTimeout(sock);
             if (timeout < 0) {
                 throw new JavaCANNativeOperationException("Unable to get write timeout!");
             }
-            return new TimeSpan(timeout, MICROSECONDS);
+            return Duration.of(timeout, MICROS);
         }
     });
-    public static final SocketOption<TimeSpan> SO_RCVTIMEO = new CanSocketOption<>("SO_RCVTIMEO", TimeSpan.class, new CanSocketOption.Handler<TimeSpan>() {
+    public static final SocketOption<Duration> SO_RCVTIMEO = new CanSocketOption<>("SO_RCVTIMEO", Duration.class, new CanSocketOption.Handler<Duration>() {
         @Override
-        public void set(int sock, TimeSpan val) throws IOException {
-            if (SocketCAN.setReadTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
+        public void set(int sock, Duration val) throws IOException {
+            if (SocketCAN.setReadTimeout(sock, val.getSeconds(), val.getNano()) == -1) {
                 throw new JavaCANNativeOperationException("Unable to set read timeout!");
             }
         }
 
         @Override
-        public TimeSpan get(int sock) throws IOException {
+        public Duration get(int sock) throws IOException {
             final long timeout = SocketCAN.getReadTimeout(sock);
             if (timeout < 0) {
                 throw new JavaCANNativeOperationException("Unable to get read timeout!");
             }
-            return new TimeSpan(timeout, MICROSECONDS);
+            return Duration.of(timeout, MICROS);
         }
     });
     public static final SocketOption<Integer> SO_RCVBUF = new CanSocketOption<>("SO_RCVBUF", Integer.class, new CanSocketOption.Handler<Integer>() {

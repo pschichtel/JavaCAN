@@ -48,11 +48,11 @@ class SocketCAN {
 
     public static native int getBlockingMode(int sock);
 
-    public static native int setReadTimeout(int sock, long timeout);
+    public static native int setReadTimeout(int sock, long seconds, long nanos);
 
     public static native long getReadTimeout(int sock);
 
-    public static native int setWriteTimeout(int sock, long timeout);
+    public static native int setWriteTimeout(int sock, long seconds, long nanos);
 
     public static native long getWriteTimeout(int sock);
 

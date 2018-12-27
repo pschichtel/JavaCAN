@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.test;
 
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanChannels;
@@ -29,10 +30,9 @@ import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.JavaCANNativeOperationException;
 import tel.schich.javacan.RawCanChannel;
-import tel.schich.javacan.option.TimeSpan;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -86,14 +86,14 @@ class RawCanSocketTest {
             socket.setOption(ERR_FILTER, 0xFF);
             assertEquals(0xFF, socket.getOption(ERR_FILTER).intValue(), "Newly set error filter should be available");
 
-            final TimeSpan readTimeout = new TimeSpan(1, SECONDS);
+            final Duration readTimeout = ofSeconds(1);
             socket.setOption(SO_RCVTIMEO, readTimeout);
             assertEquals(readTimeout, socket.getOption(SO_RCVTIMEO), "Read timeout was not as set");
 
             // precision below seconds is not guaranteed
-            TimeSpan writeTimeout = new TimeSpan(1100, MILLISECONDS);
+            Duration writeTimeout = ofMillis(1100);
             socket.setOption(SO_SNDTIMEO, writeTimeout);
-            assertEquals(new TimeSpan(1, SECONDS), socket.getOption(SO_SNDTIMEO).to(SECONDS), "Write timeout was not as set");
+            assertEquals(1, socket.getOption(SO_SNDTIMEO).getSeconds(), "Write timeout was not as set");
 
             int newReceiveBufferSize = 2048;
             int oldReceiveBufferSize = socket.getOption(SO_RCVBUF) / 2;
@@ -146,24 +146,24 @@ class RawCanSocketTest {
             socket.setOption(FILTER, new CanFilter[] {CanFilter.NONE});
 
             {
-                TimeSpan timeout = new TimeSpan(3L, SECONDS);
+                Duration timeout = ofSeconds(3);
                 socket.setOption(SO_RCVTIMEO, timeout);
                 final long start = System.currentTimeMillis();
                 final JavaCANNativeOperationException err = assertThrows(JavaCANNativeOperationException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
-                assertEquals(timeout, new TimeSpan(delta, SECONDS));
+                assertEquals(timeout.getSeconds(), delta);
                 assertTrue(err.mayTryAgain());
             }
 
             {
-                TimeSpan rtimeout = new TimeSpan(1, SECONDS);
-                TimeSpan wtimeout = new TimeSpan(10, SECONDS);
+                Duration rtimeout = ofSeconds(1);
+                Duration wtimeout = ofSeconds(10);
                 socket.setOption(SO_RCVTIMEO, rtimeout);
                 socket.setOption(SO_SNDTIMEO, wtimeout);
                 final long start = System.currentTimeMillis();
                 final JavaCANNativeOperationException err = assertThrows(JavaCANNativeOperationException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
-                assertEquals(rtimeout, new TimeSpan(delta, SECONDS));
+                assertEquals(rtimeout.getSeconds(), delta);
                 assertTrue(err.mayTryAgain());
             }
         }

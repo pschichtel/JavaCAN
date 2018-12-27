@@ -56,26 +56,12 @@ int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     return bind(sock, (const struct sockaddr *) &addr, length);
 }
 
-void micros_to_timeval(struct timeval *t, uint64_t micros) {
-    if (micros < MICROS_PER_SECOND) {
-        t->tv_sec = 0;
-        t->tv_usec = micros;
-    } else {
-        ldiv_t r = ldiv(micros, MICROS_PER_SECOND);
-        t->tv_sec = r.quot;
-        t->tv_usec = r.rem;
-    }
-}
-
-uint64_t micros_from_timeval(struct timeval *t) {
-    return ((uint64_t)t->tv_sec) * MICROS_PER_SECOND + t->tv_usec;
-}
-
-int set_timeout(int sock, int type, uint64_t t) {
+int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {
     socklen_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
+    timeout.tv_sec = seconds;
+    timeout.tv_usec = nanos / 1000;
 
-    micros_to_timeval(&timeout, t);
     return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
 }
 
@@ -88,7 +74,7 @@ int get_timeout(int sock, int type, uint64_t* micros) {
         return result;
     }
 
-    *micros = micros_from_timeval(&timeout);
+    *micros = ((uint64_t)timeout.tv_sec) * MICROS_PER_SECOND + timeout.tv_usec;
     return 0;
 }
 
