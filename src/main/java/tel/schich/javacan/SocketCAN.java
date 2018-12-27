@@ -88,4 +88,18 @@ class SocketCAN {
     public static native int setErrorFilter(int sock, int mask);
 
     public static native int getErrorFilter(int sock);
+
+    public static native int setIsotpOpts(int sock, int flags, int frameTxTime, byte extAddress, byte txpadContent, byte rxpadContent, byte rxExtAddress);
+
+    public static native int setIsotpRecvFc(int sock, byte bs, byte stmin, byte wftmax);
+
+    public static native int setIsotpTxStmin(int sock, int txStmin);
+
+    public static native int getIsotpTxStmin(int sock);
+
+    public static native int setIsotpRxStmin(int sock, int rxStmin);
+
+    public static native int getIsotpRxStmin(int sock);
+
+    public static native int setIsotpLlOpts(int sock, byte mtu, byte txDl, byte txFlags);
 }

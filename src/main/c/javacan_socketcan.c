@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <linux/can/isotp.h>
 #include <stdlib.h>
 #include <net/if.h>
 #include <stdbool.h>
@@ -101,8 +102,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveBufferSize(JNIEnv *env, jclass class, jint sock, jint size) {
-    socklen_t size_size = sizeof(size);
-    return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, size_size);
+    return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JNIEnv *env, jclass class, jint sock) {
@@ -212,4 +212,62 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *
 
 JNIEXPORT jshort JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, jclass class, jint sock, jint events, jint timeout) {
     return poll_single(sock, (short) events, timeout);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpOpts(JNIEnv *env, jclass class, jint sock, jint flags, jint frame_txtime, jbyte ext_address, jbyte txpad_content, jbyte rxpad_content, jbyte rx_ext_address) {
+    struct can_isotp_options opts;
+    opts.flags = (uint32_t) flags;
+    opts.frame_txtime = (uint32_t) frame_txtime;
+    opts.ext_address = (uint8_t) ext_address;
+    opts.txpad_content = (uint8_t) txpad_content;
+    opts.rxpad_content = (uint8_t) rxpad_content;
+    opts.rx_ext_address = (uint8_t) rx_ext_address;
+
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_OPTS, &opts, sizeof(opts));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *env, jclass class, jint sock, jbyte bs, jbyte stmin, jbyte wftmax) {
+    struct can_isotp_fc_options opts;
+    opts.bs = (uint8_t) bs;
+    opts.stmin = (uint8_t) stmin;
+    opts.wftmax = (uint8_t) wftmax;
+
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RECV_FC, &opts, sizeof(opts));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpTxStmin(JNIEnv *env, jclass class, jint sock, jint tx_stmin) {
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &tx_stmin, sizeof(tx_stmin));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpTxStmin(JNIEnv *env, jclass class, jint sock) {
+    int tx_stmin = 0;
+    socklen_t size = sizeof(tx_stmin);
+    int result = getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &tx_stmin, &size);
+    if (result != 0) {
+        return -result;
+    }
+    return tx_stmin;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRxStmin(JNIEnv *env, jclass class, jint sock, jint rx_stmin) {
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &rx_stmin, sizeof(rx_stmin));
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRxStmin(JNIEnv *env, jclass class, jint sock) {
+    int rx_stmin = 0;
+    socklen_t size = sizeof(rx_stmin);
+    int result = getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RX_STMIN, &rx_stmin, &size);
+    if (result != 0) {
+        return -result;
+    }
+    return rx_stmin;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpLlOpts(JNIEnv *env, jclass class, jint sock, jbyte mtu, jbyte tx_dl, jbyte tx_flags) {
+    struct can_isotp_ll_options opts;
+    opts.mtu = (uint8_t) mtu;
+    opts.tx_dl = (uint8_t) tx_dl;
+    opts.tx_flags = (uint8_t) tx_flags;
+
+    return setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_LL_OPTS, &opts, sizeof(opts));
 }
