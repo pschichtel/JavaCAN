@@ -25,7 +25,12 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.nio.channels.spi.SelectorProvider;
 
+import tel.schich.javacan.select.JavaCANSelectorProvider;
+
 public class CanChannels {
+
+    private static final SelectorProvider PROVIDER = new JavaCANSelectorProvider();
+
     private CanChannels() {}
 
     public static RawCanChannel newRawChannel() throws IOException {
@@ -33,7 +38,7 @@ public class CanChannels {
         if (fd == -1) {
             throw new JavaCANNativeOperationException("Unable to create socket!");
         }
-        return new RawCanChannelImpl(SelectorProvider.provider(), fd);
+        return new RawCanChannelImpl(PROVIDER, fd);
     }
 
     public static IsotpCanChannel newIsotpChannel() throws IOException {
@@ -41,6 +46,6 @@ public class CanChannels {
         if (fd == -1) {
             throw new JavaCANNativeOperationException("Unable to create ISOTP socket!");
         }
-        return new IsotpCanChannelImpl(SelectorProvider.provider(), fd);
+        return new IsotpCanChannelImpl(PROVIDER, fd);
     }
 }

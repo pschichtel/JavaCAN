@@ -53,9 +53,8 @@ public class EPollSelectorTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        JavaCANSelectorProvider provider = new JavaCANSelectorProvider();
-        try (AbstractSelector selector = provider.openSelector()) {
-            try (RawCanChannel ch = CanChannels.newRawChannel()) {
+        try (RawCanChannel ch = CanChannels.newRawChannel()) {
+            try (AbstractSelector selector = ch.provider().openSelector()) {
                 ch.setOption(RECV_OWN_MSGS, true);
                 ch.configureBlocking(false);
                 ch.bind(CAN_INTERFACE);
