@@ -29,16 +29,70 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import tel.schich.javacan.JavaCANNativeOperationException;
+
 public class EPollSelector extends AbstractSelector {
+
+    public static final long SELECT_NO_BLOCKING = 0;
+    public static final long SELECT_BLOCK_INDEFINITELY = -1;
+
+    private final int epollfd;
+    private final long eventsPointer;
+    private final int maxEvents;
+    private final int eventfd;
+
+    private final Set<SelectionKey> keys;
+    private final Set<SelectionKey> selectionKeys;
+    private final Map<Integer, EPollSelectionKey> fdToKey;
+    private final Object keyCollectionsLock = new Object();
+
     public EPollSelector(SelectorProvider provider) {
+        this(provider, 100);
+    }
+
+    public EPollSelector(SelectorProvider provider, int maxEvents) {
         super(provider);
+
+        this.epollfd = EPoll.create();
+        this.maxEvents = maxEvents;
+        this.eventsPointer = EPoll.newEvents(maxEvents);
+        this.eventfd = EPoll.createEventfd(false);
+
+        EPoll.addFileDescriptor(epollfd, epollfd, EPoll.EPOLLIN);
+
+        this.keys = new HashSet<>();
+        this.selectionKeys = new HashSet<>();
+        this.fdToKey = new HashMap<>();
     }
 
     @Override
     protected void implCloseSelector() throws IOException {
+        EPoll.freeEvents(eventsPointer);
+        IOException e = null;
+        if (EPoll.close(epollfd) != 0) {
+            e = new JavaCANNativeOperationException("Unable to close epoll fd!");
+        }
+        if (EPoll.close(eventfd) != 0) {
+            IOException eventfdClose = new JavaCANNativeOperationException("Unable to close eventfd!");
+            if (e != null) {
+                eventfdClose.addSuppressed(e);
+            }
+            e = eventfdClose;
+        }
+        if (e != null) {
+            throw e;
+        }
+    }
 
+    void updateOps(EPollSelectionKey key, int ops) throws IOException {
+        if (EPoll.updateFileDescriptor(epollfd, key.getFd(), ops) != 0) {
+            throw new JavaCANNativeOperationException("Unable to modify FD!");
+        }
     }
 
     @Override
@@ -52,36 +106,102 @@ public class EPollSelector extends AbstractSelector {
         }
         int socket = ((UnixFileDescriptor) nativeHandle).getFD();
 
-        throw new UnsupportedOperationException("TODO");
+        if (EPoll.addFileDescriptor(epollfd, socket, translateInterestsToEPoll(ops)) != 0) {
+            // TODO communicate problem!
+            return null;
+        }
+
+        EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
+        synchronized (keyCollectionsLock) {
+            this.keys.add(key);
+            this.fdToKey.put(socket, key);
+        }
+        return key;
+    }
+
+    private static int translateInterestsToEPoll(int ops) {
+        int newOps = 0;
+        if ((ops & SelectionKey.OP_READ) != 0)
+            newOps |= EPoll.EPOLLIN;
+        if ((ops & SelectionKey.OP_WRITE) != 0)
+            newOps |= EPoll.EPOLLOUT;
+        if ((ops & SelectionKey.OP_CONNECT) != 0)
+            newOps |= EPoll.EPOLLIN;
+        if ((ops & SelectionKey.OP_ACCEPT) != 0)
+            newOps |= EPoll.EPOLLIN;
+        return newOps;
+    }
+
+    private static int translateInterestsFromEPoll(int ops) {
+        int newOps = 0;
+        if ((ops & EPoll.EPOLLIN) != 0)
+            newOps |= SelectionKey.OP_READ;
+        if ((ops & EPoll.EPOLLOUT) != 0)
+            newOps |= SelectionKey.OP_WRITE;
+
+        return newOps;
     }
 
     @Override
     public Set<SelectionKey> keys() {
-        throw new UnsupportedOperationException("TODO");
+        return keys;
     }
 
     @Override
     public Set<SelectionKey> selectedKeys() {
-        throw new UnsupportedOperationException("TODO");
+
+        return selectionKeys;
+    }
+
+    private int poll(long timeout) throws IOException {
+        int n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
+        if (n == -1) {
+            throw new JavaCANNativeOperationException("Unable to poll!");
+        }
+
+        int[] events = new int[n];
+        int[] fds = new int[n];
+        if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
+            throw new JavaCANNativeOperationException("Unable to extract events");
+        }
+
+        synchronized (keyCollectionsLock) {
+            selectionKeys.clear();
+            int fd;
+            for (int i = 0; i < n; ++i) {
+                fd = fds[i];
+                if (fd == eventfd) {
+                    EPoll.clearEvent(eventfd);
+                } else {
+                    EPollSelectionKey key = fdToKey.get(fd);
+                    if (key != null) {
+                        selectionKeys.add(key.readyOps(translateInterestsFromEPoll(events[i])));
+                    }
+                }
+            }
+        }
+
+        return n;
     }
 
     @Override
     public int selectNow() throws IOException {
-        throw new UnsupportedOperationException("TODO");
+        return poll(SELECT_NO_BLOCKING);
     }
 
     @Override
     public int select(long timeout) throws IOException {
-        throw new UnsupportedOperationException("TODO");
+        return poll(timeout <= 0 ? -1 : timeout);
     }
 
     @Override
     public int select() throws IOException {
-        throw new UnsupportedOperationException("TODO");
+        return poll(SELECT_BLOCK_INDEFINITELY);
     }
 
     @Override
     public Selector wakeup() {
-        throw new UnsupportedOperationException("TODO");
+        EPoll.signalEvent(eventfd, 1);
+        return this;
     }
 }

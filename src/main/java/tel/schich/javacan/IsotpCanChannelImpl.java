@@ -34,7 +34,7 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
     @Override
     public IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (SocketCAN.bindSocket(getSocket(), device.getIndex(), rx.getId(), tx.getId()) != 0) {
-            throw new CanNativeOperationException("Unable to bind ISOTP socket!");
+            throw new JavaCANNativeOperationException("Unable to bind ISOTP socket!");
         }
         return this;
     }

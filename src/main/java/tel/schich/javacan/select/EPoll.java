@@ -20,32 +20,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.select;
 
-import java.io.IOException;
+import tel.schich.javacan.JavaCAN;
 
-public class CanDevice {
-    private final String name;
-    private final long index;
+class EPoll {
 
-    private CanDevice(String name, long index) {
-        this.name = name;
-        this.index = index;
+    static {
+        JavaCAN.initialize();
     }
 
-    public String getName() {
-        return name;
-    }
+    public static final int EPOLLIN = 0x001;
+    public static final int EPOLLOUT = 0x004;
 
-    public long getIndex() {
-        return index;
-    }
+    public static native int create();
 
-    public static CanDevice lookup(String name) throws IOException {
-        long index = SocketCAN.resolveInterfaceName(name);
-        if (index == 0) {
-            throw new JavaCANNativeOperationException("Failed to resolve the interface: " + name);
-        }
-        return new CanDevice(name, index);
-    }
+    public static native int createEventfd(boolean block);
+
+    public static native int signalEvent(int eventfd, long value);
+
+    public static native long clearEvent(int eventfd);
+
+    public static native long newEvents(int maxEvents);
+
+    public static native void freeEvents(long eventsPointer);
+
+    public static native int close(int fd);
+
+    public static native int addFileDescriptor(int epollfd, int fd, int interests);
+
+    public static native int removeFileDescriptor(int epollfd, int fd);
+
+    public static native int updateFileDescriptor(int epollfd, int fd, int interests);
+
+    public static native int poll(int epollfd, long eventsPointer, int maxEvents, long timeout);
+
+    public static native int extractEvents(long eventsPointer, int n, int[] events, int[] fds);
 }

@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.select;
 
+import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -29,12 +30,26 @@ import java.nio.channels.spi.AbstractSelectionKey;
 
 public class EPollSelectionKey extends AbstractSelectionKey {
 
-    private final Selector selector;
+    private final EPollSelector selector;
     private final SelectableChannel channel;
+    private final int fd;
+    private volatile int interestOps;
+    private final int readyOps;
 
-    public EPollSelectionKey(Selector selector, SelectableChannel channel) {
+    public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps) {
+        this(selector, channel, fd, interestOps, 0);
+    }
+
+    public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps, int readyOps) {
         this.selector = selector;
         this.channel = channel;
+        this.fd = fd;
+        this.interestOps = interestOps;
+        this.readyOps = readyOps;
+    }
+
+    public int getFd() {
+        return fd;
     }
 
     @Override
@@ -43,22 +58,32 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     }
 
     @Override
-    public Selector selector() {
+    public EPollSelector selector() {
         return selector;
     }
 
     @Override
-    public int interestOps() {
-        throw new UnsupportedOperationException("TODO");
+    public synchronized int interestOps() {
+        return interestOps;
     }
 
     @Override
-    public SelectionKey interestOps(int ops) {
-        throw new UnsupportedOperationException("TODO");
+    public synchronized SelectionKey interestOps(int ops) {
+        try {
+            selector.updateOps(this, ops);
+        } catch (IOException e) {
+            throw new RuntimeException("Interest change could not be propagated to the kernel!", e);
+        }
+        interestOps = ops;
+        return this;
     }
 
     @Override
     public int readyOps() {
-        throw new UnsupportedOperationException("TODO");
+        return readyOps;
+    }
+
+    SelectionKey readyOps(int ops) {
+        return new EPollSelectionKey(selector, channel, interestOps, ops);
     }
 }

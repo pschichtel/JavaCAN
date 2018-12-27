@@ -24,14 +24,14 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
-public class CanNativeOperationException extends IOException {
+public class JavaCANNativeOperationException extends IOException {
     private final OSError error;
 
-    public CanNativeOperationException(String message) {
+    public JavaCANNativeOperationException(String message) {
         this(message, OSError.getLast());
     }
 
-    public CanNativeOperationException(String message, OSError error) {
+    public JavaCANNativeOperationException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;
     }

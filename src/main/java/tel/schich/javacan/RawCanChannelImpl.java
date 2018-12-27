@@ -39,7 +39,7 @@ public class RawCanChannelImpl extends RawCanChannel {
     public RawCanChannel bind(CanDevice device) throws IOException {
         final int result = SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0);
         if (result == -1) {
-            throw new CanNativeOperationException("Unable to bind!");
+            throw new JavaCANNativeOperationException("Unable to bind!");
         }
         return this;
     }

@@ -28,6 +28,9 @@ import tel.schich.javacan.CanFrame;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
+
+import org.junit.jupiter.api.function.Executable;
 
 import static tel.schich.javacan.RawCanChannel.FD_MTU;
 
@@ -67,5 +70,16 @@ public class CanTestHelper {
         if (result != 0) {
             throw new IllegalStateException("Failed to use cansend to send a CAN frame!");
         }
+    }
+
+    public static void runDelayed(Duration d, Executable r) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(d.toMillis());
+                r.execute();
+            } catch (Throwable e) {
+                e.printStackTrace(System.err);
+            }
+        }).start();
     }
 }

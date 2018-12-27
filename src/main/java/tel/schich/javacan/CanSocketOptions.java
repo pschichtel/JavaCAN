@@ -38,7 +38,7 @@ public class CanSocketOptions {
         public void set(int sock, Boolean val) throws IOException {
             final int result = SocketCAN.setJoinFilters(sock, val);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to set the filter joining mode!");
+                throw new JavaCANNativeOperationException("Unable to set the filter joining mode!");
             }
         }
 
@@ -46,7 +46,7 @@ public class CanSocketOptions {
         public Boolean get(int sock) throws IOException {
             final int result = SocketCAN.getJoinFilters(sock);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to get the filter joining mode!");
+                throw new JavaCANNativeOperationException("Unable to get the filter joining mode!");
             }
             return result != 0;
         }
@@ -56,7 +56,7 @@ public class CanSocketOptions {
         public void set(int sock, Boolean val) throws IOException {
             final int result = SocketCAN.setLoopback(sock, val);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to set loopback state!");
+                throw new JavaCANNativeOperationException("Unable to set loopback state!");
             }
         }
 
@@ -64,7 +64,7 @@ public class CanSocketOptions {
         public Boolean get(int sock) throws IOException {
             final int result = SocketCAN.getLoopback(sock);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to get loopback state!");
+                throw new JavaCANNativeOperationException("Unable to get loopback state!");
             }
             return result != 0;
         }
@@ -74,7 +74,7 @@ public class CanSocketOptions {
         public void set(int sock, Boolean val) throws IOException {
             final int result = SocketCAN.setReceiveOwnMessages(sock, val);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to set receive own messages state!");
+                throw new JavaCANNativeOperationException("Unable to set receive own messages state!");
             }
         }
 
@@ -82,7 +82,7 @@ public class CanSocketOptions {
         public Boolean get(int sock) throws IOException {
             final int result = SocketCAN.getReceiveOwnMessages(sock);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to get receive own messages state!");
+                throw new JavaCANNativeOperationException("Unable to get receive own messages state!");
             }
             return result != 0;
         }
@@ -92,7 +92,7 @@ public class CanSocketOptions {
         public void set(int sock, Boolean val) throws IOException {
             final int result = SocketCAN.setAllowFDFrames(sock, val);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to set FD frame support!");
+                throw new JavaCANNativeOperationException("Unable to set FD frame support!");
             }
         }
 
@@ -100,7 +100,7 @@ public class CanSocketOptions {
         public Boolean get(int sock) throws IOException {
             final int result = SocketCAN.getAllowFDFrames(sock);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to get FD frame support!");
+                throw new JavaCANNativeOperationException("Unable to get FD frame support!");
             }
             return result != 0;
         }
@@ -110,7 +110,7 @@ public class CanSocketOptions {
         public void set(int sock, Integer val) throws IOException {
             final int result = SocketCAN.setErrorFilter(sock, val);
             if (result == -1) {
-                throw new CanNativeOperationException("Unable to set the error filter!");
+                throw new JavaCANNativeOperationException("Unable to set the error filter!");
             }
         }
 
@@ -118,7 +118,7 @@ public class CanSocketOptions {
         public Integer get(int sock) throws IOException {
             final int mask = SocketCAN.getErrorFilter(sock);
             if (mask == -1) {
-                throw new CanNativeOperationException("Unable to get the error filter!");
+                throw new JavaCANNativeOperationException("Unable to get the error filter!");
             }
             return mask;
         }
@@ -132,7 +132,7 @@ public class CanSocketOptions {
             }
 
             if (SocketCAN.setFilters(sock, filterData) == -1) {
-                throw new CanNativeOperationException("Unable to set the filters!");
+                throw new JavaCANNativeOperationException("Unable to set the filters!");
             }
         }
 
@@ -143,7 +143,7 @@ public class CanSocketOptions {
         public CanFilter[] get(int sock) throws IOException {
             ByteBuffer filterData = SocketCAN.getFilters(sock);
             if (filterData == null) {
-                throw new CanNativeOperationException("Unable to get the filters!");
+                throw new JavaCANNativeOperationException("Unable to get the filters!");
             }
 
             filterData.order(ByteOrder.nativeOrder()).rewind();
@@ -160,7 +160,7 @@ public class CanSocketOptions {
         @Override
         public void set(int sock, TimeSpan val) throws IOException {
             if (SocketCAN.setWriteTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
-                throw new CanNativeOperationException("Unable to set write timeout!");
+                throw new JavaCANNativeOperationException("Unable to set write timeout!");
             }
         }
 
@@ -168,7 +168,7 @@ public class CanSocketOptions {
         public TimeSpan get(int sock) throws IOException {
             final long timeout = SocketCAN.getWriteTimeout(sock);
             if (timeout < 0) {
-                throw new CanNativeOperationException("Unable to get write timeout!");
+                throw new JavaCANNativeOperationException("Unable to get write timeout!");
             }
             return new TimeSpan(timeout, MICROSECONDS);
         }
@@ -177,7 +177,7 @@ public class CanSocketOptions {
         @Override
         public void set(int sock, TimeSpan val) throws IOException {
             if (SocketCAN.setReadTimeout(sock, val.getTime(MICROSECONDS)) == -1) {
-                throw new CanNativeOperationException("Unable to set read timeout!");
+                throw new JavaCANNativeOperationException("Unable to set read timeout!");
             }
         }
 
@@ -185,7 +185,7 @@ public class CanSocketOptions {
         public TimeSpan get(int sock) throws IOException {
             final long timeout = SocketCAN.getReadTimeout(sock);
             if (timeout < 0) {
-                throw new CanNativeOperationException("Unable to get read timeout!");
+                throw new JavaCANNativeOperationException("Unable to get read timeout!");
             }
             return new TimeSpan(timeout, MICROSECONDS);
         }
@@ -197,7 +197,7 @@ public class CanSocketOptions {
                 throw new IllegalArgumentException("Buffer size must be positive!");
             }
             if (SocketCAN.setReceiveBufferSize(sock, val) != 0) {
-                throw new CanNativeOperationException("Unable to set receive buffer size!");
+                throw new JavaCANNativeOperationException("Unable to set receive buffer size!");
             }
         }
 
@@ -205,7 +205,7 @@ public class CanSocketOptions {
         public Integer get(int sock) throws IOException {
             final int size = SocketCAN.getReceiveBufferSize(sock);
             if (size < 0) {
-                throw new CanNativeOperationException("Unable to get receive buffer size!");
+                throw new JavaCANNativeOperationException("Unable to get receive buffer size!");
             }
             return size;
         }

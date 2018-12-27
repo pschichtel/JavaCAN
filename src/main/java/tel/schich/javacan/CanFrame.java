@@ -24,7 +24,6 @@ package tel.schich.javacan;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 public class CanFrame {
 
@@ -138,39 +137,28 @@ public class CanFrame {
         if (this == o) return true;
         if (!(o instanceof CanFrame)) return false;
         CanFrame b = (CanFrame) o;
-        if (getId() != b.getId()) {
-            return false;
-        }
-        final int dataLength = getDataLength();
-        final int dataOffset = getDataOffset();
-        final int otherDataOffset = b.getDataOffset();
 
-        if (dataLength != b.getDataLength()) {
+        if (size != b.size) {
             return false;
         }
-        for (int i = 0; i < dataLength; ++i) {
-            if (payload.get(dataOffset + i) != b.payload.get(otherDataOffset + i)) {
+        payload.limit(base + size);
+        b.payload.limit(b.base + b.size);
+        for (int i = 0; i < size; ++i) {
+            if (payload.get(base + i) != b.payload.get(b.base + i)) {
                 return false;
             }
         }
         return true;
     }
 
-    private int payloadHashCode() {
-        int result = 1;
-        final int length = getDataLength();
-        final int dataOffset = getDataOffset();
-
-        for (int i = 0; i < length; ++i) {
-            result = 31 * result + payload.get(dataOffset + i);
-        }
-        return result;
-    }
-
     @Override
     public int hashCode() {
-        int result = Objects.hash(getId());
-        result = 31 * result + payloadHashCode();
+        payload.limit(base + size);
+        int result = 1;
+
+        for (int i = 0; i < size; ++i) {
+            result = 31 * result + payload.get(base + i);
+        }
         return result;
     }
 
