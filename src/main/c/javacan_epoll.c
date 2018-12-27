@@ -41,9 +41,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_create(JNIEnv *env, 
     return epoll_create1(EPOLL_CLOEXEC);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_createEventfd(JNIEnv *env, jclass class, jboolean blocking) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_createEventfd(JNIEnv *env, jclass class, jboolean block) {
     int flags = EFD_CLOEXEC;
-    if (!blocking) {
+    if (!block) {
         flags |= EFD_NONBLOCK;
     }
 
@@ -51,13 +51,12 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_createEventfd(JNIEnv
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
-    uint64_t val = (uint64_t) value;
-    return (jint) write(eventfd, &val, sizeof(val));
+    return (jint)eventfd_write(eventfd, (eventfd_t) value);
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_clearEvent(JNIEnv *env, jclass class, jint eventfd) {
     uint64_t val = 0;
-    ssize_t result = read(eventfd, &val, sizeof(val));
+    ssize_t result = eventfd_read(eventfd, &val);
     if (result < 0) {
         return result;
     }
