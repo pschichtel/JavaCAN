@@ -24,6 +24,7 @@ package tel.schich.javacan.select;
 
 import java.io.IOException;
 import java.nio.channels.IllegalSelectorException;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
@@ -31,9 +32,13 @@ import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import sun.nio.ch.SelChImpl;
+import sun.nio.ch.SelectionKeyImpl;
+import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.JavaCANNativeOperationException;
 
 public class EPollSelector extends AbstractSelector {
@@ -51,11 +56,11 @@ public class EPollSelector extends AbstractSelector {
     private final Map<Integer, EPollSelectionKey> fdToKey;
     private final Object keyCollectionsLock = new Object();
 
-    public EPollSelector(SelectorProvider provider) {
+    public EPollSelector(SelectorProvider provider) throws JavaCANNativeOperationException {
         this(provider, 100);
     }
 
-    public EPollSelector(SelectorProvider provider, int maxEvents) {
+    public EPollSelector(SelectorProvider provider, int maxEvents) throws JavaCANNativeOperationException {
         super(provider);
 
         this.epollfd = EPoll.create();
@@ -63,7 +68,9 @@ public class EPollSelector extends AbstractSelector {
         this.eventsPointer = EPoll.newEvents(maxEvents);
 
         this.eventfd = EPoll.createEventfd(false);
-        EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN);
+        if (EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN) != 0) {
+            throw new JavaCANNativeOperationException("Unable to register the eventfd to epoll!");
+        }
 
         this.keys = new HashSet<>();
         this.selectionKeys = new HashSet<>();
@@ -112,6 +119,8 @@ public class EPollSelector extends AbstractSelector {
         }
 
         EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
+        key.attach(att);
+        key.cancel();
         synchronized (keyCollectionsLock) {
             this.keys.add(key);
             this.fdToKey.put(socket, key);
@@ -152,7 +161,38 @@ public class EPollSelector extends AbstractSelector {
         return selectionKeys;
     }
 
+    private void deregisterKey(EPollSelectionKey key) throws IOException {
+        synchronized (keyCollectionsLock) {
+            fdToKey.remove(key.getFd());
+            keys.remove(key);
+            deregister(key);
+            if (EPoll.removeFileDescriptor(epollfd, key.getFd()) != 0.) {
+                throw new JavaCANNativeOperationException("Unable to remove file descriptor!");
+            }
+        }
+    }
+
+    private void processDeregisterQueue() throws IOException {
+        Set<SelectionKey> cks = cancelledKeys();
+        synchronized (cks) {
+            if (!cks.isEmpty()) {
+                Iterator<SelectionKey> i = cks.iterator();
+                synchronized (keyCollectionsLock) {
+                    while (i.hasNext()) {
+                        SelectionKey key = i.next();
+                        i.remove();
+
+                        if (key instanceof EPollSelectionKey) {
+                            deregisterKey((EPollSelectionKey) key);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private int poll(long timeout) throws IOException {
+        processDeregisterQueue();
         int n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
         if (n == -1) {
             throw new JavaCANNativeOperationException("Unable to poll!");
@@ -160,8 +200,13 @@ public class EPollSelector extends AbstractSelector {
 
         int[] events = new int[n];
         int[] fds = new int[n];
-        if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
-            throw new JavaCANNativeOperationException("Unable to extract events");
+        begin();
+        try {
+            if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
+                throw new JavaCANNativeOperationException("Unable to extract events");
+            }
+        } finally {
+            end();
         }
 
         synchronized (keyCollectionsLock) {
@@ -200,7 +245,9 @@ public class EPollSelector extends AbstractSelector {
 
     @Override
     public Selector wakeup() {
-        EPoll.signalEvent(eventfd, 1);
+        if (EPoll.signalEvent(eventfd, 1) < 0) {
+            throw new RuntimeException(new JavaCANNativeOperationException("Unable to signal the eventfd!"));
+        }
         return this;
     }
 }

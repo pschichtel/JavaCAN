@@ -25,8 +25,8 @@ package tel.schich.javacan.select;
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectionKey;
+import java.util.Objects;
 
 public class EPollSelectionKey extends AbstractSelectionKey {
 
@@ -85,5 +85,22 @@ public class EPollSelectionKey extends AbstractSelectionKey {
 
     SelectionKey readyOps(int ops) {
         return new EPollSelectionKey(selector, channel, interestOps, ops);
+    }
+
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        EPollSelectionKey t = (EPollSelectionKey) o;
+        return fd == t.fd && interestOps == t.interestOps && selector.equals(t.selector) && channel.equals(t.channel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fd, interestOps);
     }
 }
