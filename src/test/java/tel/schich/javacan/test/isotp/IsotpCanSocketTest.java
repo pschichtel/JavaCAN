@@ -20,10 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.test;
+package tel.schich.javacan.test.isotp;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
