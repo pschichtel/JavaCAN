@@ -25,6 +25,7 @@ package tel.schich.javacan.test.select;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelector;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -35,6 +36,8 @@ import tel.schich.javacan.select.JavaCANSelectorProvider;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
@@ -63,8 +66,11 @@ public class EPollSelectorTest {
                 runDelayed(ofMillis(200), () -> {
                     ch.write(inputFrame);
                 });
-                assertTimeoutPreemptively(ofMillis(3000000), () -> {
+                assertTimeoutPreemptively(ofMillis(300), () -> {
                     selector.select();
+                    Set<SelectionKey> selectionKeys = selector.selectedKeys();
+                    assertEquals(1, selectionKeys.size(), "With one registered channel there should only be one selection key!");
+                    assertSame(ch, selectionKeys.iterator().next().channel(), "Channel from selection key should be the same as the registered channel!");
                     CanFrame outputFrame = ch.read();
                     assertEquals(inputFrame, outputFrame, "What goes in should come out!");
                 });
