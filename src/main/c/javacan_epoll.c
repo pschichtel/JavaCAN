@@ -65,11 +65,11 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_clearEvent(JNIEnv *
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_newEvents(JNIEnv *env, jclass class, jint maxEvents) {
-    return (jlong)malloc(sizeof(struct epoll_event) * maxEvents);
+    return (jlong)(uintptr_t)malloc(sizeof(struct epoll_event) * maxEvents);
 }
 
 JNIEXPORT void JNICALL Java_tel_schich_javacan_select_EPoll_freeEvents(JNIEnv *env, jclass class, jlong eventsPointer) {
-    free((struct epoll_event*)eventsPointer);
+    free((struct epoll_event*)(uintptr_t)eventsPointer);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_close(JNIEnv *env, jclass class, jint fd) {
@@ -95,7 +95,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_updateFileDescriptor
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {
-    return epoll_wait(epollfd, (struct epoll_event*)eventsPointer, maxEvents, (int) timeout);
+    return epoll_wait(epollfd, (struct epoll_event*)(uintptr_t)eventsPointer, maxEvents, (int) timeout);
 }
 
 JNIEXPORT int JNICALL Java_tel_schich_javacan_select_EPoll_extractEvents(JNIEnv *env, jclass class, jlong eventsPointer, jint n, jintArray events, jintArray fds) {
@@ -111,7 +111,7 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_select_EPoll_extractEvents(JNIEnv 
     jint *criticalEvents = (*env)->GetPrimitiveArrayCritical(env, events, false);
     jint *criticalFds = (*env)->GetPrimitiveArrayCritical(env, fds, false);
 
-    struct epoll_event* eventsPtr = (struct epoll_event*)eventsPointer;
+    struct epoll_event* eventsPtr = (struct epoll_event*)(uintptr_t)eventsPointer;
     for (int i = 0; i < n; ++i) {
         criticalEvents[i] = eventsPtr->events;
         criticalFds[i] = eventsPtr->data.fd;

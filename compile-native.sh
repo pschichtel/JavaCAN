@@ -65,7 +65,7 @@ do
     for c_file in "${c_files[@]}"
     do
         out_file="$dir/$c_file.o"
-        "$proxy" "$CC" "${includes[@]}" -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
+        "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
         out_files+=("$out_file")
     done
     "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack -fPIC -fvisibility=hidden -std=c99 -shared || exit 1
