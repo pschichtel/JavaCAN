@@ -117,8 +117,7 @@ public class EPollSelector extends AbstractSelector {
         int socket = ((UnixFileDescriptor) nativeHandle).getFD();
 
         if (EPoll.addFileDescriptor(epollfd, socket, translateInterestsToEPoll(ops)) != 0) {
-            // TODO communicate problem!
-            return null;
+            throw new RuntimeException(new JavaCANNativeOperationException("Unable to add the file descriptor!"));
         }
 
         EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
@@ -177,10 +176,10 @@ public class EPollSelector extends AbstractSelector {
     }
 
     private void processDeregisterQueue() throws IOException {
-        Set<SelectionKey> cks = cancelledKeys();
-        synchronized (cks) {
-            if (!cks.isEmpty()) {
-                Iterator<SelectionKey> i = cks.iterator();
+        Set<SelectionKey> cancelled = cancelledKeys();
+        synchronized (cancelled) {
+            if (!cancelled.isEmpty()) {
+                Iterator<SelectionKey> i = cancelled.iterator();
                 synchronized (keyCollectionsLock) {
                     while (i.hasNext()) {
                         SelectionKey key = i.next();
