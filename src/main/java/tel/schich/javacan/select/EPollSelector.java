@@ -38,8 +38,8 @@ import tel.schich.javacan.JavaCANNativeOperationException;
 
 public class EPollSelector extends AbstractSelector {
 
-    public static final long SELECT_NO_BLOCKING = 0;
-    public static final long SELECT_BLOCK_INDEFINITELY = -1;
+    private static final long SELECT_NO_BLOCKING = 0;
+    private static final long SELECT_BLOCK_INDEFINITELY = -1;
 
     private final int epollfd;
     private final long eventsPointer;
@@ -61,9 +61,9 @@ public class EPollSelector extends AbstractSelector {
         this.epollfd = EPoll.create();
         this.maxEvents = maxEvents;
         this.eventsPointer = EPoll.newEvents(maxEvents);
-        this.eventfd = EPoll.createEventfd(false);
 
-        EPoll.addFileDescriptor(epollfd, epollfd, EPoll.EPOLLIN);
+        this.eventfd = EPoll.createEventfd(false);
+        EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN);
 
         this.keys = new HashSet<>();
         this.selectionKeys = new HashSet<>();
@@ -149,7 +149,6 @@ public class EPollSelector extends AbstractSelector {
 
     @Override
     public Set<SelectionKey> selectedKeys() {
-
         return selectionKeys;
     }
 

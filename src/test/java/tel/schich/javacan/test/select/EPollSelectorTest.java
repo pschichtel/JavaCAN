@@ -25,7 +25,9 @@ package tel.schich.javacan.test.select;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelector;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
@@ -73,14 +75,11 @@ public class EPollSelectorTest {
 
     @Test
     public void testWakeup() throws IOException {
+        Duration timeout = ofSeconds(1);
         JavaCANSelectorProvider provider = new JavaCANSelectorProvider();
         try (AbstractSelector selector = provider.openSelector()) {
-            runDelayed(ofSeconds(2), () -> {
-                selector.wakeup();
-            });
-            assertTimeoutPreemptively(ofSeconds(4), () -> {
-                selector.select();
-            });
+            runDelayed(timeout, selector::wakeup);
+            assertTimeoutPreemptively(timeout, (Executable) selector::select);
         }
     }
 }
