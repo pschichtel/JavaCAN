@@ -29,7 +29,7 @@ import java.nio.channels.spi.SelectorProvider;
 public abstract class IsotpCanChannel extends AbstractCanChannel {
 
     // TODO this might actually depend on whether FD or non-FD frames are being used
-    public static final int MAX_MESSAGE_LENGTR = 4095;
+    public static final int MAX_MESSAGE_LENGTH = 4095;
 
     public IsotpCanChannel(SelectorProvider provider, int sock) {
         super(provider, sock);
