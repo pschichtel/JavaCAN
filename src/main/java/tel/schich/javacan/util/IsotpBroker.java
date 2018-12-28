@@ -69,6 +69,22 @@ public class IsotpBroker implements Closeable {
         this.start();
     }
 
+    public void removeChannel(IsotpCanChannel ch) {
+        if (!this.channels.contains(ch)) {
+            throw new IllegalArgumentException("Channel not known!");
+        }
+
+        this.channels.remove(ch);
+        this.handlerMap.remove(ch);
+        ch.keyFor(selector).cancel();
+
+        if (this.channels.isEmpty()) {
+            try {
+                this.shutdown();
+            } catch (InterruptedException ignored) {}
+        }
+    }
+
     public void start() {
         if (poller != null) {
             // already running
