@@ -68,7 +68,7 @@ class IsotpBrokerTest {
                     broker.addChannel(b, new PingPing(lock, condition));
 
                     ByteBuffer buf = ByteBuffer.allocateDirect(1);
-                    buf.put(0, (byte)1);
+                    buf.put(0, randomByte());
                     a.write(buf);
 
                     try {
@@ -93,6 +93,10 @@ class IsotpBrokerTest {
         return s.toString();
     }
 
+    private static byte randomByte() {
+        return (byte)(Math.random() * 255);
+    }
+
     private static final class PingPing implements MessageHandler {
         private final Lock lock;
         private final Condition condition;
@@ -108,7 +112,7 @@ class IsotpBrokerTest {
                 System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(payload, offset, length)));
                 System.out.flush();
             }
-            payload.put(length, (byte)(Math.random() * 255));
+            payload.put(length, randomByte());
             try {
                 ch.write(payload, 0, length + 1);
             } catch (Exception e) {
