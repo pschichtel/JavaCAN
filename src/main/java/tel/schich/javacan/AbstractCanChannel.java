@@ -101,6 +101,9 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
     }
 
     protected long readSocket(ByteBuffer buffer, int offset, int length) throws IOException {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("The buffer must be a direct buffer!");
+        }
         if (offset + length > buffer.capacity()) {
             throw new BufferOverflowException();
         }
@@ -118,6 +121,9 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
     }
 
     protected long writeSocket(ByteBuffer buffer, int offset, int length) throws IOException {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("The buffer must be a direct buffer!");
+        }
         if (offset + length > buffer.capacity()) {
             throw new BufferUnderflowException();
         }
