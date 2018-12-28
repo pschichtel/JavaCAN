@@ -22,7 +22,7 @@ This project is a wrapper around SocketCAN, which is a Linux kernel module that 
 
 ## Supported Architectures
 
-The project uses dockcross to cross-compile its native components for various Linux supported platforms.
+The project uses [dockcross](https://github.com/dockcross/dockcross) to cross-compile its native components for various Linux supported platforms.
 
 Currently the full build process includes the following architectures:
 
