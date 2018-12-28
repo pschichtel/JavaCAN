@@ -41,11 +41,38 @@ public class CanChannels {
         return new RawCanChannelImpl(PROVIDER, fd);
     }
 
+    public static RawCanChannel newRawChannel(CanDevice device) throws IOException {
+        RawCanChannel ch = newRawChannel();
+        ch.bind(device);
+        return ch;
+    }
+    public static RawCanChannel newRawChannel(String device) throws IOException {
+        return newRawChannel(CanDevice.lookup(device));
+    }
+
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
         if (fd == -1) {
             throw new JavaCANNativeOperationException("Unable to create ISOTP socket!");
         }
         return new IsotpCanChannelImpl(PROVIDER, fd);
+    }
+
+    public static IsotpCanChannel newIsotpChannel(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+        IsotpCanChannel ch = newIsotpChannel();
+        ch.bind(device, rx, tx);
+        return ch;
+    }
+
+    public static IsotpCanChannel newIsotpChannel(String device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+        return newIsotpChannel(CanDevice.lookup(device), rx, tx);
+    }
+
+    public static IsotpCanChannel newIsotpChannel(CanDevice device, int rx, int tx) throws IOException {
+        return newIsotpChannel(device, IsotpSocketAddress.isotpAddress(rx), IsotpSocketAddress.isotpAddress(tx));
+    }
+
+    public static IsotpCanChannel newIsotpChannel(String device, int rx, int tx) throws IOException {
+        return newIsotpChannel(CanDevice.lookup(device), rx, tx);
     }
 }
