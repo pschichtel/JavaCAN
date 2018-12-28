@@ -32,4 +32,9 @@ public class UnixFileDescriptor implements NativeHandle {
     public int getFD() {
         return fd;
     }
+
+    @Override
+    public String toString() {
+        return "UnixFileDescriptor{" + "fd=" + fd + '}';
+    }
 }
