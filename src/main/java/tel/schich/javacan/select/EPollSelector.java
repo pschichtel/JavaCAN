@@ -179,7 +179,7 @@ public class EPollSelector extends AbstractSelector {
             fdToKey.remove(key.getFd());
             keys.remove(key);
             deregister(key);
-            if (EPoll.removeFileDescriptor(epollfd, key.getFd()) != 0.) {
+            if (EPoll.removeFileDescriptor(epollfd, key.getFd()) != 0) {
                 throw new JavaCANNativeOperationException("Unable to remove file descriptor!");
             }
         }
