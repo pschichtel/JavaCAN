@@ -110,14 +110,14 @@ class IsotpBrokerTest {
         }
 
         @Override
-        public void handle(IsotpCanChannel ch, ByteBuffer payload, int offset, int length) {
+        public void handle(IsotpCanChannel ch, ByteBuffer buffer, int offset, int length) {
             if (length % 200 == 0) {
-                System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(payload, offset, length)));
+                System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(buffer, offset, length)));
                 System.out.flush();
             }
-            payload.put(length, randomByte());
+            buffer.put(length, randomByte());
             try {
-                ch.write(payload, 0, length + 1);
+                ch.write(buffer, 0, length + 1);
             } catch (Exception e) {
                 assertEquals(IllegalArgumentException.class, e.getClass());
                 System.err.println("Failed to send message:");

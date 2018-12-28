@@ -27,5 +27,5 @@ import java.nio.ByteBuffer;
 import tel.schich.javacan.IsotpCanChannel;
 
 public interface MessageHandler {
-    void handle(IsotpCanChannel ch, ByteBuffer payload, int offset, int length);
+    void handle(IsotpCanChannel ch, ByteBuffer buffer, int offset, int length);
 }
