@@ -2,7 +2,7 @@
 
 A complete implementation of Java's [SelectableChannel](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/SelectableChannel.html) API for CAN_RAW and CAN_ISOTP sockets.
 
-Even though the JDK provides an epoll based Selector implementation, that implementation is unfortunately not compatible with custom Channel implementations. For that reason a custom SelectorProvider wrapping the system provider is provided, that supplies an epoll based Selector that is compatible with CAN Channels.
+Even though the JDK provides an epoll based Selector implementation, that implementation is unfortunately not compatible with custom Channel implementations. For that reason a custom `SelectorProvider` is required, that supplies an epoll based `Selector` compatible with CAN Channels.
 
 ## What works?
 
@@ -16,7 +16,11 @@ Even though the JDK provides an epoll based Selector implementation, that implem
 
 * Support for other CAN protocols (e.g. BCM)
 
-## Supported platforms
+## Supported Operation Systems
+
+This project is a wrapper around SocketCAN, which is a Linux kernel module that implements CAN communication. As such, only Linux can be supported. For this reason, the custom Selector will also only use epoll (Linux API for event-driven IO), as support for other OS' is not possible anyway.
+
+## Supported Architectures
 
 The project uses dockcross to cross-compile its native components for various Linux supported platforms.
 
@@ -26,6 +30,8 @@ Currently the full build process includes the following architectures:
 * x86_64
 * armv7
 * aarch64
+
+The implementation can handle word sizes up to 64 bit and is byte order aware. 
 
 ## How to use
 
