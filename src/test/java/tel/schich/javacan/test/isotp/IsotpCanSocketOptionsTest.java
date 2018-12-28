@@ -45,7 +45,7 @@ import static tel.schich.javacan.IsotpCanSocketOptions.TX_STMIN;
 import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
-public class IsotpCanSocketTest {
+public class IsotpCanSocketOptionsTest {
 
     @Test
     void testOptions() throws IOException {
