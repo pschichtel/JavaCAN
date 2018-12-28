@@ -40,6 +40,9 @@ import tel.schich.javacan.util.IsotpBroker;
 import tel.schich.javacan.util.MessageHandler;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.IsotpAddress.DESTINATION_ECU_1;
+import static tel.schich.javacan.IsotpAddress.SFF_ECU_REQUEST_BASE;
+import static tel.schich.javacan.IsotpAddress.SFF_ECU_RESPONSE_BASE;
 
 class IsotpBrokerTest {
 
@@ -51,8 +54,8 @@ class IsotpBrokerTest {
             return t;
         };
 
-        IsotpSocketAddress addra = IsotpSocketAddress.isotpAddress(0x7E0);
-        IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(0x7E8);
+        IsotpSocketAddress addra = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
+        IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
 
         try (IsotpBroker broker = new IsotpBroker(threadFactory, new JavaCANSelectorProvider(), Duration.ofSeconds(5))) {
 
