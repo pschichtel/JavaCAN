@@ -80,8 +80,8 @@ public class EPollSelector extends AbstractSelector {
         this.selectionKeys = newSetFromMap(new IdentityHashMap<>());
         this.fdToKey = new HashMap<>();
 
-        this.publicKeys = unmodifiableSet(keys);
-        this.publicSelectionKeys = new UngrowableSet<>(keys);
+        this.publicKeys = unmodifiableSet(this.keys);
+        this.publicSelectionKeys = new UngrowableSet<>(this.selectionKeys);
     }
 
     @Override
@@ -210,20 +210,22 @@ public class EPollSelector extends AbstractSelector {
         ensureOpen();
 
         processDeregisterQueue();
-        int n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
+
+        int n;
+        begin();
+        try {
+            n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
+        } finally {
+            end();
+        }
         if (n == -1) {
             throw new JavaCANNativeOperationException("Unable to poll!");
         }
 
         int[] events = new int[n];
         int[] fds = new int[n];
-        begin();
-        try {
-            if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
-                throw new JavaCANNativeOperationException("Unable to extract events");
-            }
-        } finally {
-            end();
+        if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
+            throw new JavaCANNativeOperationException("Unable to extract events");
         }
 
         synchronized (keyCollectionsLock) {
