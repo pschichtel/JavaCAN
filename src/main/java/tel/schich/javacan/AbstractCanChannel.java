@@ -104,7 +104,6 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         if (offset + length > buffer.capacity()) {
             throw new BufferOverflowException();
         }
-        buffer.order(ByteOrder.nativeOrder());
         long bytesRead = 0;
         begin();
         try {

@@ -24,6 +24,7 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.spi.SelectorProvider;
 
 /**
@@ -53,6 +54,7 @@ public class RawCanChannelImpl extends RawCanChannel {
 
     @Override
     public CanFrame read(ByteBuffer buffer, int offset, int length) throws IOException {
+        buffer.order(ByteOrder.nativeOrder());
         long bytesRead = readSocket(buffer, offset, length);
         return CanFrame.create(buffer, offset, (int) bytesRead);
     }
