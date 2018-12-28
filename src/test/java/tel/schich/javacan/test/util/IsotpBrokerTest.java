@@ -104,7 +104,7 @@ class IsotpBrokerTest {
 
         @Override
         public void handle(IsotpCanChannel ch, ByteBuffer payload, int offset, int length) {
-            /*if (length % 200 == 0) */{
+            if (length % 200 == 0) {
                 System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(payload, offset, length)));
                 System.out.flush();
             }

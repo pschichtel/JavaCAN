@@ -63,7 +63,6 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         if (SocketCAN.close(sock) != 0) {
             throw new JavaCANNativeOperationException("Unable to close socket!");
         }
-
     }
 
     @Override
