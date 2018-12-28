@@ -34,6 +34,9 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
 
     public abstract IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
 
+    public abstract IsotpSocketAddress getRxAddress();
+    public abstract IsotpSocketAddress getTxAddress();
+
     public int read(ByteBuffer buffer) throws IOException {
         return read(buffer, buffer.position(), buffer.remaining());
     }

@@ -27,19 +27,33 @@ import java.nio.ByteBuffer;
 import java.nio.channels.spi.SelectorProvider;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
+
+    private IsotpSocketAddress rx;
+    private IsotpSocketAddress tx;
+
     public IsotpCanChannelImpl(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
 
     @Override
-    public IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+    public synchronized IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (SocketCAN.bindSocket(getSocket(), device.getIndex(), rx.getId(), tx.getId()) != 0) {
             throw new JavaCANNativeOperationException("Unable to bind ISOTP socket!");
         }
+        this.rx = rx;
+        this.tx = tx;
         return this;
     }
 
+    @Override
+    public synchronized IsotpSocketAddress getRxAddress() {
+        return this.rx;
+    }
 
+    @Override
+    public synchronized IsotpSocketAddress getTxAddress() {
+        return this.tx;
+    }
 
     @Override
     public int read(ByteBuffer buffer, int offset, int length) throws IOException {
