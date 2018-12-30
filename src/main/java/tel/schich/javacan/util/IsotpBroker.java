@@ -40,7 +40,7 @@ import java.util.concurrent.ThreadFactory;
 import tel.schich.javacan.IsotpCanChannel;
 
 public class IsotpBroker implements Closeable {
-    private final ByteBuffer readBuffer = ByteBuffer.allocateDirect(4096);
+    private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
     private final ThreadFactory threadFactory;
     private final AbstractSelector selector;
     private final Duration timeout;
