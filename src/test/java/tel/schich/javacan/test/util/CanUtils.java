@@ -20,12 +20,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.util;
+package tel.schich.javacan.test.util;
 
 import java.nio.ByteBuffer;
 
-import tel.schich.javacan.IsotpCanChannel;
+public class CanUtils {
 
-public interface MessageHandler {
-    void handle(IsotpCanChannel ch, ByteBuffer buffer);
+    private CanUtils() {}
+
+    public static String hexDump(ByteBuffer data) {
+        return hexDump(data, data.position(), data.remaining());
+    }
+
+    public static String hexDump(ByteBuffer data, int offset, int length) {
+        StringBuilder s = new StringBuilder(length * 2);
+        if (length > 0) {
+            s.append(String.format("%02X", data.get(offset)));
+            for (int i = 1; i < length; ++i) {
+                s.append('.').append(String.format("%02X", data.get(offset + i)));
+            }
+        }
+        return s.toString();
+    }
 }

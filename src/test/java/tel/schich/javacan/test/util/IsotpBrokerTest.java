@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.IsotpAddress.DESTINATION_ECU_1;
 import static tel.schich.javacan.IsotpAddress.SFF_ECU_REQUEST_BASE;
 import static tel.schich.javacan.IsotpAddress.SFF_ECU_RESPONSE_BASE;
+import static tel.schich.javacan.test.util.CanUtils.hexDump;
 
 class IsotpBrokerTest {
 
@@ -86,17 +87,6 @@ class IsotpBrokerTest {
         }
     }
 
-    public static String hexDump(ByteBuffer data, int offset, int length) {
-        StringBuilder s = new StringBuilder(length * 2);
-        if (length > 0) {
-            s.append(String.format("%02X", data.get(offset)));
-            for (int i = 1; i < length; ++i) {
-                s.append('.').append(String.format("%02X", data.get(offset + i)));
-            }
-        }
-        return s.toString();
-    }
-
     private static byte randomByte() {
         return (byte)(Math.random() * 255);
     }
@@ -113,9 +103,10 @@ class IsotpBrokerTest {
         }
 
         @Override
-        public void handle(IsotpCanChannel ch, ByteBuffer buffer, int offset, int length) {
+        public void handle(IsotpCanChannel ch, ByteBuffer buffer) {
+            int length = buffer.remaining();
             if (length % 200 == 0) {
-                System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(buffer, offset, length)));
+                System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(buffer)));
                 System.out.flush();
             }
             buf.clear();

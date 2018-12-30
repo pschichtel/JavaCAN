@@ -116,10 +116,9 @@ public class IsotpBroker implements Closeable {
                         MessageHandler handler = handlerMap.get(ch);
                         if (handler != null) {
                             readBuffer.clear();
-                            final int bytesRead = ((IsotpCanChannel) ch).read(readBuffer);
-                            readBuffer.rewind();
-                            readBuffer.limit(bytesRead);
-                            handler.handle(isotp, readBuffer.asReadOnlyBuffer(), 0, bytesRead);
+                            ((IsotpCanChannel) ch).read(readBuffer);
+                            readBuffer.flip();
+                            handler.handle(isotp, readBuffer.asReadOnlyBuffer());
                         } else {
                             System.err.println("Handler not found for channel: " + ch);
                         }
