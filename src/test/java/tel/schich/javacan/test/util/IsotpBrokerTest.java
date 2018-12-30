@@ -61,17 +61,18 @@ class IsotpBrokerTest {
 
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
+                    final ByteBuffer buf = IsotpCanChannel.allocateSufficientMemory();
                     final Lock lock = new ReentrantLock();
                     final Condition condition = lock.newCondition();
 
                     a.bind(CanTestHelper.CAN_INTERFACE, addra, addrb);
                     b.bind(CanTestHelper.CAN_INTERFACE, addrb, addra);
 
-                    broker.addChannel(a, new PingPing(lock, condition));
-                    broker.addChannel(b, new PingPing(lock, condition));
+                    broker.addChannel(a, new PingPing(lock, condition, buf));
+                    broker.addChannel(b, new PingPing(lock, condition, buf));
 
-                    ByteBuffer buf = ByteBuffer.allocateDirect(1);
-                    buf.put(0, randomByte());
+                    buf.put(randomByte())
+                            .flip();
                     a.write(buf);
 
                     try {
@@ -103,10 +104,12 @@ class IsotpBrokerTest {
     private static final class PingPing implements MessageHandler {
         private final Lock lock;
         private final Condition condition;
+        private final ByteBuffer buf;
 
-        public PingPing(Lock lock, Condition condition) {
+        public PingPing(Lock lock, Condition condition, ByteBuffer buf) {
             this.lock = lock;
             this.condition = condition;
+            this.buf = buf;
         }
 
         @Override
@@ -115,9 +118,12 @@ class IsotpBrokerTest {
                 System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(buffer, offset, length)));
                 System.out.flush();
             }
-            buffer.put(length, randomByte());
+            buf.clear();
+            buf.put(buffer);
+            buf.put(randomByte());
+            buf.flip();
             try {
-                ch.write(buffer, 0, length + 1);
+                ch.write(buf);
             } catch (Exception e) {
                 assertEquals(IllegalArgumentException.class, e.getClass());
                 System.err.println("Failed to send message:");

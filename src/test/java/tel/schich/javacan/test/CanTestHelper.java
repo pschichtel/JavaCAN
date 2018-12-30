@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan.test;
 
-import tel.schich.javacan.AbstractCanChannel;
 import tel.schich.javacan.CanDevice;
 import tel.schich.javacan.CanFrame;
 
@@ -31,8 +30,6 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 
 import org.junit.jupiter.api.function.Executable;
-
-import static tel.schich.javacan.RawCanChannel.FD_MTU;
 
 public class CanTestHelper {
     public static final CanDevice CAN_INTERFACE = lookupDev();
@@ -48,7 +45,7 @@ public class CanTestHelper {
 
     public static void sendFrameViaUtils(CanDevice device, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();
-        ByteBuffer buf = AbstractCanChannel.allocate(FD_MTU);
+        ByteBuffer buf = ByteBuffer.allocateDirect(CanFrame.MAX_FD_DATA_LENGTH);
         frame.getData(buf);
         buf.flip();
         while (buf.hasRemaining()) {

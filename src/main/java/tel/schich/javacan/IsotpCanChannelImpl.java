@@ -56,17 +56,17 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
     }
 
     @Override
-    public int read(ByteBuffer buffer, int offset, int length) throws IOException {
-        long bytesRead = readSocket(buffer, offset, length);
+    public int read(ByteBuffer buffer) throws IOException {
+        long bytesRead = readSocket(buffer);
         return (int) bytesRead;
     }
 
     @Override
-    public int write(ByteBuffer buffer, int offset, int length) throws IOException {
-        if (length > MAX_MESSAGE_LENGTH) {
+    public int write(ByteBuffer buffer) throws IOException {
+        if (buffer.remaining() > MAX_MESSAGE_LENGTH) {
             throw new IllegalArgumentException("Message too long!");
         }
-        long bytesRead = writeSocket(buffer, offset, length);
+        long bytesRead = writeSocket(buffer);
         return (int) bytesRead;
     }
 }

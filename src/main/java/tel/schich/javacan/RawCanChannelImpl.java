@@ -48,20 +48,22 @@ public class RawCanChannelImpl extends RawCanChannel {
     @Override
     public CanFrame read() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
-        ByteBuffer frameBuf = AbstractCanChannel.allocate(length);
-        return read(frameBuf, 0, length);
+        ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
+        CanFrame read = read(frameBuf);
+        return read;
     }
 
     @Override
-    public CanFrame read(ByteBuffer buffer, int offset, int length) throws IOException {
+    public CanFrame read(ByteBuffer buffer) throws IOException {
         buffer.order(ByteOrder.nativeOrder());
-        long bytesRead = readSocket(buffer, offset, length);
-        return CanFrame.create(buffer, offset, (int) bytesRead);
+        readSocket(buffer);
+        buffer.flip();
+        return CanFrame.create(buffer);
     }
 
     @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
-        long written = writeSocket(frame.getBuffer(), frame.getBase(), frame.getSize());
+        long written = writeSocket(frame.getBuffer());
         if (written != frame.getSize()) {
             throw new IOException("Frame written incompletely!");
         }

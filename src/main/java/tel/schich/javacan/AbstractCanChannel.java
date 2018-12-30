@@ -100,47 +100,41 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         }
     }
 
-    protected long readSocket(ByteBuffer buffer, int offset, int length) throws IOException {
+    protected long readSocket(ByteBuffer buffer) throws IOException {
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        if (offset + length > buffer.capacity()) {
-            throw new BufferOverflowException();
-        }
-        long bytesRead = 0;
+        int bytesRead = 0;
         begin();
         try {
-            bytesRead = SocketCAN.read(sock, buffer, offset, length);
+            int pos = buffer.position();
+            bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
             if (bytesRead == -1) {
                 throw new JavaCANNativeOperationException("Unable to read from the socket!");
             }
+            buffer.position(pos + bytesRead);
             return bytesRead;
         } finally {
             end(bytesRead > 0);
         }
     }
 
-    protected long writeSocket(ByteBuffer buffer, int offset, int length) throws IOException {
+    protected long writeSocket(ByteBuffer buffer) throws IOException {
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        if (offset + length > buffer.capacity()) {
-            throw new BufferUnderflowException();
-        }
-        long bytesWritten = 0;
+        int bytesWritten = 0;
         begin();
         try {
-            bytesWritten = SocketCAN.write(sock, buffer, offset, length);
+            int pos = buffer.position();
+            bytesWritten = (int)SocketCAN.write(sock, buffer, pos, buffer.remaining());
             if (bytesWritten == -1) {
                 throw new JavaCANNativeOperationException("Unable to write to the socket!");
             }
+            buffer.position(pos + bytesWritten);
             return bytesWritten;
         } finally {
             end(bytesWritten > 0);
         }
-    }
-
-    public static ByteBuffer allocate(int size) {
-        return ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder());
     }
 }

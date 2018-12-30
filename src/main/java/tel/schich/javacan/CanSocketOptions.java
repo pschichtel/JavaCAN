@@ -127,7 +127,8 @@ public class CanSocketOptions {
     public static final SocketOption<CanFilter[]> FILTER = new CanSocketOption<>("FILTER", CanFilter[].class, new CanSocketOption.Handler<CanFilter[]>() {
         @Override
         public void set(int sock, CanFilter[] val) throws IOException {
-            ByteBuffer filterData = AbstractCanChannel.allocate(val.length * CanFilter.BYTES);
+            ByteBuffer filterData = ByteBuffer.allocateDirect(val.length * CanFilter.BYTES);
+            filterData.order(ByteOrder.nativeOrder());
             for (CanFilter f : val) {
                 CanFilter.toBuffer(f, filterData);
             }

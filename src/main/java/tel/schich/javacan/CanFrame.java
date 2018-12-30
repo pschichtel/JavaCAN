@@ -24,6 +24,7 @@ package tel.schich.javacan;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class CanFrame {
 
@@ -44,10 +45,10 @@ public class CanFrame {
     private final int base;
     private final int size;
 
-    CanFrame(ByteBuffer buffer, int base, int size) {
+    CanFrame(ByteBuffer buffer) {
         this.buffer = buffer;
-        this.base = base;
-        this.size = size;
+        this.base = buffer.position();
+        this.size = buffer.remaining();
     }
 
     public int getId() {
@@ -59,6 +60,9 @@ public class CanFrame {
     }
 
     public ByteBuffer getBuffer() {
+        this.buffer.clear()
+                   .position(base)
+                   .limit(base + size);
         return this.buffer;
     }
 
@@ -178,23 +182,23 @@ public class CanFrame {
         } else {
             bufSize = RawCanChannel.FD_MTU;
         }
-        ByteBuffer buf = AbstractCanChannel.allocate(bufSize);
-        buf.putInt(id);
-        buf.put((byte)data.length);
-        buf.put(flags);
-        buf.position(HEADER_LENGTH);
-        buf.put(data);
-        return CanFrame.create(buf, 0, bufSize);
+        ByteBuffer buf = ByteBuffer.allocateDirect(bufSize);
+        buf.order(ByteOrder.nativeOrder())
+            .putInt(id)
+            .put((byte)data.length)
+            .put(flags)
+            .putShort((short) 0) // skip 2 bytes
+            .put(data)
+            .clear();
+        return CanFrame.create(buf);
     }
 
-    public static CanFrame create(ByteBuffer payload, int offset, int length) {
-        if (offset + length > payload.capacity()) {
-            throw new BufferOverflowException();
-        }
+    public static CanFrame create(ByteBuffer buffer) {
+        int length = buffer.remaining();
         if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
             throw new IllegalArgumentException("length must be either MTU or FD_MTU!");
         }
-        CanFrame frame = new CanFrame(payload, offset, length);
+        CanFrame frame = new CanFrame(buffer);
         if (frame.getDataLength() > MAX_FD_DATA_LENGTH) {
             throw new IllegalArgumentException("payload must fit in " + MAX_FD_DATA_LENGTH + " bytes!");
         }

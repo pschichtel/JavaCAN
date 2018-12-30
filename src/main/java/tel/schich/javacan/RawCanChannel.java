@@ -41,6 +41,6 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     public abstract RawCanChannel bind(CanDevice device) throws IOException;
 
     public abstract CanFrame read() throws IOException;
-    public abstract CanFrame read(ByteBuffer buffer, int offset, int length) throws IOException;
+    public abstract CanFrame read(ByteBuffer buffer) throws IOException;
     public abstract RawCanChannel write(CanFrame frame) throws IOException;
 }
