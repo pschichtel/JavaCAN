@@ -84,7 +84,7 @@ public class CanFrame {
         final int currentLimit = this.buffer.limit();
         this.buffer.position(offset);
         if (dest.remaining() <= getDataLength() || currentLimit == limit) {
-            this.buffer.put(dest);
+            dest.put(this.buffer);
         } else {
             this.buffer.limit(limit);
             dest.put(this.buffer);
