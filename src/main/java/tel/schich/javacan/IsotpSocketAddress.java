@@ -36,6 +36,18 @@ public class IsotpSocketAddress extends SocketAddress {
         return id;
     }
 
+    public IsotpSocketAddress returnAddress() {
+        return new IsotpSocketAddress(IsotpAddress.returnAddress(id));
+    }
+
+    public boolean isExtended() {
+        return CanId.isExtended(id);
+    }
+
+    public boolean isFunctional() {
+        return IsotpAddress.isFunctional(id);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
