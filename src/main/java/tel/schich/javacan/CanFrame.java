@@ -92,6 +92,11 @@ public class CanFrame {
         }
     }
 
+    public void getData(byte[] dest, int offset, int length) {
+        this.buffer.position(getDataOffset());
+        this.buffer.get(dest, offset, length);
+    }
+
     public boolean isFDFrame() {
         return this.getFlags() != 0 || getDataLength() > MAX_DATA_LENGTH;
     }
