@@ -40,26 +40,26 @@ public class CanFrame {
     private static final int OFFSET_FLAGS = OFFSET_DATA_LENGTH + 1;
     private static final int OFFSET_DATA = HEADER_LENGTH;
 
-    private final ByteBuffer payload;
+    private final ByteBuffer buffer;
     private final int base;
     private final int size;
 
     CanFrame(ByteBuffer buffer, int base, int size) {
-        this.payload = buffer;
+        this.buffer = buffer;
         this.base = base;
         this.size = size;
     }
 
     public int getId() {
-        return CanId.getId(this.payload.getInt(base + OFFSET_ID));
+        return CanId.getId(this.buffer.getInt(base + OFFSET_ID));
     }
 
     public byte getFlags() {
-        return this.payload.get(base + OFFSET_FLAGS);
+        return this.buffer.get(base + OFFSET_FLAGS);
     }
 
     public ByteBuffer getBuffer() {
-        return this.payload;
+        return this.buffer;
     }
 
     public int getBase() {
@@ -71,7 +71,7 @@ public class CanFrame {
     }
 
     public int getDataLength() {
-        return this.payload.get(this.base + OFFSET_DATA_LENGTH);
+        return this.buffer.get(this.base + OFFSET_DATA_LENGTH);
     }
 
     public int getSize() {
@@ -79,10 +79,17 @@ public class CanFrame {
     }
 
     public void getData(ByteBuffer dest) {
-        int offset = getDataOffset();
-        this.payload.position(offset);
-        this.payload.limit(offset + getDataLength());
-        dest.put(this.payload);
+        final int offset = getDataOffset();
+        final int limit = offset + getDataLength();
+        final int currentLimit = this.buffer.limit();
+        this.buffer.position(offset);
+        if (dest.remaining() <= getDataLength() || currentLimit == limit) {
+            this.buffer.put(dest);
+        } else {
+            this.buffer.limit(limit);
+            dest.put(this.buffer);
+            this.buffer.limit(currentLimit);
+        }
     }
 
     public boolean isFDFrame() {
@@ -124,9 +131,9 @@ public class CanFrame {
                 .append(length)
                 .append(", DATA=[");
         if (length > 0) {
-            sb.append(String.format("%02X", payload.get(dataOffset)));
+            sb.append(String.format("%02X", buffer.get(dataOffset)));
             for (int i = 1; i < length; ++i) {
-                sb.append(", ").append(String.format("%02X", payload.get(dataOffset + i)));
+                sb.append(", ").append(String.format("%02X", buffer.get(dataOffset + i)));
             }
         }
         return sb.append("])").toString();
@@ -141,10 +148,8 @@ public class CanFrame {
         if (size != b.size) {
             return false;
         }
-        payload.limit(base + size);
-        b.payload.limit(b.base + b.size);
         for (int i = 0; i < size; ++i) {
-            if (payload.get(base + i) != b.payload.get(b.base + i)) {
+            if (buffer.get(base + i) != b.buffer.get(b.base + i)) {
                 return false;
             }
         }
@@ -153,11 +158,10 @@ public class CanFrame {
 
     @Override
     public int hashCode() {
-        payload.limit(base + size);
         int result = 1;
 
         for (int i = 0; i < size; ++i) {
-            result = 31 * result + payload.get(base + i);
+            result = 31 * result + buffer.get(base + i);
         }
         return result;
     }
