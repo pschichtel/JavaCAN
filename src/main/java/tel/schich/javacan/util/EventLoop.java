@@ -25,6 +25,7 @@ package tel.schich.javacan.util;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelector;
@@ -77,6 +78,9 @@ abstract class EventLoop implements Closeable {
 
 
     public final void start() {
+        if (!selector.isOpen()) {
+            throw new ClosedSelectorException();
+        }
         synchronized (pollerLock) {
             if (poller != null) {
                 // already running
@@ -134,8 +138,14 @@ abstract class EventLoop implements Closeable {
     public final void close() throws IOException {
         try {
             shutdown();
+            selector.close();
+            closeResources();
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
+    }
+
+    protected void closeResources() throws IOException {
+
     }
 }

@@ -185,4 +185,22 @@ public class CanBroker extends EventLoop {
         reactor.addFilter(FUNCTIONAL_FILTER);
         return reactor;
     }
+
+    @Override
+    protected void closeResources() throws IOException {
+        IOException e = null;
+        for (RawCanChannel channel : this.channelMap.values()) {
+            try {
+                channel.close();
+            } catch (IOException e1) {
+                if (e != null) {
+                    e1.addSuppressed(e);
+                }
+                e = e1;
+            }
+        }
+        if (e != null) {
+            throw e;
+        }
+    }
 }
