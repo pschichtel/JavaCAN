@@ -42,12 +42,8 @@ import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 
 import static tel.schich.javacan.CanSocketOptions.FILTER;
-import static tel.schich.javacan.IsotpAddress.SFF_FUNCTIONAL_ADDRESS;
 
 public class CanBroker extends EventLoop {
-
-    public static final CanFilter FUNCTIONAL_FILTER = new CanFilter(SFF_FUNCTIONAL_ADDRESS);
-
     private final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<RawCanChannel, FrameHandler> handlerMap = new IdentityHashMap<>();
@@ -178,12 +174,6 @@ public class CanBroker extends EventLoop {
                 }
             }
         }
-    }
-
-    public static CanBroker functional(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
-        CanBroker reactor = new CanBroker(threadFactory, provider, timeout);
-        reactor.addFilter(FUNCTIONAL_FILTER);
-        return reactor;
     }
 
     @Override
