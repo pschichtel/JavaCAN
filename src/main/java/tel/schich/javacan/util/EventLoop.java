@@ -49,6 +49,18 @@ abstract class EventLoop implements Closeable {
         this.timeout = timeout;
     }
 
+    public ThreadFactory getThreadFactory() {
+        return threadFactory;
+    }
+
+    public AbstractSelector getSelector() {
+        return selector;
+    }
+
+    public Duration getTimeout() {
+        return timeout;
+    }
+
     protected final void register(SelectableChannel ch, int ops) throws ClosedChannelException {
         ch.register(selector, ops);
     }
