@@ -37,6 +37,7 @@ import java.util.concurrent.ThreadFactory;
 
 abstract class EventLoop implements Closeable {
     private final ThreadFactory threadFactory;
+    private final SelectorProvider provider;
     private final AbstractSelector selector;
     private final Duration timeout;
 
@@ -45,6 +46,7 @@ abstract class EventLoop implements Closeable {
 
     public EventLoop(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
         this.threadFactory = threadFactory;
+        this.provider = provider;
         this.selector = provider.openSelector();
         this.timeout = timeout;
     }
@@ -53,8 +55,8 @@ abstract class EventLoop implements Closeable {
         return threadFactory;
     }
 
-    public AbstractSelector getSelector() {
-        return selector;
+    public SelectorProvider getSelectorProvider() {
+        return provider;
     }
 
     public Duration getTimeout() {
