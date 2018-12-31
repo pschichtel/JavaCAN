@@ -36,7 +36,7 @@ import tel.schich.javacan.IsotpCanChannel;
 import tel.schich.javacan.IsotpSocketAddress;
 import tel.schich.javacan.select.JavaCANSelectorProvider;
 import tel.schich.javacan.test.CanTestHelper;
-import tel.schich.javacan.util.IsotpBroker;
+import tel.schich.javacan.util.IsotpListener;
 import tel.schich.javacan.util.MessageHandler;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,7 +45,7 @@ import static tel.schich.javacan.IsotpAddress.SFF_ECU_REQUEST_BASE;
 import static tel.schich.javacan.IsotpAddress.SFF_ECU_RESPONSE_BASE;
 import static tel.schich.javacan.test.util.CanUtils.hexDump;
 
-class IsotpBrokerTest {
+class IsotpListenerTest {
 
     @Test
     void testBroker() throws Exception {
@@ -58,7 +58,7 @@ class IsotpBrokerTest {
         IsotpSocketAddress addra = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
         IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
 
-        try (IsotpBroker broker = new IsotpBroker(threadFactory, new JavaCANSelectorProvider(), Duration.ofSeconds(5))) {
+        try (IsotpListener broker = new IsotpListener(threadFactory, new JavaCANSelectorProvider(), Duration.ofSeconds(5))) {
 
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {

@@ -49,8 +49,7 @@ public class RawCanChannelImpl extends RawCanChannel {
     public CanFrame read() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
         ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
-        CanFrame read = read(frameBuf);
-        return read;
+        return read(frameBuf);
     }
 
     @Override

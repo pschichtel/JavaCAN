@@ -20,34 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.util;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.spi.SelectorProvider;
+import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.RawCanChannel;
 
-import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
-import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
-import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
-
-public abstract class RawCanChannel extends AbstractCanChannel {
-    public RawCanChannel(SelectorProvider provider, int sock) {
-        super(provider, sock);
-    }
-
-    public static final int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
-    public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
-
-    public abstract RawCanChannel bind(CanDevice device) throws IOException;
-
-    public abstract CanFrame read() throws IOException;
-    public abstract CanFrame read(ByteBuffer buffer) throws IOException;
-    public abstract RawCanChannel write(CanFrame frame) throws IOException;
-
-    public static ByteBuffer allocateSufficientMemory() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(FD_MTU + 1);
-        buf.order(ByteOrder.nativeOrder());
-        return buf;
-    }
+public interface FrameHandler {
+    void handle(RawCanChannel ch, CanFrame frame);
 }
