@@ -30,11 +30,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 import tel.schich.javacan.IsotpCanChannel;
@@ -45,85 +42,111 @@ public class IsotpBroker implements Closeable {
     private final AbstractSelector selector;
     private final Duration timeout;
 
-    private final Set<IsotpCanChannel> channels;
-    private final Map<IsotpCanChannel, MessageHandler> handlerMap;
+    private final IdentityHashMap<IsotpCanChannel, MessageHandler> handlerMap = new IdentityHashMap<>();
+    private final Object handlerLock = new Object();
 
     private PollingThread poller;
+    private final Object pollerLock = new Object();
 
     public IsotpBroker(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
         this.threadFactory = threadFactory;
         this.selector = provider.openSelector();
         this.timeout = timeout;
-        this.channels = new HashSet<>();
-        this.handlerMap = new IdentityHashMap<>();
     }
 
     public void addChannel(IsotpCanChannel ch, MessageHandler handler) throws IOException {
-        if (ch.isRegistered()) {
-            throw new IllegalArgumentException("Channel already registered!");
+        synchronized (handlerLock) {
+            if (handler == null) {
+                throw new NullPointerException("handle must not be null!");
+            }
+            if (this.handlerMap.containsKey(ch)) {
+                throw new IllegalArgumentException("Channel already added!");
+            }
+            if (ch.isRegistered()) {
+                throw new IllegalArgumentException("Channel already registered!");
+            }
+            if (ch.isBlocking()) {
+                ch.configureBlocking(false);
+            }
+            ch.register(this.selector, SelectionKey.OP_READ);
+            this.handlerMap.put(ch, handler);
+            this.start();
         }
-        ch.configureBlocking(false);
-        ch.register(this.selector, SelectionKey.OP_READ);
-        this.channels.add(ch);
-        this.handlerMap.put(ch, handler);
-        this.start();
     }
 
     public void removeChannel(IsotpCanChannel ch) {
-        if (!this.channels.contains(ch)) {
-            throw new IllegalArgumentException("Channel not known!");
-        }
+        synchronized (handlerLock) {
+            if (!this.handlerMap.containsKey(ch)) {
+                throw new IllegalArgumentException("Channel not known!");
+            }
 
-        this.channels.remove(ch);
-        this.handlerMap.remove(ch);
-        ch.keyFor(selector).cancel();
+            this.handlerMap.remove(ch);
+            ch.keyFor(selector).cancel();
 
-        if (this.channels.isEmpty()) {
-            try {
-                this.shutdown();
-            } catch (InterruptedException ignored) {}
+            if (isEmpty()) {
+                try {
+                    this.shutdown();
+                } catch (InterruptedException ignored) {
+                }
+            }
         }
     }
 
-    public void start() {
-        if (poller != null) {
-            // already running
-            return;
+    public boolean isEmpty() {
+        synchronized (handlerLock) {
+            return this.handlerMap.isEmpty();
         }
+    }
 
+    public boolean hasChannels() {
+        return !isEmpty();
+    }
 
-        this.poller = PollingThread.create("primary-poller", timeout.toMillis(), threadFactory, this::poll, this::handle);
-        this.poller.start();
+    public synchronized void start() {
+        synchronized (pollerLock) {
+            if (poller != null) {
+                // already running
+                return;
+            }
+
+            this.poller = PollingThread.create("primary-poller", timeout.toMillis(), threadFactory, this::poll, this::handle);
+            this.poller.start();
+        }
     }
 
     private boolean poll(long timeout) {
-        if (channels.isEmpty()) {
-            try {
-                shutdown();
-            } catch (InterruptedException ignored) {}
-            return false;
+        synchronized (handlerLock) {
+            if (isEmpty()) {
+                try {
+                    shutdown();
+                } catch (InterruptedException ignored) {
+                }
+                return false;
+            }
         }
         try {
             int n = selector.select(timeout);
             if (n > 0) {
                 Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-                while (it.hasNext()) {
-                    SelectionKey key = it.next();
-                    it.remove();
-                    SelectableChannel ch = key.channel();
-                    if (ch instanceof IsotpCanChannel) {
-                        IsotpCanChannel isotp = (IsotpCanChannel) ch;
-                        MessageHandler handler = handlerMap.get(ch);
-                        if (handler != null) {
-                            readBuffer.clear();
-                            ((IsotpCanChannel) ch).read(readBuffer);
-                            readBuffer.flip();
-                            handler.handle(isotp, readBuffer.asReadOnlyBuffer());
+                synchronized (handlerLock) {
+                    while (it.hasNext()) {
+                        SelectionKey key = it.next();
+                        it.remove();
+                        SelectableChannel ch = key.channel();
+                        if (ch instanceof IsotpCanChannel) {
+                            IsotpCanChannel isotp = (IsotpCanChannel) ch;
+                            MessageHandler handler = handlerMap.get(ch);
+                            if (handler != null) {
+                                readBuffer.clear();
+                                ((IsotpCanChannel) ch).read(readBuffer);
+                                readBuffer.flip();
+                                handler.handle(isotp, readBuffer.asReadOnlyBuffer());
+                            } else {
+                                System.err.println("Handler not found for channel: " + ch);
+                            }
                         } else {
-                            System.err.println("Handler not found for channel: " + ch);
+                            System.err.println("Unsupported channel: " + ch);
                         }
-                    } else {
-                        System.err.println("Unsupported channel: " + ch);
                     }
                 }
             }
@@ -146,16 +169,18 @@ public class IsotpBroker implements Closeable {
     }
 
     public void shutdown() throws InterruptedException {
-        if (this.poller == null) {
-            // already stopped
-            return;
-        }
-        try {
-            this.poller.stop();
-            this.selector.wakeup();
-            this.poller.join();
-        } finally {
-            this.poller = null;
+        synchronized (pollerLock) {
+            if (this.poller == null) {
+                // already stopped
+                return;
+            }
+            try {
+                this.poller.stop();
+                this.selector.wakeup();
+                this.poller.join();
+            } finally {
+                this.poller = null;
+            }
         }
     }
 
