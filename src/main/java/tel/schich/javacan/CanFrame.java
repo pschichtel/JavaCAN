@@ -196,13 +196,16 @@ public class CanFrame {
     public static CanFrame create(ByteBuffer buffer) {
         int length = buffer.remaining();
         if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
-            throw new IllegalArgumentException("length must be either MTU or FD_MTU!");
+            throw new IllegalArgumentException("length must be either MTU or FD_MTU, but was " + length + "!");
         }
         CanFrame frame = new CanFrame(buffer);
-        if (frame.getDataLength() > MAX_FD_DATA_LENGTH) {
-            throw new IllegalArgumentException("payload must fit in " + MAX_FD_DATA_LENGTH + " bytes!");
+        int maxDlen = frame.isFDFrame() ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
+        int dlen = frame.getDataLength();
+        if (dlen > maxDlen) {
+            throw new IllegalArgumentException("payload must fit in " + maxDlen + " bytes, but specifies a length of " + dlen
+                    + "!");
         }
-        if (frame.getBase() + frame.getDataLength() >= length) {
+        if (frame.getBase() + dlen >= length) {
             throw new BufferOverflowException();
         }
         return frame;
