@@ -23,6 +23,7 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class CanDevice {
     private final String name;
@@ -47,5 +48,25 @@ public class CanDevice {
             throw new JavaCANNativeOperationException("Failed to resolve the interface: " + name);
         }
         return new CanDevice(name, index);
+    }
+
+    @Override
+    public String toString() {
+        return "CanDevice{" + "name='" + name + '\'' + ", index=" + index + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        CanDevice canDevice = (CanDevice) o;
+        return index == canDevice.index;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index);
     }
 }
