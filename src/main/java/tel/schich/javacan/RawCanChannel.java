@@ -43,4 +43,8 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     public abstract CanFrame read() throws IOException;
     public abstract CanFrame read(ByteBuffer buffer) throws IOException;
     public abstract RawCanChannel write(CanFrame frame) throws IOException;
+
+    public static ByteBuffer allocateSufficientMemory() {
+        return ByteBuffer.allocateDirect(FD_MTU + 1);
+    }
 }
