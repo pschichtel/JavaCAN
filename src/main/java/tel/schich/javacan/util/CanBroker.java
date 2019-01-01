@@ -163,9 +163,7 @@ public class CanBroker extends EventLoop {
                     FrameHandler handler = handlerMap.get(ch);
                     if (handler != null) {
                         readBuffer.clear();
-                        raw.read(readBuffer);
-                        readBuffer.flip();
-                        handler.handle(raw, CanFrame.create(readBuffer));
+                        handler.handle(raw, raw.read(readBuffer));
                     } else {
                         System.err.println("Handler not found for channel: " + ch);
                     }
