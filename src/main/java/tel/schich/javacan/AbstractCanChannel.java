@@ -49,6 +49,10 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         this.fileDescriptor = new UnixFileDescriptor(sock);
     }
 
+    public abstract CanDevice getDevice();
+
+    public abstract boolean isBound();
+
     protected int getSocket() {
         return sock;
     }

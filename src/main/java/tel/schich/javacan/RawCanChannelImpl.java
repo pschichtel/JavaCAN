@@ -25,6 +25,7 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
 /**
@@ -32,17 +33,32 @@ import java.nio.channels.spi.SelectorProvider;
  */
 public class RawCanChannelImpl extends RawCanChannel {
 
+    private volatile CanDevice device;
+
     RawCanChannelImpl(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
 
     @Override
     public RawCanChannel bind(CanDevice device) throws IOException {
-        final int result = SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0);
-        if (result == -1) {
+        if (SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0) == -1) {
             throw new JavaCANNativeOperationException("Unable to bind!");
         }
+        this.device = device;
         return this;
+    }
+
+    @Override
+    public CanDevice getDevice() {
+        if (!isBound()) {
+            throw new NotYetBoundException();
+        }
+        return this.device;
+    }
+
+    @Override
+    public boolean isBound() {
+        return this.device != null;
     }
 
     @Override

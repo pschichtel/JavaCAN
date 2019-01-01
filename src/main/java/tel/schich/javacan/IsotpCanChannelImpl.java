@@ -24,10 +24,13 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.AlreadyBoundException;
+import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
 
+    private CanDevice device;
     private IsotpSocketAddress rx;
     private IsotpSocketAddress tx;
 
@@ -37,21 +40,44 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
 
     @Override
     public synchronized IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+        if (isBound()) {
+            throw new AlreadyBoundException();
+        }
         if (SocketCAN.bindSocket(getSocket(), device.getIndex(), rx.getId(), tx.getId()) != 0) {
             throw new JavaCANNativeOperationException("Unable to bind ISOTP socket!");
         }
+        this.device = device;
         this.rx = rx;
         this.tx = tx;
         return this;
     }
 
     @Override
+    public synchronized boolean isBound() {
+        return this.device != null;
+    }
+
+    @Override
+    public synchronized CanDevice getDevice() {
+        if (!isBound()) {
+            throw new NotYetBoundException();
+        }
+        return this.device;
+    }
+
+    @Override
     public synchronized IsotpSocketAddress getRxAddress() {
+        if (!isBound()) {
+            throw new NotYetBoundException();
+        }
         return this.rx;
     }
 
     @Override
     public synchronized IsotpSocketAddress getTxAddress() {
+        if (!isBound()) {
+            throw new NotYetBoundException();
+        }
         return this.tx;
     }
 
