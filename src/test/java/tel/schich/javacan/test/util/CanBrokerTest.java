@@ -44,8 +44,6 @@ class CanBrokerTest {
 
     @Test
     void testLoopback() throws Exception {
-
-
         final int id = 0x7E0;
         CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[] {1, 2, 3});
         CanFilter filter = new CanFilter(id);
@@ -53,9 +51,7 @@ class CanBrokerTest {
         CanBroker brokerA = new CanBroker(FACTORY);
         CanBroker brokerB = new CanBroker(FACTORY);
 
-        brokerA.setLoopback(true);
         brokerA.addFilter(filter);
-        brokerB.setLoopback(true);
         brokerB.addFilter(filter);
 
         CompletableFuture<CanFrame> f = new CompletableFuture<>();

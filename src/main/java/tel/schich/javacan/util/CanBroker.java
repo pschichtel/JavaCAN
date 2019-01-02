@@ -61,7 +61,7 @@ public class CanBroker extends EventLoop {
     private CanFilter[] filterArray = new CanFilter[0];
     private final Object filterLock = new Object();
 
-    private volatile boolean loopback;
+    private volatile boolean loopback = true;
 
     public CanBroker(ThreadFactory threadFactory) throws IOException {
         this(threadFactory, PROVIDER, TIMEOUT);
