@@ -23,6 +23,7 @@
 package tel.schich.javacan.util;
 
 import java.io.IOException;
+import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -41,9 +42,15 @@ import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 
+import static java.time.Duration.ofMinutes;
+import static tel.schich.javacan.CanChannels.PROVIDER;
 import static tel.schich.javacan.CanSocketOptions.FILTER;
+import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 
 public class CanBroker extends EventLoop {
+
+    private static final Duration TIMEOUT = ofMinutes(1);
+
     private final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<RawCanChannel, FrameHandler> handlerMap = new IdentityHashMap<>();
@@ -52,6 +59,16 @@ public class CanBroker extends EventLoop {
     private final Set<CanFilter> filters = new HashSet<>();
     private CanFilter[] filterArray = new CanFilter[0];
     private final Object filterLock = new Object();
+
+    private volatile boolean loopback;
+
+    public CanBroker(ThreadFactory threadFactory) throws IOException {
+        this(threadFactory, PROVIDER, TIMEOUT);
+    }
+
+    public CanBroker(ThreadFactory threadFactory, Duration timeout) throws IOException {
+        this(threadFactory, PROVIDER, timeout);
+    }
 
     public CanBroker(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
         super(threadFactory, provider, timeout);
@@ -66,6 +83,11 @@ public class CanBroker extends EventLoop {
 
             ch.write(frame);
         }
+    }
+
+    public synchronized void setLoopback(boolean enable) throws IOException {
+        this.loopback = enable;
+        this.updateOption(LOOPBACK, enable);
     }
 
     public void addFilter(CanFilter filter) throws IOException {
@@ -88,28 +110,34 @@ public class CanBroker extends EventLoop {
         synchronized (filterLock) {
             synchronized (this.handlerLock) {
                 filterArray = this.filters.toArray(new CanFilter[0]);
-                IOException e = null;
-                for (RawCanChannel channel : this.channelMap.values()) {
-                    try {
-                        channel.setOption(FILTER, filterArray);
-                    } catch (IOException e1) {
-                        if (e != null) {
-                            e1.addSuppressed(e);
-                        }
-                        e = e1;
+                updateOption(FILTER, filterArray);
+            }
+        }
+    }
+
+    private <T> void updateOption(SocketOption<T> opt, T val) throws IOException {
+        synchronized (this.handlerLock) {
+            IOException e = null;
+            for (RawCanChannel channel : this.channelMap.values()) {
+                try {
+                    channel.setOption(opt, val);
+                } catch (IOException e1) {
+                    if (e != null) {
+                        e1.addSuppressed(e);
                     }
+                    e = e1;
                 }
-                if (e != null) {
-                    throw e;
-                }
+            }
+            if (e != null) {
+                throw e;
             }
         }
     }
 
     public void send(CanFrame frame) throws IOException {
         synchronized (handlerLock) {
-            for (RawCanChannel channel : this.channelMap.values()) {
-                channel.write(frame);
+            for (RawCanChannel ch : this.channelMap.values()) {
+                ch.write(frame);
             }
         }
     }
@@ -125,6 +153,7 @@ public class CanBroker extends EventLoop {
             RawCanChannel ch = CanChannels.newRawChannel(device);
             ch.configureBlocking(false);
             ch.setOption(FILTER, filterArray);
+            ch.setOption(LOOPBACK, loopback);
             register(ch, SelectionKey.OP_READ);
             this.handlerMap.put(ch, handler);
             this.channelMap.put(device, ch);
