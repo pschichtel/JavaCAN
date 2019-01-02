@@ -36,22 +36,22 @@ import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class CanBrokerTest {
+    private static final ThreadFactory FACTORY = r -> {
+        Thread t = new Thread(r);
+        t.setName("can-broker-test" + Math.random());
+        return t;
+    };
 
     @Test
     void testLoopback() throws Exception {
-        ThreadFactory factory = r -> {
-            Thread t = new Thread(r);
-            t.setName("bla" + Math.random());
-            return t;
-        };
 
 
         final int id = 0x7E0;
         CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[] {1, 2, 3});
         CanFilter filter = new CanFilter(id);
 
-        CanBroker brokerA = new CanBroker(factory);
-        CanBroker brokerB = new CanBroker(factory);
+        CanBroker brokerA = new CanBroker(FACTORY);
+        CanBroker brokerB = new CanBroker(FACTORY);
 
         brokerA.setLoopback(true);
         brokerA.addFilter(filter);
@@ -82,7 +82,7 @@ class CanBrokerTest {
         CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[] {1, 2, 3});
         CompletableFuture<CanFrame> f = new CompletableFuture<>();
 
-        CanBroker can = new CanBroker(Thread::new);
+        CanBroker can = new CanBroker(FACTORY);
         can.addFilter(new CanFilter(id));
         can.addDevice(CAN_INTERFACE, (ch, frame) -> {
             f.complete(frame);
