@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.util;
+package tel.schich.javacan.test.util;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadFactory;
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.test.CanTestHelper;
+import tel.schich.javacan.util.CanBroker;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
