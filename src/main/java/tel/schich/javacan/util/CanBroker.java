@@ -50,6 +50,7 @@ import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 public class CanBroker extends EventLoop {
 
     private static final Duration TIMEOUT = ofMinutes(1);
+    private static final CanFilter[] NO_FILTERS = { CanFilter.NONE };
 
     private final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
 
@@ -109,7 +110,11 @@ public class CanBroker extends EventLoop {
     private void updateFilters() throws IOException {
         synchronized (filterLock) {
             synchronized (this.handlerLock) {
-                filterArray = this.filters.toArray(new CanFilter[0]);
+                if (filters.isEmpty()) {
+                    this.filterArray = NO_FILTERS;
+                } else {
+                    filterArray = this.filters.toArray(new CanFilter[0]);
+                }
                 updateOption(FILTER, filterArray);
             }
         }
