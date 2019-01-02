@@ -29,7 +29,7 @@ import tel.schich.javacan.select.JavaCANSelectorProvider;
 
 public class CanChannels {
 
-    private static final SelectorProvider PROVIDER = new JavaCANSelectorProvider();
+    public static final SelectorProvider PROVIDER = new JavaCANSelectorProvider();
 
     private CanChannels() {}
 
