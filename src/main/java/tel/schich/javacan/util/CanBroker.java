@@ -49,7 +49,7 @@ import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 
 public class CanBroker extends EventLoop {
 
-    private static final Duration TIMEOUT = ofMinutes(1);
+    public static final Duration DEFAULT_TIMEOUT = ofMinutes(1);
     private static final CanFilter[] NO_FILTERS = { CanFilter.NONE };
 
     private final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
@@ -64,7 +64,7 @@ public class CanBroker extends EventLoop {
     private volatile boolean loopback = true;
 
     public CanBroker(ThreadFactory threadFactory) throws IOException {
-        this(threadFactory, PROVIDER, TIMEOUT);
+        this(threadFactory, PROVIDER, DEFAULT_TIMEOUT);
     }
 
     public CanBroker(ThreadFactory threadFactory, Duration timeout) throws IOException {
