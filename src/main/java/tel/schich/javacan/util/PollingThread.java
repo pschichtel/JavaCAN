@@ -24,7 +24,7 @@ package tel.schich.javacan.util;
 
 import java.util.concurrent.ThreadFactory;
 
-import tel.schich.javacan.JavaCANNativeOperationException;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
 
 final class PollingThread {
     private final Poller poller;
@@ -45,22 +45,8 @@ final class PollingThread {
         this.poller.stop();
     }
 
-    public synchronized boolean join(long millis) throws InterruptedException {
-        thread.join(millis);
-        return thread.isAlive();
-    }
-
-    public synchronized boolean join(long millis, int nanos) throws InterruptedException {
-        thread.join(millis, nanos);
-        return thread.isAlive();
-    }
-
     public synchronized void join() throws InterruptedException {
         thread.join();
-    }
-
-    public synchronized void kill() {
-        thread.interrupt();
     }
 
     static PollingThread create(String name, long timeout, ThreadFactory factory, PollFunction foo, PollExceptionHandler exceptionHandler) {
@@ -110,8 +96,8 @@ final class PollingThread {
         }
 
         private boolean mayRetry(Exception e) {
-            if (e instanceof JavaCANNativeOperationException) {
-                return ((JavaCANNativeOperationException) e).mayTryAgain();
+            if (e instanceof LinuxNativeOperationException) {
+                return ((LinuxNativeOperationException) e).mayTryAgain();
             }
             return false;
         }
