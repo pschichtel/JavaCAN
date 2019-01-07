@@ -51,34 +51,78 @@ abstract class EventLoop implements Closeable {
         this.timeout = timeout;
     }
 
+    /**
+     * Exposes the {@link java.util.concurrent.ThreadFactory} used by this event loop.
+     *
+     * @return the thread factory
+     */
     public ThreadFactory getThreadFactory() {
         return threadFactory;
     }
 
+    /**
+     * Exposes the {@link java.nio.channels.spi.SelectorProvider} used by this event loop.
+     *
+     * @return the selector provider
+     */
     public SelectorProvider getSelectorProvider() {
         return provider;
     }
 
+    /**
+     * Gets the timeout used on epoll wait calls.
+     *
+     * @return the timeout as a {@link java.time.Duration}
+     */
     public Duration getTimeout() {
         return timeout;
     }
 
+    /**
+     * Registers a channel to the {@link java.nio.channels.Selector}.
+     *
+     * @param ch the channel to register
+     * @param ops the interested ops
+     * @throws ClosedChannelException if the channel is already closed
+     */
     protected final void register(SelectableChannel ch, int ops) throws ClosedChannelException {
         ch.register(selector, ops);
     }
 
+    /**
+     * Cancels the given {@link java.nio.channels.SelectableChannel}'s {@link java.nio.channels.SelectionKey}.
+     *
+     * @param ch the channel to cancel the key for
+     */
     protected final void cancel(SelectableChannel ch) {
         ch.keyFor(selector).cancel();
     }
 
+    /**
+     * Passes the call through to the underlying {@link java.nio.channels.Selector}.
+     *
+     * @param timeout the timeout in milliseconds
+     * @return the number of events
+     * @throws IOException if the native call fails
+     */
     protected final int select(long timeout) throws IOException {
         return this.selector.select(timeout);
     }
 
+    /**
+     * Returns the selected keys by the underlying {@link java.nio.channels.Selector}.
+     *
+     * @return the selected keys
+     */
     protected final Set<SelectionKey> selectedKeys() {
         return this.selector.selectedKeys();
     }
 
+    /**
+     * Shuts the event loop down if there are no more channels registered.
+     *
+     * @return true if the event loop has been shutdown
+     */
     protected boolean lazyShutdown() {
         if (isEmpty()) {
             try {
@@ -90,7 +134,11 @@ abstract class EventLoop implements Closeable {
         return false;
     }
 
-
+    /**
+     * Starts the polling loop of this event loop.
+     *
+     * A direct call is not necessary, as implementations should start the loop upon adding a channel.
+     */
     public final void start() {
         if (!selector.isOpen()) {
             throw new ClosedSelectorException();
@@ -106,6 +154,13 @@ abstract class EventLoop implements Closeable {
         }
     }
 
+    /**
+     * Shuts down this event loop, even if currently blocking in a poll call.
+     *
+     * The event loop is automatically shutdown when no channels are registered.
+     *
+     * @throws InterruptedException if the joining the polling thread gets interrupted
+     */
     public final void shutdown() throws InterruptedException {
         synchronized (pollerLock) {
             if (this.poller == null) {
@@ -122,6 +177,13 @@ abstract class EventLoop implements Closeable {
         }
     }
 
+    /**
+     * Waits for IO events on all registered channels.
+     *
+     * @param timeout the timeout in milliseconds
+     * @return true if the event loop should continue
+     * @throws IOException if the native calls fail
+     */
     protected final boolean poll(long timeout) throws IOException {
         if (lazyShutdown()) {
             return true;
@@ -133,6 +195,14 @@ abstract class EventLoop implements Closeable {
         return true;
     }
 
+    /**
+     * Handles the {@link java.lang.Throwable} that got thrown in the event loop.
+     *
+     * @param thread the thread that had the exception
+     * @param t the exception
+     * @param terminal if the exception was terminal for the event loop
+     * @return true if the event loop should continue, false for the event loop to exit
+     */
     protected boolean handleException(Thread thread, Throwable t, boolean terminal) {
         System.err.println("Polling thread failed: " + thread.getName());
         t.printStackTrace(System.err);
@@ -145,20 +215,49 @@ abstract class EventLoop implements Closeable {
         return true;
     }
 
+    /**
+     * Checks if there are any devices known to this broker.
+     *
+     * @return true only if this broker has no known devices
+     */
     protected abstract boolean isEmpty();
+
+    /**
+     * Processes the events for the provided {@link java.nio.channels.SelectionKey}s.
+     *
+     * The provided iterator can be iterated once to retrieve the keys. Processed events should be removed while
+     * iterating.
+     *
+     * @param selectedKeys the keys
+     * @throws IOException if the implementation has IO failures
+     */
     protected abstract void processEvents(Iterator<SelectionKey> selectedKeys) throws IOException;
 
+    /**
+     * Closes the event loop by shutting it down and then
+     *
+     * @throws IOException if any underlying operations has IO failures
+     */
     @Override
     public final void close() throws IOException {
         try {
             shutdown();
-            selector.close();
-            closeResources();
         } catch (InterruptedException e) {
             throw new IOException(e);
+        } finally {
+            try {
+                selector.close();
+            } finally {
+                closeResources();
+            }
         }
     }
 
+    /**
+     * This method allows the implementation to close additional resources.
+     *
+     * @throws IOException if any underlying operations has IO failures
+     */
     protected void closeResources() throws IOException {
 
     }

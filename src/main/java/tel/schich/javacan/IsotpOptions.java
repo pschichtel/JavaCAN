@@ -24,6 +24,9 @@ package tel.schich.javacan;
 
 import java.util.Objects;
 
+/**
+ * This class represents ISOTP's general options.
+ */
 public class IsotpOptions {
     private final int flags;
     private final int frameTransmissionTime;

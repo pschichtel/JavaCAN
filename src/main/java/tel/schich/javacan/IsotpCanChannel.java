@@ -26,24 +26,83 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.spi.SelectorProvider;
 
+/**
+ * This is the base class for ISOTP channels providing a minimal interface to send and receive messages.
+ */
 public abstract class IsotpCanChannel extends AbstractCanChannel {
-
-    // TODO this might actually depend on whether FD or non-FD frames are being used
+    /**
+     * The maximum message length.
+     *
+     * TODO this might actually depend on whether FD or non-FD frames are being used
+     */
     public static final int MAX_MESSAGE_LENGTH = 4095;
 
+    /**
+     * Creates a new channel given the {@link java.nio.channels.spi.SelectorProvider} and the socket file descriptor.
+     *
+     * @param provider the selector provider
+     * @param sock the socket file descriptor
+     */
     public IsotpCanChannel(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
 
-    public abstract IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
+    /**
+     * Binds this channel to the given {@link tel.schich.javacan.NetworkDevice} and
+     * {@link tel.schich.javacan.IsotpSocketAddress}es.
+     *
+     * @param device the device to bind to
+     * @param rx the receiving address to bind to
+     * @param tx the transmitting address to bind to
+     * @return fluent interface
+     * @throws IOException if the native calls fail
+     * @throws java.nio.channels.AlreadyBoundException if this channel has already been bound
+     */
+    public abstract IsotpCanChannel bind(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
 
+    /**
+     * Returns the receiving {@link tel.schich.javacan.IsotpSocketAddress} this channel has been bound to.
+     *
+     * @return the receiving address
+     * @throws java.nio.channels.NotYetBoundException if the channel has not been bound yet
+     */
     public abstract IsotpSocketAddress getRxAddress();
+
+    /**
+     * Returns the transmitting {@link tel.schich.javacan.IsotpSocketAddress} this channel has been bound to.
+     *
+     * @return the transmitting address
+     * @throws java.nio.channels.NotYetBoundException if the channel has not been bound yet
+     */
     public abstract IsotpSocketAddress getTxAddress();
 
+    /**
+     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
+     * respected and will be updated according to the data that has been read.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @param buffer the destination buffer
+     * @return the amount of bytes that have been read
+     * @throws IOException if the native calls fail
+     */
     public abstract int read(ByteBuffer buffer) throws IOException;
 
+    /**
+     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been written.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @param buffer the source buffer
+     * @return the amount of bytes that have been written
+     * @throws IOException if the native calls fail
+     */
     public abstract int write(ByteBuffer buffer) throws IOException;
 
+    /**
+     * Allocates a new direct {@link java.nio.ByteBuffer} that can hold any message.
+     *
+     * @return the newly allocated buffer
+     */
     public static ByteBuffer allocateSufficientMemory() {
         return ByteBuffer.allocateDirect(MAX_MESSAGE_LENGTH + 1);
     }

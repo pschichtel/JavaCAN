@@ -22,35 +22,115 @@
  */
 package tel.schich.javacan;
 
+/**
+ * This class provides constants and methods to work with ISOTP addresses.
+ */
 public class IsotpAddress {
 
+    /**
+     * The relative destination address for ECU 1
+     */
     public static final int DESTINATION_ECU_1              = 0x00;
+
+    /**
+     * The relative destination address for ECU 2
+     */
     public static final int DESTINATION_ECU_2              = 0x01;
+
+    /**
+     * The relative destination address for ECU 3
+     */
     public static final int DESTINATION_ECU_3              = 0x02;
+
+    /**
+     * The relative destination address for ECU 4
+     */
     public static final int DESTINATION_ECU_4              = 0x03;
+
+    /**
+     * The relative destination address for ECU 5
+     */
     public static final int DESTINATION_ECU_5              = 0x04;
+
+    /**
+     * The relative destination address for ECU 6
+     */
     public static final int DESTINATION_ECU_6              = 0x05;
+
+    /**
+     * The relative destination address for ECU 7
+     */
     public static final int DESTINATION_ECU_7              = 0x06;
+
+    /**
+     * The functional address when using EFF addressing.
+     */
     public static final int DESTINATION_EFF_FUNCTIONAL     = 0x33;
+
+    /**
+     * The address of the test equipment whenusing EFF addressing.
+     */
     public static final int DESTINATION_EFF_TEST_EQUIPMENT = 0xF1;
 
+    /**
+     * The physical addressing type when using EFF addressing.
+     */
     public static final int EFF_TYPE_PHYSICAL_ADDRESSING   = 0xDA;
+
+    /**
+     * The functional addressing type when using EFF addressing.
+     */
     public static final int EFF_TYPE_FUNCTIONAL_ADDRESSING = 0xDB;
 
+    /**
+     * This mask can be used in a CAN filter to match functional response frames when using EFF addressing.
+     */
     public static final int EFF_MASK_FUNCTIONAL_RESPONSE = 0xFFFF00FF;
 
+    /**
+     * This is the absolute base address for ECU requests when using SFF addressing.
+     */
     public static final int SFF_ECU_REQUEST_BASE   = 0x7E0;
+
+    /**
+     * This is the absolute base address for ECU responses when using SFF addressing.
+     */
     public static final int SFF_ECU_RESPONSE_BASE  = 0x7E8;
+
+    /**
+     * This is the absolute functional address when using SFF addressing.
+     */
     public static final int SFF_FUNCTIONAL_ADDRESS = 0x7DF;
 
+    /**
+     * This mask can be used to match functional requests.
+     */
     public static final int SFF_MASK_FUNCTIONAL_RESPONSE = 0b111_11111000;
 
+    /**
+     * This filter can be used to match functional requests.
+     */
     public static final CanFilter SFF_FUNCTIONAL_FILTER = new CanFilter(SFF_ECU_RESPONSE_BASE, SFF_MASK_FUNCTIONAL_RESPONSE);
 
+    /**
+     * Constructs an EFF CAN ID given the ISOTP address components.
+     *
+     * @param priority the message priority
+     * @param type the address type (functional vs physical)
+     * @param sender the sender address
+     * @param receiver the receiver address
+     * @return the final CAN ID representing the ISOTP address
+     */
     public static int effAddress(int priority, int type, int sender, int receiver) {
         return ((((priority & 0xFF) << 24) | ((type & 0xFF) << 16) | ((sender & 0xFF) << 8) | (receiver & 0xFF)) & CanId.EFF_MASK) | CanId.EFF_FLAG;
     }
 
+    /**
+     * Calculates the return address for the given address.
+     *
+     * @param addr the address to calculate the return address for
+     * @return the return address
+     */
     public static int returnAddress(int addr) {
         if (CanId.isExtended(addr)) {
             return effReturnAddress(addr);
@@ -91,6 +171,12 @@ public class IsotpAddress {
         return addr == SFF_FUNCTIONAL_ADDRESS;
     }
 
+    /**
+     * Checks if the given address is addressing functionally.
+     *
+     * @param addr the address to check
+     * @return true if the address is a functional address
+     */
     public static boolean isFunctional(int addr) {
         if (CanId.isExtended(addr)) {
             return isEffAddressFunctional(addr);
@@ -99,6 +185,12 @@ public class IsotpAddress {
         }
     }
 
+    /**
+     * Constructs a new {@link tel.schich.javacan.CanFilter} from the given destination address.
+     *
+     * @param addr the destination address
+     * @return the new filter
+     */
     public static CanFilter filterFromDestination(int addr) {
         if (CanId.isExtended(addr)) {
             int[] components = decomposeEffAddress(addr);
@@ -121,6 +213,12 @@ public class IsotpAddress {
         }
     }
 
+    /**
+     * Decomposes the given EFF address into its components.
+     *
+     * @param effAddr the EFF address to decompose
+     * @return an int array with 4 elements representing the components in order: priority, type, sender, receiver
+     */
     public static int[] decomposeEffAddress(int effAddr) {
         int prio = (effAddr >>> 24);
         int type = ((effAddr >>> 16) & 0xFF);

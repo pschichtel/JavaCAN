@@ -31,9 +31,17 @@ import java.time.Duration;
 import tel.schich.javacan.option.CanSocketOption;
 
 import static java.time.temporal.ChronoUnit.MICROS;
-import static java.time.temporal.ChronoUnit.NANOS;
 
+/**
+ * This class provides the standard socket options supported by CAN sockets.
+ */
 public class CanSocketOptions {
+
+    private CanSocketOptions() {}
+
+    /**
+     * Option to configure whether to join filters.
+     */
     public static final SocketOption<Boolean> JOIN_FILTERS = new CanSocketOption<>("JOIN_FILTERS", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
@@ -52,6 +60,10 @@ public class CanSocketOptions {
             return result != 0;
         }
     });
+
+    /**
+     * Option to configure whether loop back frames.
+     */
     public static final SocketOption<Boolean> LOOPBACK = new CanSocketOption<>("LOOPBACK", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
@@ -70,6 +82,10 @@ public class CanSocketOptions {
             return result != 0;
         }
     });
+
+    /**
+     * Option to configure whether to receive outgoing frames back.
+     */
     public static final SocketOption<Boolean> RECV_OWN_MSGS = new CanSocketOption<>("RECV_OWN_MSGS", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
@@ -88,6 +104,10 @@ public class CanSocketOptions {
             return result != 0;
         }
     });
+
+    /**
+     * Option to configure whether to support FD frames.
+     */
     public static final SocketOption<Boolean> FD_FRAMES = new CanSocketOption<>("FD_FRAMES", Boolean.class, new CanSocketOption.Handler<Boolean>() {
         @Override
         public void set(int sock, Boolean val) throws IOException {
@@ -106,6 +126,10 @@ public class CanSocketOptions {
             return result != 0;
         }
     });
+
+    /**
+     * Option to configure the error filter.
+     */
     public static final SocketOption<Integer> ERR_FILTER = new CanSocketOption<>("ERR_FILTER", Integer.class, new CanSocketOption.Handler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
@@ -124,6 +148,10 @@ public class CanSocketOptions {
             return mask;
         }
     });
+
+    /**
+     * Option to configure the CAN filters.
+     */
     public static final SocketOption<CanFilter[]> FILTER = new CanSocketOption<>("FILTER", CanFilter[].class, new CanSocketOption.Handler<CanFilter[]>() {
         @Override
         public void set(int sock, CanFilter[] val) throws IOException {
@@ -158,6 +186,10 @@ public class CanSocketOptions {
             return filters;
         }
     });
+
+    /**
+     * Option to configure the send timeout.
+     */
     public static final SocketOption<Duration> SO_SNDTIMEO = new CanSocketOption<>("SO_SNDTIMEO", Duration.class, new CanSocketOption.Handler<Duration>() {
         @Override
         public void set(int sock, Duration val) throws IOException {
@@ -175,6 +207,10 @@ public class CanSocketOptions {
             return Duration.of(timeout, MICROS);
         }
     });
+
+    /**
+     * Option to configure the receive timeout.
+     */
     public static final SocketOption<Duration> SO_RCVTIMEO = new CanSocketOption<>("SO_RCVTIMEO", Duration.class, new CanSocketOption.Handler<Duration>() {
         @Override
         public void set(int sock, Duration val) throws IOException {
@@ -192,6 +228,10 @@ public class CanSocketOptions {
             return Duration.of(timeout, MICROS);
         }
     });
+
+    /**
+     * Option to configure the size of the receive buffer.
+     */
     public static final SocketOption<Integer> SO_RCVBUF = new CanSocketOption<>("SO_RCVBUF", Integer.class, new CanSocketOption.Handler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {

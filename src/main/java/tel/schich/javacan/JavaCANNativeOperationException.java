@@ -24,6 +24,11 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
+/**
+ * This exception is thrown when an error occurs during a native call.
+ * It provides OS specific information if possible, but no guarantees are given that the information is correct and/or
+ * complete.
+ */
 public class JavaCANNativeOperationException extends IOException {
     private final OSError error;
 
@@ -44,6 +49,11 @@ public class JavaCANNativeOperationException extends IOException {
         }
     }
 
+    /**
+     * Checks if the underlying OS error suggests retrying as a solution.
+     *
+     * @return true if a retry might be a viable resolution of this exception
+     */
     public boolean mayTryAgain() {
         if (error == null) {
             return false;
@@ -51,6 +61,11 @@ public class JavaCANNativeOperationException extends IOException {
         return error.mayTryAgain();
     }
 
+    /**
+     * Returns the underlying {@link tel.schich.javacan.OSError} if available.
+     *
+     * @return the underlying error or null
+     */
     public OSError getError() {
         return error;
     }

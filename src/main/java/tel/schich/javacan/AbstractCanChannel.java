@@ -24,10 +24,7 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.net.SocketOption;
-import java.nio.BufferOverflowException;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectableChannel;
@@ -38,6 +35,13 @@ import tel.schich.javacan.select.NativeChannel;
 import tel.schich.javacan.select.NativeHandle;
 import tel.schich.javacan.select.UnixFileDescriptor;
 
+/**
+ * This abstract base class for CAN channels implements all shared APIs common to CAN communication: It implements
+ * {@link java.nio.channels.SelectableChannel} via {@link java.nio.channels.spi.AbstractSelectableChannel}, implements
+ * {@link tel.schich.javacan.select.NativeChannel} by exposing the underlying socket file descriptor as a
+ * {@link tel.schich.javacan.select.UnixFileDescriptor} and it provides APIs to set socket options and read/write
+ * buffers.
+ */
 public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
 
     private final int sock;
@@ -49,10 +53,28 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         this.fileDescriptor = new UnixFileDescriptor(sock);
     }
 
-    public abstract CanDevice getDevice();
+    /**
+     * Returns the CAN device this channel is bound to, given that is has already been bound.
+     *
+     * @return The CAN device.
+     * @throws java.nio.channels.NotYetBoundException if not yet bound
+     */
+    public abstract NetworkDevice getDevice();
 
+    /**
+     * Returns if this channel has already been bound. This state may in theory get out of sync with the kernel as
+     * this is tracked purely in the {@link java.nio.channels.Channel} implementation, the kernel does not expose
+     * its bind state.
+     *
+     * @return true if the socket has been bound
+     */
     public abstract boolean isBound();
 
+    /**
+     * Returns the internal socket file descriptor
+     *
+     * @return the file descriptor
+     */
     protected int getSocket() {
         return sock;
     }
@@ -81,6 +103,15 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         return SelectionKey.OP_READ | SelectionKey.OP_WRITE;
     }
 
+    /**
+     * Sets a socket option on this {@link java.nio.channels.Channel}'s socket.
+     *
+     * @param option The option to set
+     * @param value the value to set
+     * @param <T> The type of the option
+     * @return fluent interface, implementations may specialize
+     * @throws IOException if the native call fails
+     */
     public <T> AbstractCanChannel setOption(SocketOption<T> option, T value) throws IOException {
         if (!isOpen()) {
             throw new ClosedChannelException();
@@ -93,6 +124,15 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         }
     }
 
+    /**
+     * Retrieves the current value of a socket option.
+     * The returned value may or may not be useful depending on the state the socket is in.
+     *
+     * @param option The option to get
+     * @param <T> The type of the option
+     * @return The current value of option
+     * @throws IOException if the native call fails
+     */
     public <T> T getOption(SocketOption<T> option) throws IOException {
         if (!isOpen()) {
             throw new ClosedChannelException();
@@ -104,6 +144,15 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         }
     }
 
+    /**
+     * Reads data from this socket into the given {@link java.nio.ByteBuffer}.
+     * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
+     * Buffer position and limit will be respected and the position will be updated.
+     *
+     * @param buffer the buffer to read into
+     * @return The number of bytes read from the socket
+     * @throws IOException if the native call fails
+     */
     protected long readSocket(ByteBuffer buffer) throws IOException {
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
@@ -123,6 +172,15 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         }
     }
 
+    /**
+     * Writes data to this socket from the given {@link java.nio.ByteBuffer}.
+     * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
+     * Buffer position and limit will be respected and the position will be updated.
+     *
+     * @param buffer the buffer to write from
+     * @return The number of bytes written to the socket
+     * @throws IOException if the native call fails
+     */
     protected long writeSocket(ByteBuffer buffer) throws IOException {
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");

@@ -22,6 +22,22 @@
  */
 package tel.schich.javacan.select;
 
-public interface NativeChannel {
+import java.nio.channels.Channel;
+
+/**
+ * This interface is intended for {@link java.nio.channels.Channel} implementations that are backed by native APIs
+ * like for example Berkley sockets. It exposes a wrapper around the native handle for the
+ * {@link java.nio.channels.Channel}'s connection (e.g. the socket file descriptor on Linux).
+ * The handle can then be typed checked by the consumer to see if it can handle that kind of native
+ * {@link java.nio.channels.Channel}.
+ */
+public interface NativeChannel extends Channel {
+    /**
+     * Exposes the internal "connection handle" without being specific about it.
+     * Implementations may even expose more concrete types than {@link tel.schich.javacan.select.NativeHandle} to
+     * allow for compile time checking of handle types.
+     *
+     * @return the native handle, never null.
+     */
     NativeHandle getHandle();
 }

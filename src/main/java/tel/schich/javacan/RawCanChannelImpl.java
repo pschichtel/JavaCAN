@@ -33,14 +33,14 @@ import java.nio.channels.spi.SelectorProvider;
  */
 public class RawCanChannelImpl extends RawCanChannel {
 
-    private volatile CanDevice device;
+    private volatile NetworkDevice device;
 
     RawCanChannelImpl(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
 
     @Override
-    public RawCanChannel bind(CanDevice device) throws IOException {
+    public RawCanChannel bind(NetworkDevice device) throws IOException {
         if (SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0) == -1) {
             throw new JavaCANNativeOperationException("Unable to bind!");
         }
@@ -49,7 +49,7 @@ public class RawCanChannelImpl extends RawCanChannel {
     }
 
     @Override
-    public CanDevice getDevice() {
+    public NetworkDevice getDevice() {
         if (!isBound()) {
             throw new NotYetBoundException();
         }

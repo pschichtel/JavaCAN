@@ -25,6 +25,17 @@ package tel.schich.javacan.util;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 
+/**
+ * Frame handlers are called by a {@link tel.schich.javacan.util.CanBroker} for each {@link tel.schich.javacan.CanFrame}
+ * received by the {@link tel.schich.javacan.RawCanChannel} it has been added with.
+ */
+@FunctionalInterface
 public interface FrameHandler {
+    /**
+     * Handles a received frame.
+     *
+     * @param ch the channel that received the frame
+     * @param frame the frame that has been received
+     */
     void handle(RawCanChannel ch, CanFrame frame);
 }

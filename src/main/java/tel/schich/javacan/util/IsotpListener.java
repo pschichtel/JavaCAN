@@ -34,6 +34,11 @@ import java.util.concurrent.ThreadFactory;
 
 import tel.schich.javacan.IsotpCanChannel;
 
+/**
+ * This class implements an event driven interface over several {@link tel.schich.javacan.IsotpCanChannel}s to
+ * receive messages with callbacks. Received messages are passed on to a {@link tel.schich.javacan.util.MessageHandler}
+ * for for each specific channel.
+ */
 public class IsotpListener extends EventLoop {
     private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
 
@@ -44,6 +49,14 @@ public class IsotpListener extends EventLoop {
         super(threadFactory, provider, timeout);
     }
 
+    /**
+     * Adds the given {@link tel.schich.javacan.IsotpCanChannel} together with its
+     * {@link tel.schich.javacan.util.MessageHandler} to this listener.
+     *
+     * @param ch the channel to add
+     * @param handler the corresponding handler
+     * @throws IOException if native calls fail
+     */
     public void addChannel(IsotpCanChannel ch, MessageHandler handler) throws IOException {
         synchronized (handlerLock) {
             if (handler == null) {
@@ -64,6 +77,11 @@ public class IsotpListener extends EventLoop {
         }
     }
 
+    /**
+     * Removes the given {@link tel.schich.javacan.IsotpCanChannel} from this listener.
+     *
+     * @param ch the channel to remove
+     */
     public void removeChannel(IsotpCanChannel ch) {
         synchronized (handlerLock) {
             if (!this.handlerMap.containsKey(ch)) {

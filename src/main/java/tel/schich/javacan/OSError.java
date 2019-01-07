@@ -24,13 +24,21 @@ package tel.schich.javacan;
 
 import static tel.schich.javacan.LinuxErrnoBase.EAGAIN;
 
+/**
+ * This class represents an OS error with an ID and an error message.
+ */
 public class OSError {
     public final int errorNumber;
     public final String errorMessage;
 
-    public OSError(int errorNumber, String errorMessage) {
-        this.errorNumber = errorNumber;
-        this.errorMessage = errorMessage;
+    /**
+     * Creates a new instance with a given error number and message
+     * @param number the number
+     * @param message the message
+     */
+    public OSError(int number, String message) {
+        this.errorNumber = number;
+        this.errorMessage = message;
     }
 
     @Override
@@ -38,6 +46,11 @@ public class OSError {
         return "OSError{" + "errorNumber=" + errorNumber + ", errorMessage='" + errorMessage + '\'' + '}';
     }
 
+    /**
+     * Creates a new instance by getting the last error from the OS if available.
+     *
+     * @return a new instance representing the last OS error or null
+     */
     public static OSError getLast() {
         int lastErrno = SocketCAN.errno();
         if (lastErrno == 0) {
@@ -56,10 +69,20 @@ public class OSError {
         }
     }
 
+    /**
+     * Checks if the error suggests retrying as a solution.
+     *
+     * @return true if a retry might be a viable resolution of this error
+     */
     public boolean mayTryAgain() {
         return isTemporary(errorNumber);
     }
 
+    /**
+     * Checks if the last error was a temporary one.
+     *
+     * @return true if the last error was temporary
+     */
     public static boolean wasTemporaryError() {
         return isTemporary(SocketCAN.errno());
     }

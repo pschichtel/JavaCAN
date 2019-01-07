@@ -25,6 +25,9 @@ package tel.schich.javacan;
 import java.net.SocketAddress;
 import java.util.Objects;
 
+/**
+ * This class represents an ISOTP socket address and implements teh {@link java.net.SocketAddress} API.
+ */
 public class IsotpSocketAddress extends SocketAddress {
     private final int id;
 
@@ -32,18 +35,38 @@ public class IsotpSocketAddress extends SocketAddress {
         this.id = id;
     }
 
+    /**
+     * Returns the CAN ID of this ISOTP address.
+     *
+     * @return the CAN ID
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Returns the return address of this address.
+     *
+     * @return the return address
+     */
     public IsotpSocketAddress returnAddress() {
         return new IsotpSocketAddress(IsotpAddress.returnAddress(id));
     }
 
+    /**
+     * Checks if this address uses EFF.
+     *
+     * @return true if this address uses EFF
+     */
     public boolean isExtended() {
         return CanId.isExtended(id);
     }
 
+    /**
+     * Checks if this address is used to address functionally.
+     *
+     * @return true if this address is used to address functionally
+     */
     public boolean isFunctional() {
         return IsotpAddress.isFunctional(id);
     }
@@ -68,6 +91,12 @@ public class IsotpSocketAddress extends SocketAddress {
         return "IsotpSocketAddress{" + "id=" + id + '}';
     }
 
+    /**
+     * Creates a new ISOTP address using the given CAN ID.
+     *
+     * @param id the CAN ID
+     * @return the new address instance
+     */
     public static IsotpSocketAddress isotpAddress(int id) {
         return new IsotpSocketAddress(id);
     }

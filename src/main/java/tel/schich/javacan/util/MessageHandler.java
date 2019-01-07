@@ -26,6 +26,18 @@ import java.nio.ByteBuffer;
 
 import tel.schich.javacan.IsotpCanChannel;
 
+/**
+ * Message handlers are called by a {@link tel.schich.javacan.util.IsotpListener} for each message received by the
+ * {@link tel.schich.javacan.IsotpCanChannel} it was added with.
+ */
+@FunctionalInterface
 public interface MessageHandler {
+    /**
+     * Handles a received message. The given {@link java.nio.ByteBuffer} is read-only and its position and limit is set
+     * so the message can be read from it.
+     *
+     * @param ch the channel that received the message
+     * @param buffer the buffer containing the message
+     */
     void handle(IsotpCanChannel ch, ByteBuffer buffer);
 }

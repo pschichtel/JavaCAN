@@ -22,7 +22,18 @@
  */
 package tel.schich.javacan.util;
 
+/**
+ * Implementations of this interface are used to handle exceptions in a polling event loop.
+ */
 @FunctionalInterface
 public interface PollExceptionHandler {
+    /**
+     * handles an exception thrown in the event loop on the given thread.
+     *
+     * @param thread the thread the exception originated from
+     * @param t the exception
+     * @param terminal if the exception terminates the event loop
+     * @return true if the event loop should terminate (will be ignored if terminal is true)
+     */
     boolean handle(Thread thread, Throwable t, boolean terminal);
 }

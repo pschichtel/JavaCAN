@@ -22,5 +22,10 @@
  */
 package tel.schich.javacan.select;
 
+/**
+ * This marker interface is intended for objects that wrap native handles like socket file descriptors on Linux
+ * without exposing their exact nature. This way consumers can check if the supplied handle is useful for them and
+ * deny it at runtime if not compatible.
+ */
 public interface NativeHandle {
 }

@@ -22,8 +22,10 @@
  */
 package tel.schich.javacan.test.util;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadFactory;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import tel.schich.javacan.CanFilter;
@@ -57,7 +59,11 @@ class CanBrokerTest {
         CompletableFuture<CanFrame> f = new CompletableFuture<>();
         brokerA.addDevice(CAN_INTERFACE, (dev, frame) -> {
             f.complete(frame);
-            brokerA.removeDevice(CAN_INTERFACE);
+            try {
+                brokerA.removeDevice(CAN_INTERFACE);
+            } catch (IOException e) {
+                Assert.fail("Removing the device from brokerA should not fail: " + e.getLocalizedMessage());
+            }
         });
 
         brokerB.addDevice(CAN_INTERFACE, (d, frame) -> {

@@ -22,13 +22,27 @@
  */
 package tel.schich.javacan.select;
 
+/**
+ * This class implements a {@link tel.schich.javacan.select.NativeHandle} that is backed by a
+ * native file descriptor.
+ */
 public class UnixFileDescriptor implements NativeHandle {
     private final int fd;
 
+    /**
+     * Creates a instance from the given file descriptor ID.
+     *
+     * @param fd the file descriptor ID
+     */
     public UnixFileDescriptor(int fd) {
         this.fd = fd;
     }
 
+    /**
+     * Returns the backing file descriptor ID.
+     *
+     * @return the file descriptor ID
+     */
     public int getFD() {
         return fd;
     }

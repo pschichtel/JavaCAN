@@ -27,6 +27,10 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectionKey;
 
+/**
+ * This class implements the {@link java.nio.channels.SelectionKey} API necessary for
+ * {@link java.nio.channels.Selector}s.
+ */
 public class EPollSelectionKey extends AbstractSelectionKey {
 
     private final EPollSelector selector;
@@ -35,6 +39,15 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     private volatile int interestOps;
     private volatile int readyOps;
 
+    /**
+     * Creates a new selection key given an {@link tel.schich.javacan.select.EPollSelector},
+     * a {@link java.nio.channels.SelectableChannel}, the underlying socket file descriptor and the interested ops.
+     *
+     * @param selector the selector
+     * @param channel the channel
+     * @param fd the underlying socket file descriptor
+     * @param interestOps the interested ops
+     */
     public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps) {
         this.selector = selector;
         this.channel = channel;
@@ -43,6 +56,11 @@ public class EPollSelectionKey extends AbstractSelectionKey {
         this.readyOps = 0;
     }
 
+    /**
+     * Returns the underlying file descriptor.
+     *
+     * @return the underlying file descriptor
+     */
     public int getFd() {
         return fd;
     }
@@ -78,12 +96,23 @@ public class EPollSelectionKey extends AbstractSelectionKey {
         return readyOps;
     }
 
+    /**
+     * Sets the ready ops for this selection. This should be called when this key has been first selected.
+     *
+     * @param ops the new ready ops
+     */
     synchronized void setReadyOps(int ops) {
         this.readyOps = ops;
     }
 
-    synchronized void mergeReadyOps(int newOps) {
-        this.readyOps = this.readyOps | newOps;
+    /**
+     * merges the given ready ops into this selection. This should be called when this key has been selected again
+     * with new ops.
+     *
+     * @param ops the new ready ops to merge in
+     */
+    synchronized void mergeReadyOps(int ops) {
+        this.readyOps = this.readyOps | ops;
     }
 
     @Override

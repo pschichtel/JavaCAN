@@ -24,6 +24,9 @@ package tel.schich.javacan;
 
 import java.util.Objects;
 
+/**
+ * This class represents ISOTP's flow control options.
+ */
 public class IsotpFlowControlOptions {
     private final byte blockSize;
     private final byte minimumSeparationTime;

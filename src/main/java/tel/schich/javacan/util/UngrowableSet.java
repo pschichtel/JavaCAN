@@ -27,6 +27,13 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Spliterator;
 
+/**
+ * A simple {@link java.util.Set} implementation that wraps another {@link java.util.Set} and delegates all methods
+ * to it except those that add elements to it. This way the set can be lose elements, but not gain any.
+ * This contract is required by implementations of {@link java.nio.channels.Selector#selectedKeys()}.
+ *
+ * @param <E> the type of the elements
+ */
 public class UngrowableSet<E> implements Set<E> {
 
     private final Set<E> parent;

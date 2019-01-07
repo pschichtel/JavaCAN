@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan.test;
 
-import tel.schich.javacan.CanDevice;
+import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.CanFrame;
 
 import java.io.IOException;
@@ -32,18 +32,18 @@ import java.time.Duration;
 import org.junit.jupiter.api.function.Executable;
 
 public class CanTestHelper {
-    public static final CanDevice CAN_INTERFACE = lookupDev();
+    public static final NetworkDevice CAN_INTERFACE = lookupDev();
 
-    private static CanDevice lookupDev() {
+    private static NetworkDevice lookupDev() {
         try {
-            return CanDevice.lookup("vcan0");
+            return NetworkDevice.lookup("vcan0");
         } catch (IOException e) {
             e.printStackTrace(System.err);
         }
         return null;
     }
 
-    public static void sendFrameViaUtils(CanDevice device, CanFrame frame) throws IOException, InterruptedException {
+    public static void sendFrameViaUtils(NetworkDevice device, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();
         ByteBuffer buf = ByteBuffer.allocateDirect(CanFrame.MAX_FD_DATA_LENGTH);
         frame.getData(buf);

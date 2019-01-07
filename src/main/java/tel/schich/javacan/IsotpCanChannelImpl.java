@@ -30,7 +30,7 @@ import java.nio.channels.spi.SelectorProvider;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
 
-    private CanDevice device;
+    private NetworkDevice device;
     private IsotpSocketAddress rx;
     private IsotpSocketAddress tx;
 
@@ -39,7 +39,7 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
     }
 
     @Override
-    public synchronized IsotpCanChannel bind(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+    public synchronized IsotpCanChannel bind(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (isBound()) {
             throw new AlreadyBoundException();
         }
@@ -58,7 +58,7 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
     }
 
     @Override
-    public synchronized CanDevice getDevice() {
+    public synchronized NetworkDevice getDevice() {
         if (!isBound()) {
             throw new NotYetBoundException();
         }

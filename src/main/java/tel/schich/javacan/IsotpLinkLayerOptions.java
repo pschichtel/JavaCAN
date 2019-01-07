@@ -24,6 +24,9 @@ package tel.schich.javacan;
 
 import java.util.Objects;
 
+/**
+ * This class represents ISOTP's link layer options.
+ */
 public class IsotpLinkLayerOptions {
     private final byte maximumTranmissionUnit;
     private final byte transmissionDataLength;

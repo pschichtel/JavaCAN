@@ -22,7 +22,20 @@
  */
 package tel.schich.javacan.util;
 
+/**
+ * This interface abstracts the actually polling out of the {@link tel.schich.javacan.util.PollingThread}.
+ * An implementation should simply call {@link java.nio.channels.Selector#select(long)} or
+ * {@link java.util.concurrent.BlockingQueue#poll(long, java.util.concurrent.TimeUnit)}, as long as it can be passed
+ * a timeout in milliseconds.
+ */
 @FunctionalInterface
 public interface PollFunction {
+    /**
+     * Should invoke a blocking operation with the given timeout.
+     *
+     * @param timeout the timeout in milliseconds
+     * @return true if the event loop should continue
+     * @throws Exception the function may throw any {@link java.lang.Exception}, they will be handled upstream
+     */
     boolean poll(long timeout) throws Exception;
 }

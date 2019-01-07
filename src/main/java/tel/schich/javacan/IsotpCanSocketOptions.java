@@ -27,7 +27,17 @@ import java.net.SocketOption;
 
 import tel.schich.javacan.option.CanSocketOption;
 
+/**
+ * This class provides ISOTP specific socket options supported by CAN sockets. This class is similar to
+ * {@link tel.schich.javacan.CanSocketOptions}.
+ */
 public class IsotpCanSocketOptions {
+
+    private IsotpCanSocketOptions() {}
+
+    /**
+     * Option to configure general options using a {@link tel.schich.javacan.IsotpOptions} object
+     */
     public static final SocketOption<IsotpOptions> OPTS = new CanSocketOption<>("OPTS", IsotpOptions.class, new CanSocketOption.Handler<IsotpOptions>() {
         @Override
         public void set(int sock, IsotpOptions val) throws IOException {
@@ -46,6 +56,10 @@ public class IsotpCanSocketOptions {
             return opts;
         }
     });
+
+    /**
+     * Option to configure flow control options using a {@link tel.schich.javacan.IsotpFlowControlOptions} object
+     */
     public static final SocketOption<IsotpFlowControlOptions> RECV_FC = new CanSocketOption<>("RECV_FC", IsotpFlowControlOptions.class, new CanSocketOption.Handler<IsotpFlowControlOptions>() {
         @Override
         public void set(int sock, IsotpFlowControlOptions val) throws IOException {
@@ -64,6 +78,10 @@ public class IsotpCanSocketOptions {
             return opts;
         }
     });
+
+    /**
+     * Option to configure the minimum transmission separation time.
+     */
     public static final SocketOption<Integer> TX_STMIN = new CanSocketOption<>("TX_STMIN", Integer.class, new CanSocketOption.Handler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
@@ -82,6 +100,10 @@ public class IsotpCanSocketOptions {
             return mask;
         }
     });
+
+    /**
+     * Option to configure the minimum receive separation time.
+     */
     public static final SocketOption<Integer> RX_STMIN = new CanSocketOption<>("RX_STMIN", Integer.class, new CanSocketOption.Handler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
@@ -100,6 +122,10 @@ public class IsotpCanSocketOptions {
             return mask;
         }
     });
+
+    /**
+     * Option to configure link layer options using a {@link tel.schich.javacan.IsotpLinkLayerOptions} object
+     */
     public static final SocketOption<IsotpLinkLayerOptions> LL_OPTS = new CanSocketOption<>("LL_OPTS", IsotpLinkLayerOptions.class, new CanSocketOption.Handler<IsotpLinkLayerOptions>() {
         @Override
         public void set(int sock, IsotpLinkLayerOptions val) throws IOException {

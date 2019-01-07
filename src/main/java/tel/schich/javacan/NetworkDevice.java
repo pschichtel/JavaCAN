@@ -25,34 +25,55 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.util.Objects;
 
-public class CanDevice {
+/**
+ * This class represents a network device.
+ */
+public class NetworkDevice {
     private final String name;
     private final long index;
 
-    private CanDevice(String name, long index) {
+    private NetworkDevice(String name, long index) {
         this.name = name;
         this.index = index;
     }
 
+    /**
+     * Gets the name of the device.
+     *
+     * @return the device name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the index of the device.
+     *
+     * @return the device index
+     */
     public long getIndex() {
         return index;
     }
 
-    public static CanDevice lookup(String name) throws IOException {
+    /**
+     * Looks up an network device by name and constructs a new {@link NetworkDevice} instance from the
+     * result.
+     *
+     * @param name the device name
+     * @return the device wrapper
+     * @throws IOException if the native calls fail
+     */
+    public static NetworkDevice lookup(String name) throws IOException {
         long index = SocketCAN.resolveInterfaceName(name);
         if (index == 0) {
             throw new JavaCANNativeOperationException("Failed to resolve the interface: " + name);
         }
-        return new CanDevice(name, index);
+        return new NetworkDevice(name, index);
     }
 
     @Override
     public String toString() {
-        return "CanDevice{" + "name='" + name + '\'' + ", index=" + index + '}';
+        return "NetworkDevice{" + "name='" + name + '\'' + ", index=" + index + '}';
     }
 
     @Override
@@ -61,8 +82,8 @@ public class CanDevice {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        CanDevice canDevice = (CanDevice) o;
-        return index == canDevice.index;
+        NetworkDevice dev = (NetworkDevice) o;
+        return index == dev.index;
     }
 
     @Override

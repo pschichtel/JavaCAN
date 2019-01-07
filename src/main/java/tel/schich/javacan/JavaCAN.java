@@ -70,6 +70,9 @@ public class JavaCAN {
         }
     }
 
+    /**
+     * Initializes the library by loading the native library.
+     */
     public synchronized static void initialize() {
         if (initialized) {
             return;

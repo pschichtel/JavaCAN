@@ -42,6 +42,17 @@ import tel.schich.javacan.util.UngrowableSet;
 import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
 
+/**
+ * This is an implementation of the {@link java.nio.channels.Selector} API relying on Linux' epoll API to poll for
+ * IO events from an arbitrary amount of file descriptors. The implementation is based
+ * on {@link java.nio.channels.spi.AbstractSelector} and is inspired by Java's own epoll-based Selector implementation.
+ *
+ * This reimplementation is sadly necessary, because the original implementation does not allow custom
+ * {@link java.nio.channels.Channel} implementations as Java's selector is requires the channels to implement non-public
+ * interface to expose the underlying file descriptor.
+ *
+ * This implementation does not expose any more public APIs.
+ */
 public class EPollSelector extends AbstractSelector {
 
     private static final long SELECT_NO_BLOCKING = 0;

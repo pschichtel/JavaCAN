@@ -25,6 +25,11 @@ package tel.schich.javacan.option;
 import java.io.IOException;
 import java.net.SocketOption;
 
+/**
+ * This class provides the base for all socket options by this library.
+ *
+ * @param <T> the type of the option value
+ */
 public class CanSocketOption<T> implements SocketOption<T> {
     private final String name;
     private final Class<T> type;
@@ -50,6 +55,12 @@ public class CanSocketOption<T> implements SocketOption<T> {
         return handler;
     }
 
+    /**
+     * This interface needs to be implemented per option to call into native code to actually implement that option
+     * change or extract the current value.
+     *
+     * @param <T> the type of the option value
+     */
     public interface Handler<T> {
         void set(int sock, T val) throws IOException;
         T get(int sock) throws IOException;

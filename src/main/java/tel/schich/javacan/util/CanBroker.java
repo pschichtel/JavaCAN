@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 import tel.schich.javacan.CanChannels;
-import tel.schich.javacan.CanDevice;
+import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
@@ -47,6 +47,12 @@ import static tel.schich.javacan.CanChannels.PROVIDER;
 import static tel.schich.javacan.CanSocketOptions.FILTER;
 import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 
+/**
+ * This class implements an event driven interface over several CAN interface to send and receive
+ * {@link tel.schich.javacan.CanFrame}s over multiple {@link tel.schich.javacan.NetworkDevice}s. Received
+ * frames are passed on to a {@link tel.schich.javacan.util.FrameHandler} for for each specific interface.
+ * Frames can be send either to individual interfaces or all at once.
+ */
 public class CanBroker extends EventLoop {
 
     public static final Duration DEFAULT_TIMEOUT = ofMinutes(1);
@@ -55,7 +61,7 @@ public class CanBroker extends EventLoop {
     private final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<RawCanChannel, FrameHandler> handlerMap = new IdentityHashMap<>();
-    private final HashMap<CanDevice, RawCanChannel> channelMap = new HashMap<>();
+    private final HashMap<NetworkDevice, RawCanChannel> channelMap = new HashMap<>();
     private final Object handlerLock = new Object();
     private final Set<CanFilter> filters = new HashSet<>();
     private CanFilter[] filterArray = new CanFilter[0];
@@ -75,7 +81,28 @@ public class CanBroker extends EventLoop {
         super(threadFactory, provider, timeout);
     }
 
-    public void send(CanDevice device, CanFrame frame) throws IOException {
+    /**
+     * Sends a {@link tel.schich.javacan.CanFrame} to all known devices.
+     *
+     * @param frame the frame to send
+     * @throws IOException if the native call fails
+     */
+    public void send(CanFrame frame) throws IOException {
+        synchronized (handlerLock) {
+            for (RawCanChannel ch : this.channelMap.values()) {
+                ch.write(frame);
+            }
+        }
+    }
+
+    /**
+     * Sends a {@link tel.schich.javacan.CanFrame} to the given known {@link tel.schich.javacan.NetworkDevice}.
+     *
+     * @param device the device to send the frame to
+     * @param frame the frame to send
+     * @throws IOException if the native call fails
+     */
+    public void send(NetworkDevice device, CanFrame frame) throws IOException {
         synchronized (handlerLock) {
             RawCanChannel ch = channelMap.get(device);
             if (ch == null) {
@@ -86,11 +113,32 @@ public class CanBroker extends EventLoop {
         }
     }
 
+    /**
+     * Sets the loopback mode for all known devices.
+     *
+     * @param enable whether to enable loopback
+     * @throws IOException if the native call fails
+     */
     public synchronized void setLoopback(boolean enable) throws IOException {
         this.loopback = enable;
         this.updateOption(LOOPBACK, enable);
     }
 
+    /**
+     * Checks if the devices of this broker are in loopback mode.
+     *
+     * @return true if the devices are in loopback mode
+     */
+    public boolean isLoopback() {
+        return loopback;
+    }
+
+    /**
+     * Adds a filter that will be added to all underlying channels.
+     *
+     * @param filter the new filter
+     * @throws IOException if the native call fails
+     */
     public void addFilter(CanFilter filter) throws IOException {
         synchronized (filterLock) {
             if (this.filters.add(filter)) {
@@ -99,9 +147,29 @@ public class CanBroker extends EventLoop {
         }
     }
 
+    /**
+     * Remove a filter from all underlying channels.
+     *
+     * @param filter the new filter
+     * @throws IOException if the native call fails
+     */
     public void removeFilter(CanFilter filter) throws IOException {
         synchronized (filterLock) {
             if (this.filters.remove(filter)) {
+                updateFilters();
+            }
+        }
+    }
+
+    /**
+     * Clears all filters.
+     *
+     * @throws IOException if the native call fails
+     */
+    public void clearFilters() throws IOException {
+        synchronized (filterLock) {
+            if (!filters.isEmpty()) {
+                this.filters.clear();
                 updateFilters();
             }
         }
@@ -139,15 +207,15 @@ public class CanBroker extends EventLoop {
         }
     }
 
-    public void send(CanFrame frame) throws IOException {
-        synchronized (handlerLock) {
-            for (RawCanChannel ch : this.channelMap.values()) {
-                ch.write(frame);
-            }
-        }
-    }
-
-    public void addDevice(CanDevice device, FrameHandler handler) throws IOException {
+    /**
+     * Adds a new {@link tel.schich.javacan.NetworkDevice} to this broker instance together with a
+     * {@link tel.schich.javacan.util.FrameHandler} to handle incoming frames.
+     *
+     * @param device the device
+     * @param handler the handler
+     * @throws IOException if the native call fails
+     */
+    public void addDevice(NetworkDevice device, FrameHandler handler) throws IOException {
         synchronized (handlerLock) {
             if (handler == null) {
                 throw new NullPointerException("handle must not be null!");
@@ -166,7 +234,13 @@ public class CanBroker extends EventLoop {
         }
     }
 
-    public void removeDevice(CanDevice device) {
+    /**
+     * Removes a {@link tel.schich.javacan.NetworkDevice} from this broker instance
+     *
+     * @param device the device to remove
+     * @throws IOException if the native call fails
+     */
+    public void removeDevice(NetworkDevice device) throws IOException {
         synchronized (handlerLock) {
             if (!this.channelMap.containsKey(device)) {
                 throw new IllegalArgumentException("Device not known!");
@@ -176,6 +250,7 @@ public class CanBroker extends EventLoop {
             this.handlerMap.remove(ch);
             cancel(ch);
             lazyShutdown();
+            ch.close();
         }
     }
 

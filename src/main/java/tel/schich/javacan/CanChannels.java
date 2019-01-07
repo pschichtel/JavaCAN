@@ -27,12 +27,26 @@ import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.select.JavaCANSelectorProvider;
 
+/**
+ * This utility class provides helper methods to easily create new channels similar to those in
+ * {@link java.nio.file.Files} and {@link java.nio.channels.Channels}.
+ */
 public class CanChannels {
 
+    /**
+     * A {@link java.nio.channels.spi.SelectorProvider} implementation that supports custom
+     * {@link java.nio.channels.Channel} implementations just like this one.
+     */
     public static final SelectorProvider PROVIDER = new JavaCANSelectorProvider();
 
     private CanChannels() {}
 
+    /**
+     * Creates a new {@link tel.schich.javacan.RawCanChannel} without binding it to a device.
+     *
+     * @return The new channel
+     * @throws IOException if the native socket could not be created
+     */
     public static RawCanChannel newRawChannel() throws IOException {
         int fd = SocketCAN.createRawSocket();
         if (fd == -1) {
@@ -41,15 +55,37 @@ public class CanChannels {
         return new RawCanChannelImpl(PROVIDER, fd);
     }
 
-    public static RawCanChannel newRawChannel(CanDevice device) throws IOException {
+    /**
+     * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given
+     * {@link NetworkDevice}.
+     *
+     * @param device the device to bind to
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
+    public static RawCanChannel newRawChannel(NetworkDevice device) throws IOException {
         RawCanChannel ch = newRawChannel();
         ch.bind(device);
         return ch;
     }
+
+    /**
+     * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given device.
+     *
+     * @param device the device to bind to
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
     public static RawCanChannel newRawChannel(String device) throws IOException {
-        return newRawChannel(CanDevice.lookup(device));
+        return newRawChannel(NetworkDevice.lookup(device));
     }
 
+    /**
+     * Creates a new {@link tel.schich.javacan.IsotpCanChannel} without binding it to a device and addresses.
+     *
+     * @return The new channel
+     * @throws IOException if the native socket could not be created
+     */
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
         if (fd == -1) {
@@ -58,21 +94,60 @@ public class CanChannels {
         return new IsotpCanChannelImpl(PROVIDER, fd);
     }
 
-    public static IsotpCanChannel newIsotpChannel(CanDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
+    /**
+     * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
+     * {@link NetworkDevice} and {@link tel.schich.javacan.IsotpSocketAddress}es.
+     *
+     * @param device the device to bind to
+     * @param rx the receiving address
+     * @param tx the destination address
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
+    public static IsotpCanChannel newIsotpChannel(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         IsotpCanChannel ch = newIsotpChannel();
         ch.bind(device, rx, tx);
         return ch;
     }
 
+    /**
+     * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and
+     * {@link tel.schich.javacan.IsotpSocketAddress}es.
+     *
+     * @param device the device to bind to
+     * @param rx the receiving address
+     * @param tx the destination address
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
     public static IsotpCanChannel newIsotpChannel(String device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
-        return newIsotpChannel(CanDevice.lookup(device), rx, tx);
+        return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
     }
 
-    public static IsotpCanChannel newIsotpChannel(CanDevice device, int rx, int tx) throws IOException {
+    /**
+     * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
+     * {@link NetworkDevice} and addresses.
+     *
+     * @param device the device to bind to
+     * @param rx the receiving address
+     * @param tx the destination address
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
+    public static IsotpCanChannel newIsotpChannel(NetworkDevice device, int rx, int tx) throws IOException {
         return newIsotpChannel(device, IsotpSocketAddress.isotpAddress(rx), IsotpSocketAddress.isotpAddress(tx));
     }
 
+    /**
+     * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and addresses.
+     *
+     * @param device the device to bind to
+     * @param rx the receiving address
+     * @param tx the destination address
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     */
     public static IsotpCanChannel newIsotpChannel(String device, int rx, int tx) throws IOException {
-        return newIsotpChannel(CanDevice.lookup(device), rx, tx);
+        return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
     }
 }

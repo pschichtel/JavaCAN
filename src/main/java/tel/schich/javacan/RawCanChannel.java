@@ -36,10 +36,17 @@ public abstract class RawCanChannel extends AbstractCanChannel {
         super(provider, sock);
     }
 
+    /**
+     * The MTU of a standard non-FD CAN socket. This is also the exact size of a valid non-FD CAN frame.
+     */
     public static final int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
+
+    /**
+     * The MTU of a standard CAN FD socket. This is also the exact size of a valid CAN FD frame.
+     */
     public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
 
-    public abstract RawCanChannel bind(CanDevice device) throws IOException;
+    public abstract RawCanChannel bind(NetworkDevice device) throws IOException;
 
     public abstract CanFrame read() throws IOException;
     public abstract CanFrame read(ByteBuffer buffer) throws IOException;
