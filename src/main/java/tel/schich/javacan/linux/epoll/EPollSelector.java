@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.select;
+package tel.schich.javacan.linux.epoll;
 
 import java.io.IOException;
 import java.nio.channels.ClosedSelectorException;
@@ -36,7 +36,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import tel.schich.javacan.JavaCANNativeOperationException;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.NativeChannel;
+import tel.schich.javacan.select.NativeHandle;
 import tel.schich.javacan.util.UngrowableSet;
 
 import static java.util.Collections.newSetFromMap;
@@ -71,11 +74,11 @@ public class EPollSelector extends AbstractSelector {
     private final Set<SelectionKey> publicKeys;
     private final Set<SelectionKey> publicSelectionKeys;
 
-    public EPollSelector(SelectorProvider provider) throws JavaCANNativeOperationException {
+    public EPollSelector(SelectorProvider provider) throws LinuxNativeOperationException {
         this(provider, 100);
     }
 
-    public EPollSelector(SelectorProvider provider, int maxEvents) throws JavaCANNativeOperationException {
+    public EPollSelector(SelectorProvider provider, int maxEvents) throws LinuxNativeOperationException {
         super(provider);
 
         this.epollfd = EPoll.create();
@@ -84,7 +87,7 @@ public class EPollSelector extends AbstractSelector {
 
         this.eventfd = EPoll.createEventfd(false);
         if (EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN) != 0) {
-            throw new JavaCANNativeOperationException("Unable to register the eventfd to epoll!");
+            throw new LinuxNativeOperationException("Unable to register the eventfd to epoll!");
         }
 
         this.keys = newSetFromMap(new IdentityHashMap<>());
@@ -100,10 +103,10 @@ public class EPollSelector extends AbstractSelector {
         EPoll.freeEvents(eventsPointer);
         IOException e = null;
         if (EPoll.close(epollfd) != 0) {
-            e = new JavaCANNativeOperationException("Unable to close epoll fd!");
+            e = new LinuxNativeOperationException("Unable to close epoll fd!");
         }
         if (EPoll.close(eventfd) != 0) {
-            IOException eventfdClose = new JavaCANNativeOperationException("Unable to close eventfd!");
+            IOException eventfdClose = new LinuxNativeOperationException("Unable to close eventfd!");
             if (e != null) {
                 eventfdClose.addSuppressed(e);
             }
@@ -121,7 +124,7 @@ public class EPollSelector extends AbstractSelector {
 
     void updateOps(EPollSelectionKey key, int ops) throws IOException {
         if (EPoll.updateFileDescriptor(epollfd, key.getFd(), ops) != 0) {
-            throw new JavaCANNativeOperationException("Unable to modify FD!");
+            throw new LinuxNativeOperationException("Unable to modify FD!");
         }
     }
 
@@ -138,7 +141,7 @@ public class EPollSelector extends AbstractSelector {
         int socket = ((UnixFileDescriptor) nativeHandle).getFD();
 
         if (EPoll.addFileDescriptor(epollfd, socket, translateInterestsToEPoll(ops)) != 0) {
-            throw new RuntimeException(new JavaCANNativeOperationException("Unable to add the file descriptor!"));
+            throw new RuntimeException(new LinuxNativeOperationException("Unable to add the file descriptor!"));
         }
 
         EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
@@ -191,7 +194,7 @@ public class EPollSelector extends AbstractSelector {
             keys.remove(key);
             deregister(key);
             if (EPoll.removeFileDescriptor(epollfd, key.getFd()) != 0) {
-                throw new JavaCANNativeOperationException("Unable to remove file descriptor!");
+                throw new LinuxNativeOperationException("Unable to remove file descriptor!");
             }
         }
     }
@@ -230,13 +233,13 @@ public class EPollSelector extends AbstractSelector {
             end();
         }
         if (n == -1) {
-            throw new JavaCANNativeOperationException("Unable to poll!");
+            throw new LinuxNativeOperationException("Unable to poll!");
         }
 
         int[] events = new int[n];
         int[] fds = new int[n];
         if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
-            throw new JavaCANNativeOperationException("Unable to extract events");
+            throw new LinuxNativeOperationException("Unable to extract events");
         }
 
         synchronized (keyCollectionsLock) {
@@ -282,7 +285,7 @@ public class EPollSelector extends AbstractSelector {
     public Selector wakeup() {
         ensureOpen();
         if (EPoll.signalEvent(eventfd, 1) < 0) {
-            throw new RuntimeException(new JavaCANNativeOperationException("Unable to signal the eventfd!"));
+            throw new RuntimeException(new LinuxNativeOperationException("Unable to signal the eventfd!"));
         }
         return this;
     }

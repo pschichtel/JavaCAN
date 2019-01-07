@@ -46,7 +46,7 @@ public class IsotpListener extends EventLoop {
     private final Object handlerLock = new Object();
 
     public IsotpListener(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
-        super(threadFactory, provider, timeout);
+        super("ISOTP", threadFactory, provider, timeout);
     }
 
     /**

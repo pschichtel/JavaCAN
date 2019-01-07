@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 #include "helpers.h"
-#include <tel_schich_javacan_select_EPoll.h>
+#include <tel_schich_javacan_linux_epoll_EPoll.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <linux/can.h>
@@ -37,11 +37,11 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_create(JNIEnv *env, jclass class) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_create(JNIEnv *env, jclass class) {
     return epoll_create1(EPOLL_CLOEXEC);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_createEventfd(JNIEnv *env, jclass class, jboolean block) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_createEventfd(JNIEnv *env, jclass class, jboolean block) {
     int flags = EFD_CLOEXEC;
     if (!block) {
         flags |= EFD_NONBLOCK;
@@ -50,11 +50,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_createEventfd(JNIEnv
     return eventfd(0, flags);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
     return (jint)eventfd_write(eventfd, (eventfd_t) value);
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_clearEvent(JNIEnv *env, jclass class, jint eventfd) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_clearEvent(JNIEnv *env, jclass class, jint eventfd) {
     uint64_t val = 0;
     ssize_t result = eventfd_read(eventfd, &val);
     if (result < 0) {
@@ -63,41 +63,41 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_clearEvent(JNIEnv *
     return val;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_select_EPoll_newEvents(JNIEnv *env, jclass class, jint maxEvents) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_newEvents(JNIEnv *env, jclass class, jint maxEvents) {
     return (jlong)(uintptr_t)malloc(sizeof(struct epoll_event) * maxEvents);
 }
 
-JNIEXPORT void JNICALL Java_tel_schich_javacan_select_EPoll_freeEvents(JNIEnv *env, jclass class, jlong eventsPointer) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_freeEvents(JNIEnv *env, jclass class, jlong eventsPointer) {
     free((struct epoll_event*)(uintptr_t)eventsPointer);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_close(JNIEnv *env, jclass class, jint fd) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_close(JNIEnv *env, jclass class, jint fd) {
     return close(fd);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_addFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_addFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
     struct epoll_event ev;
     ev.events = (uint32_t) interests;
     ev.data.fd = fd;
     return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_removeFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_removeFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd) {
     return epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_updateFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_updateFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
     struct epoll_event ev;
     ev.events = (uint32_t) interests;
     ev.data.fd = fd;
     return epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_select_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {
     return epoll_wait(epollfd, (struct epoll_event*)(uintptr_t)eventsPointer, maxEvents, (int) timeout);
 }
 
-JNIEXPORT int JNICALL Java_tel_schich_javacan_select_EPoll_extractEvents(JNIEnv *env, jclass class, jlong eventsPointer, jint n, jintArray events, jintArray fds) {
+JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JNIEnv *env, jclass class, jlong eventsPointer, jint n, jintArray events, jintArray fds) {
 
     if (n <= 0) {
         return 0;

@@ -20,7 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.select;
+package tel.schich.javacan.linux;
+
+import tel.schich.javacan.select.NativeHandle;
 
 /**
  * This class implements a {@link tel.schich.javacan.select.NativeHandle} that is backed by a

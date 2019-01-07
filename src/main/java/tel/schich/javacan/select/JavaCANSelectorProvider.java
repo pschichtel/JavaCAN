@@ -31,6 +31,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
 
+import tel.schich.javacan.Platform;
+import tel.schich.javacan.linux.epoll.EPollSelector;
+
 public class JavaCANSelectorProvider extends SelectorProvider {
 
     private final SelectorProvider parent;
@@ -60,7 +63,12 @@ public class JavaCANSelectorProvider extends SelectorProvider {
 
     @Override
     public AbstractSelector openSelector() throws IOException {
-        return new EPollSelector(this);
+        switch (Platform.getOS()) {
+            case LINUX:
+                return new EPollSelector(this);
+            default:
+                return parent.openSelector();
+        }
     }
 
     @Override

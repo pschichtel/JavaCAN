@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 abstract class EventLoop implements Closeable {
+    private final String name;
+
     private final ThreadFactory threadFactory;
     private final SelectorProvider provider;
     private final AbstractSelector selector;
@@ -44,7 +46,8 @@ abstract class EventLoop implements Closeable {
     private PollingThread poller;
     private final Object pollerLock = new Object();
 
-    public EventLoop(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
+    public EventLoop(String name, ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
+        this.name = name;
         this.threadFactory = threadFactory;
         this.provider = provider;
         this.selector = provider.openSelector();
@@ -149,7 +152,7 @@ abstract class EventLoop implements Closeable {
                 return;
             }
 
-            this.poller = PollingThread.create("primary-poller", timeout.toMillis(), threadFactory, this::poll, this::handleException);
+            this.poller = PollingThread.create(name + "-primary-poller", timeout.toMillis(), threadFactory, this::poll, this::handleException);
             this.poller.start();
         }
     }

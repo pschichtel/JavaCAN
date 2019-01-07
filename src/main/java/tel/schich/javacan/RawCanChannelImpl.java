@@ -28,6 +28,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
  */
@@ -42,7 +44,7 @@ public class RawCanChannelImpl extends RawCanChannel {
     @Override
     public RawCanChannel bind(NetworkDevice device) throws IOException {
         if (SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0) == -1) {
-            throw new JavaCANNativeOperationException("Unable to bind!");
+            throw new LinuxNativeOperationException("Unable to bind!");
         }
         this.device = device;
         return this;

@@ -20,51 +20,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.option;
-
-import java.io.IOException;
-import java.net.SocketOption;
-
-import tel.schich.javacan.select.NativeHandle;
+package tel.schich.javacan;
 
 /**
- * This class provides the base for all socket options by this library.
- *
- * @param <T> the type of the option value
+ * Helper class to detect and handle various platforms. Currently only Linux is handled.
  */
-public class CanSocketOption<T> implements SocketOption<T> {
-    private final String name;
-    private final Class<T> type;
-    private final Handler<T> handler;
-
-    public CanSocketOption(String name, Class<T> type, Handler<T> handler) {
-        this.name = name;
-        this.type = type;
-        this.handler = handler;
-    }
-
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public Class<T> type() {
-        return type;
-    }
-
-    public Handler<T> getHandler() {
-        return handler;
-    }
-
+public class Platform {
     /**
-     * This interface needs to be implemented per option to call into native code to actually implement that option
-     * change or extract the current value.
+     * Checks if the currently running OS is Linux
      *
-     * @param <T> the type of the option value
+     * @return true if running on Linux
      */
-    public interface Handler<T> {
-        void set(NativeHandle handle, T val) throws IOException;
-        T get(NativeHandle handle) throws IOException;
+    public static boolean isLinux() {
+        return System.getProperty("os.name").equalsIgnoreCase("Linux");
+    }
+
+    public static OS getOS() {
+        if (isLinux()) {
+            return OS.LINUX;
+        } else {
+            return OS.UNKNOWN;
+        }
+    }
+
+    public enum OS {
+        LINUX,
+        UNKNOWN
     }
 }

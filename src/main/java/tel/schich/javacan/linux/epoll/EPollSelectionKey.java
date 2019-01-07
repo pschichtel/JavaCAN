@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.select;
+package tel.schich.javacan.linux.epoll;
 
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
@@ -40,7 +40,7 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     private volatile int readyOps;
 
     /**
-     * Creates a new selection key given an {@link tel.schich.javacan.select.EPollSelector},
+     * Creates a new selection key given an {@link EPollSelector},
      * a {@link java.nio.channels.SelectableChannel}, the underlying socket file descriptor and the interested ops.
      *
      * @param selector the selector

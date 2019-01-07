@@ -78,7 +78,7 @@ public class CanBroker extends EventLoop {
     }
 
     public CanBroker(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
-        super(threadFactory, provider, timeout);
+        super("CAN", threadFactory, provider, timeout);
     }
 
     /**

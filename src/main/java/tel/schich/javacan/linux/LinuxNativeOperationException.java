@@ -20,23 +20,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.linux;
 
 import java.io.IOException;
+
+import tel.schich.javacan.OSError;
 
 /**
  * This exception is thrown when an error occurs during a native call.
  * It provides OS specific information if possible, but no guarantees are given that the information is correct and/or
  * complete.
  */
-public class JavaCANNativeOperationException extends IOException {
+public class LinuxNativeOperationException extends IOException {
     private final OSError error;
 
-    public JavaCANNativeOperationException(String message) {
+    public LinuxNativeOperationException(String message) {
         this(message, OSError.getLast());
     }
 
-    public JavaCANNativeOperationException(String message, OSError error) {
+    public LinuxNativeOperationException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;
     }

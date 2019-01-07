@@ -20,51 +20,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.option;
+package tel.schich.javacan.linux;
 
 import java.io.IOException;
-import java.net.SocketOption;
 
+import tel.schich.javacan.option.CanSocketOption;
 import tel.schich.javacan.select.NativeHandle;
 
 /**
- * This class provides the base for all socket options by this library.
+ * An abstract {@link tel.schich.javacan.option.CanSocketOption.Handler} implementation that verifies and unpacks
+ * the given {@link tel.schich.javacan.select.NativeHandle} and forwards the file descriptor to the actual
+ * implementation.
  *
- * @param <T> the type of the option value
+ * @param <T> type of the option value
  */
-public class CanSocketOption<T> implements SocketOption<T> {
-    private final String name;
-    private final Class<T> type;
-    private final Handler<T> handler;
-
-    public CanSocketOption(String name, Class<T> type, Handler<T> handler) {
-        this.name = name;
-        this.type = type;
-        this.handler = handler;
+public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Handler<T> {
+    @Override
+    public void set(NativeHandle handle, T val) throws IOException {
+        if (!(handle instanceof UnixFileDescriptor)) {
+            throw new IllegalArgumentException("Unsupported handle given!");
+        }
+        set(((UnixFileDescriptor) handle).getFD(), val);
     }
 
     @Override
-    public String name() {
-        return name;
+    public T get(NativeHandle handle) throws IOException {
+        if (!(handle instanceof UnixFileDescriptor)) {
+            throw new IllegalArgumentException("Unsupported handle given!");
+        }
+        return get(((UnixFileDescriptor) handle).getFD());
     }
 
-    @Override
-    public Class<T> type() {
-        return type;
-    }
+    protected abstract void set(int sock, T val) throws IOException;
 
-    public Handler<T> getHandler() {
-        return handler;
-    }
-
-    /**
-     * This interface needs to be implemented per option to call into native code to actually implement that option
-     * change or extract the current value.
-     *
-     * @param <T> the type of the option value
-     */
-    public interface Handler<T> {
-        void set(NativeHandle handle, T val) throws IOException;
-        T get(NativeHandle handle) throws IOException;
-    }
+    protected abstract T get(int sock) throws IOException;
 }

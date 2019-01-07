@@ -62,10 +62,10 @@ public class OSError {
 
     private static boolean isTemporary(int errno) {
         switch (errno) {
-        case EAGAIN:
-            return true;
-        default:
-            return false;
+            case EAGAIN:
+                return true;
+            default:
+                return false;
         }
     }
 

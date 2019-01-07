@@ -25,6 +25,8 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.util.Objects;
 
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+
 /**
  * This class represents a network device.
  */
@@ -66,7 +68,7 @@ public class NetworkDevice {
     public static NetworkDevice lookup(String name) throws IOException {
         long index = SocketCAN.resolveInterfaceName(name);
         if (index == 0) {
-            throw new JavaCANNativeOperationException("Failed to resolve the interface: " + name);
+            throw new LinuxNativeOperationException("Failed to resolve the interface: " + name);
         }
         return new NetworkDevice(name, index);
     }

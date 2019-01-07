@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
-import tel.schich.javacan.JavaCANNativeOperationException;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.RawCanChannel;
 
 import static java.time.Duration.ofMillis;
@@ -149,7 +149,7 @@ class RawCanSocketTest {
                 Duration timeout = ofSeconds(3);
                 socket.setOption(SO_RCVTIMEO, timeout);
                 final long start = System.currentTimeMillis();
-                final JavaCANNativeOperationException err = assertThrows(JavaCANNativeOperationException.class, socket::read);
+                final LinuxNativeOperationException err = assertThrows(LinuxNativeOperationException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
                 assertEquals(timeout.getSeconds(), delta);
                 assertTrue(err.mayTryAgain());
@@ -161,7 +161,7 @@ class RawCanSocketTest {
                 socket.setOption(SO_RCVTIMEO, rtimeout);
                 socket.setOption(SO_SNDTIMEO, wtimeout);
                 final long start = System.currentTimeMillis();
-                final JavaCANNativeOperationException err = assertThrows(JavaCANNativeOperationException.class, socket::read);
+                final LinuxNativeOperationException err = assertThrows(LinuxNativeOperationException.class, socket::read);
                 final long delta = (System.currentTimeMillis() - start) / 1000;
                 assertEquals(rtimeout.getSeconds(), delta);
                 assertTrue(err.mayTryAgain());
@@ -203,7 +203,7 @@ class RawCanSocketTest {
 
             socket.setOption(RECV_OWN_MSGS, false);
             socket.write(input);
-            assertThrows(JavaCANNativeOperationException.class, socket::read);
+            assertThrows(LinuxNativeOperationException.class, socket::read);
         }
     }
 

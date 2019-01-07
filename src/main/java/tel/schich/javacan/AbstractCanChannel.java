@@ -30,16 +30,17 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
+import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.option.CanSocketOption;
 import tel.schich.javacan.select.NativeChannel;
 import tel.schich.javacan.select.NativeHandle;
-import tel.schich.javacan.select.UnixFileDescriptor;
+import tel.schich.javacan.linux.UnixFileDescriptor;
 
 /**
  * This abstract base class for CAN channels implements all shared APIs common to CAN communication: It implements
  * {@link java.nio.channels.SelectableChannel} via {@link java.nio.channels.spi.AbstractSelectableChannel}, implements
  * {@link tel.schich.javacan.select.NativeChannel} by exposing the underlying socket file descriptor as a
- * {@link tel.schich.javacan.select.UnixFileDescriptor} and it provides APIs to set socket options and read/write
+ * {@link tel.schich.javacan.linux.UnixFileDescriptor} and it provides APIs to set socket options and read/write
  * buffers.
  */
 public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
@@ -87,14 +88,14 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
     @Override
     protected void implCloseSelectableChannel() throws IOException {
         if (SocketCAN.close(sock) != 0) {
-            throw new JavaCANNativeOperationException("Unable to close socket!");
+            throw new LinuxNativeOperationException("Unable to close socket!");
         }
     }
 
     @Override
     protected void implConfigureBlocking(boolean block) throws IOException {
         if (SocketCAN.setBlockingMode(sock, block) == -1) {
-            throw new JavaCANNativeOperationException("Unable to set the blocking mode!");
+            throw new LinuxNativeOperationException("Unable to set the blocking mode!");
         }
     }
 
@@ -117,7 +118,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
-            ((CanSocketOption<T>) option).getHandler().set(sock, value);
+            ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
             return this;
         } else {
             throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
@@ -138,7 +139,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
-            return ((CanSocketOption<T>) option).getHandler().get(sock);
+            return ((CanSocketOption<T>) option).getHandler().get(getHandle());
         } else {
             throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
         }
@@ -163,7 +164,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             int pos = buffer.position();
             bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
             if (bytesRead == -1) {
-                throw new JavaCANNativeOperationException("Unable to read from the socket!");
+                throw new LinuxNativeOperationException("Unable to read from the socket!");
             }
             buffer.position(pos + bytesRead);
             return bytesRead;
@@ -191,7 +192,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             int pos = buffer.position();
             bytesWritten = (int)SocketCAN.write(sock, buffer, pos, buffer.remaining());
             if (bytesWritten == -1) {
-                throw new JavaCANNativeOperationException("Unable to write to the socket!");
+                throw new LinuxNativeOperationException("Unable to write to the socket!");
             }
             buffer.position(pos + bytesWritten);
             return bytesWritten;
