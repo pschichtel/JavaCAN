@@ -30,6 +30,11 @@ import tel.schich.javacan.select.JavaCANSelectorProvider;
 /**
  * This utility class provides helper methods to easily create new channels similar to those in
  * {@link java.nio.file.Files} and {@link java.nio.channels.Channels}.
+ *
+ * The most important advantage of this helper is, that channels will be created with the proper
+ * {@link java.nio.channels.spi.SelectorProvider}, as only the customized
+ * {@link tel.schich.javacan.select.JavaCANSelectorProvider} provides a compatible {@link java.nio.channels.Selector}
+ * implementation.
  */
 public class CanChannels {
 
