@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
-import tel.schich.javacan.select.JavaCANSelectorProvider;
+import tel.schich.javacan.select.ExtensibleSelectorProvider;
 
 /**
  * This utility class provides helper methods to easily create new channels similar to those in
@@ -34,7 +34,7 @@ import tel.schich.javacan.select.JavaCANSelectorProvider;
  *
  * The most important advantage of this helper is, that channels will be created with the proper
  * {@link java.nio.channels.spi.SelectorProvider}, as only the customized
- * {@link tel.schich.javacan.select.JavaCANSelectorProvider} provides a compatible {@link java.nio.channels.Selector}
+ * {@link tel.schich.javacan.select.ExtensibleSelectorProvider} provides a compatible {@link java.nio.channels.Selector}
  * implementation.
  */
 public class CanChannels {
@@ -43,7 +43,7 @@ public class CanChannels {
      * A {@link java.nio.channels.spi.SelectorProvider} implementation that supports custom
      * {@link java.nio.channels.Channel} implementations just like this one.
      */
-    public static final SelectorProvider PROVIDER = new JavaCANSelectorProvider();
+    public static final SelectorProvider PROVIDER = new ExtensibleSelectorProvider();
 
     private CanChannels() {}
 

@@ -34,16 +34,20 @@ import java.nio.channels.spi.SelectorProvider;
 import tel.schich.javacan.Platform;
 import tel.schich.javacan.linux.epoll.EPollSelector;
 
-public class JavaCANSelectorProvider extends SelectorProvider {
+public class ExtensibleSelectorProvider extends SelectorProvider {
 
     private final SelectorProvider parent;
 
-    public JavaCANSelectorProvider() {
+    public ExtensibleSelectorProvider() {
         this(SelectorProvider.provider());
     }
 
-    public JavaCANSelectorProvider(SelectorProvider parent) {
-        this.parent = parent;
+    public ExtensibleSelectorProvider(SelectorProvider parent) {
+        if (parent instanceof ExtensibleSelectorProvider) {
+            this.parent = ((ExtensibleSelectorProvider) parent).parent;
+        } else {
+            this.parent = parent;
+        }
     }
 
     @Override

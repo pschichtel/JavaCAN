@@ -32,7 +32,7 @@ import org.junit.jupiter.api.function.Executable;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
-import tel.schich.javacan.select.JavaCANSelectorProvider;
+import tel.schich.javacan.select.ExtensibleSelectorProvider;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +47,7 @@ public class EPollSelectorTest {
 
     @Test
     public void testOpenClose() throws IOException {
-        JavaCANSelectorProvider provider = new JavaCANSelectorProvider();
+        ExtensibleSelectorProvider provider = new ExtensibleSelectorProvider();
         provider.openSelector().close();
     }
 
@@ -78,7 +78,7 @@ public class EPollSelectorTest {
 
     @Test
     public void testWakeup() throws IOException {
-        JavaCANSelectorProvider provider = new JavaCANSelectorProvider();
+        ExtensibleSelectorProvider provider = new ExtensibleSelectorProvider();
         try (AbstractSelector selector = provider.openSelector()) {
             runDelayed(ofMillis(100), selector::wakeup);
             assertTimeoutPreemptively(ofMillis(200), (Executable) selector::select);
