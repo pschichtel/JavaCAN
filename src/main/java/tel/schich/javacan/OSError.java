@@ -22,12 +22,16 @@
  */
 package tel.schich.javacan;
 
-import static tel.schich.javacan.LinuxErrnoBase.EAGAIN;
-
 /**
  * This class represents an OS error with an ID and an error message.
  */
 public class OSError {
+    /**
+     * Try again
+     */
+    public static final int EAGAIN = 11;
+
+
     public final int errorNumber;
     public final String errorMessage;
 
