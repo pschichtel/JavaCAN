@@ -52,7 +52,7 @@ do
     chmod +x "$proxy"
 
     lib_output="$base/lib$libname-${translated_arch}.so"
-    c_files=(common javacan_socketcan javacan_epoll javacan_networkdevice)
+    c_files=(common javacan_socketcan javacan_epoll javacan_networkdevice javacan_error)
     includes=(
         -I"$src"
         -I"$base/jni"

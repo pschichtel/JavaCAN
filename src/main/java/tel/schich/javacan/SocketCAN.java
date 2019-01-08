@@ -38,10 +38,6 @@ class SocketCAN {
 
     public static native int close(int sock);
 
-    public static native int errno();
-
-    public static native String errstr(int errno);
-
     public static native int setBlockingMode(int sock, boolean block);
 
     public static native int getBlockingMode(int sock);

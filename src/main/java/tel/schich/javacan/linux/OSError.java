@@ -20,12 +20,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.linux;
+
+import tel.schich.javacan.JavaCAN;
 
 /**
  * This class represents an OS error with an ID and an error message.
  */
 public class OSError {
+
+    static {
+        JavaCAN.initialize();
+    }
+
     /**
      * Try again
      */
@@ -56,12 +63,12 @@ public class OSError {
      * @return a new instance representing the last OS error or null
      */
     public static OSError getLast() {
-        int lastErrno = SocketCAN.errno();
+        int lastErrno = errno();
         if (lastErrno == 0) {
             return null;
         }
 
-        return new OSError(lastErrno, SocketCAN.errstr(lastErrno));
+        return new OSError(lastErrno, errstr(lastErrno));
     }
 
     private static boolean isTemporary(int errno) {
@@ -88,6 +95,10 @@ public class OSError {
      * @return true if the last error was temporary
      */
     public static boolean wasTemporaryError() {
-        return isTemporary(SocketCAN.errno());
+        return isTemporary(errno());
     }
+
+    public static native int errno();
+
+    public static native String errstr(int errno);
 }

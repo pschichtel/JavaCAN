@@ -24,8 +24,6 @@ package tel.schich.javacan.linux;
 
 import java.io.IOException;
 
-import tel.schich.javacan.OSError;
-
 /**
  * This exception is thrown when an error occurs during a native call.
  * It provides OS specific information if possible, but no guarantees are given that the information is correct and/or
@@ -64,7 +62,7 @@ public class LinuxNativeOperationException extends IOException {
     }
 
     /**
-     * Returns the underlying {@link tel.schich.javacan.OSError} if available.
+     * Returns the underlying {@link OSError} if available.
      *
      * @return the underlying error or null
      */
