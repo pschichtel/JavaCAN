@@ -1,4 +1,4 @@
-/*
+/**
  * The MIT License
  * Copyright © 2018 Phillip Schichtel
  *
@@ -20,29 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+#ifndef _JAVACAN_HELPERS
+#define _JAVACAN_HELPERS
 
-import java.io.IOException;
+#include <stdint.h>
+#include <sys/time.h>
+#include <stdbool.h>
 
-import tel.schich.javacan.linux.LinuxNetworkDevice;
+#define MICROS_PER_SECOND 1000000
 
-/**
- * This class represents a network device.
- */
-public interface NetworkDevice {
-    /**
-     * Gets the name of the device.
-     *
-     * @return the device name
-     */
-    String getName();
+int create_can_raw_socket();
+int create_can_isotp_socket();
+int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
+int set_timeout(int, int, uint64_t, uint64_t);
+int get_timeout(int, int, uint64_t*);
+int set_blocking_mode(int, bool);
+int is_blocking(int);
+int set_boolean_opt(int sock, int opt, bool enable);
+int get_boolean_opt(int sock, int opt);
+short poll_single(int, short, int);
 
-    static NetworkDevice lookup(String name) throws IOException {
-        switch (Platform.getOS()) {
-            case LINUX:
-                return LinuxNetworkDevice.lookup(name);
-            default:
-                throw new UnsupportedPlatformException();
-        }
-    }
-}
+#endif

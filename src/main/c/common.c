@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "helpers.h"
+#include "common.h"
 #include <fcntl.h>
 #include <net/if.h>
 #include <sys/socket.h>
@@ -32,10 +32,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-unsigned int interface_name_to_index(const char *name) {
-    return if_nametoindex(name);
-}
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);

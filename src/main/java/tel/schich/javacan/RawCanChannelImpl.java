@@ -29,6 +29,7 @@ import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.linux.LinuxNetworkDevice;
 
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
@@ -43,7 +44,10 @@ public class RawCanChannelImpl extends RawCanChannel {
 
     @Override
     public RawCanChannel bind(NetworkDevice device) throws IOException {
-        if (SocketCAN.bindSocket(getSocket(), device.getIndex(), 0, 0) == -1) {
+        if (!(device instanceof LinuxNetworkDevice)) {
+            throw new IllegalArgumentException("Unsupported network device given!");
+        }
+        if (SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0) == -1) {
             throw new LinuxNativeOperationException("Unable to bind!");
         }
         this.device = device;

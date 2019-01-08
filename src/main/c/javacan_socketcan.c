@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "helpers.h"
+#include "common.h"
 #include <tel_schich_javacan_SocketCAN.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -35,13 +35,6 @@
 #include <string.h>
 #include <jni.h>
 #include <limits.h>
-
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
-    const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
-    unsigned int ifindex = interface_name_to_index(ifname);
-    (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
-    return ifindex;
-}
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv *env, jclass class) {
     return create_can_raw_socket();

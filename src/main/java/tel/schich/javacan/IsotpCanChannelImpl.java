@@ -29,6 +29,7 @@ import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.linux.LinuxNetworkDevice;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
 
@@ -45,7 +46,10 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
         if (isBound()) {
             throw new AlreadyBoundException();
         }
-        if (SocketCAN.bindSocket(getSocket(), device.getIndex(), rx.getId(), tx.getId()) != 0) {
+        if (!(device instanceof LinuxNetworkDevice)) {
+            throw new IllegalArgumentException("Unsupported network device given!");
+        }
+        if (SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId()) != 0) {
             throw new LinuxNativeOperationException("Unable to bind ISOTP socket!");
         }
         this.device = device;

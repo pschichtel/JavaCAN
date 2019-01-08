@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "helpers.h"
+#include "common.h"
 #include <tel_schich_javacan_linux_epoll_EPoll.h>
 #include <unistd.h>
 #include <sys/socket.h>

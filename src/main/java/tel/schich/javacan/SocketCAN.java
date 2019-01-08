@@ -30,8 +30,6 @@ class SocketCAN {
         JavaCAN.initialize();
     }
 
-    public static native long resolveInterfaceName(String interfaceName);
-
     public static native int createRawSocket();
 
     public static native int createIsotpSocket();

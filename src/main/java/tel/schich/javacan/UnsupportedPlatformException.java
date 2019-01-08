@@ -1,4 +1,4 @@
-/**
+/*
  * The MIT License
  * Copyright © 2018 Phillip Schichtel
  *
@@ -20,25 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _JAVACAN_HELPERS
-#define _JAVACAN_HELPERS
+package tel.schich.javacan;
 
-#include <stdint.h>
-#include <sys/time.h>
-#include <stdbool.h>
-
-#define MICROS_PER_SECOND 1000000
-
-unsigned int interface_name_to_index(const char *);
-int create_can_raw_socket();
-int create_can_isotp_socket();
-int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
-int set_timeout(int, int, uint64_t, uint64_t);
-int get_timeout(int, int, uint64_t*);
-int set_blocking_mode(int, bool);
-int is_blocking(int);
-int set_boolean_opt(int sock, int opt, bool enable);
-int get_boolean_opt(int sock, int opt);
-short poll_single(int, short, int);
-
-#endif
+public class UnsupportedPlatformException extends RuntimeException {
+}

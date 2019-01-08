@@ -1,4 +1,4 @@
-/*
+/**
  * The MIT License
  * Copyright © 2018 Phillip Schichtel
  *
@@ -20,29 +20,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+#include "common.h"
+#include <tel_schich_javacan_linux_LinuxNetworkDevice.h>
+#include <net/if.h>
+#include <stdbool.h>
+#include <string.h>
+#include <jni.h>
 
-import java.io.IOException;
-
-import tel.schich.javacan.linux.LinuxNetworkDevice;
-
-/**
- * This class represents a network device.
- */
-public interface NetworkDevice {
-    /**
-     * Gets the name of the device.
-     *
-     * @return the device name
-     */
-    String getName();
-
-    static NetworkDevice lookup(String name) throws IOException {
-        switch (Platform.getOS()) {
-            case LINUX:
-                return LinuxNetworkDevice.lookup(name);
-            default:
-                throw new UnsupportedPlatformException();
-        }
-    }
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
+    const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
+    unsigned int ifindex = if_nametoindex(ifname);
+    (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
+    return ifindex;
 }
