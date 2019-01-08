@@ -1,4 +1,4 @@
-# JavaCAN
+# JavaCAN [![Maven Central](https://img.shields.io/maven-central/v/tel.schich/javacan.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22tel.schich%22%20AND%20a:%22javacan%22)
 
 A complete implementation of Java's [SelectableChannel](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/SelectableChannel.html) API for CAN_RAW and CAN_ISOTP sockets.
 
