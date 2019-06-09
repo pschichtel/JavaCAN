@@ -108,7 +108,15 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JN
     }
 
     jint *criticalEvents = (*env)->GetPrimitiveArrayCritical(env, events, false);
+    if (criticalEvents == NULL) {
+        return -1;
+    }
+
     jint *criticalFds = (*env)->GetPrimitiveArrayCritical(env, fds, false);
+    if (criticalFds == NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, events, criticalEvents, false);
+        return -1;
+    }
 
     struct epoll_event* eventsPtr = (struct epoll_event*)(uintptr_t)eventsPointer;
     for (int i = 0; i < n; ++i) {
@@ -118,7 +126,7 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JN
     }
 
     (*env)->ReleasePrimitiveArrayCritical(env, events, criticalEvents, false);
-    (*env)->ReleasePrimitiveArrayCritical(env, events, criticalFds, false);
+    (*env)->ReleasePrimitiveArrayCritical(env, fds, criticalFds, false);
 
     return 0;
 }
