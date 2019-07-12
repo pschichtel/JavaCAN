@@ -144,6 +144,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
     }
 
     memcpy(filters_out, filters, size);
+    free(filters);
     return (*env)->NewDirectByteBuffer(env, filters_out, size);
 }
 
