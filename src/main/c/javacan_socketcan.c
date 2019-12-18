@@ -41,6 +41,10 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv 
     return fd;
 }
 
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createBcmSocket(JNIEnv *env, jclass class) {
+    return create_can_bcm_socket();
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createIsotpSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_isotp_socket();
     if (fd == -1) {
@@ -55,6 +59,10 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindSocket(JNIEnv *env,
         throw_native_exception(env, "Unable to bind");
     }
     return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+    return connect_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {

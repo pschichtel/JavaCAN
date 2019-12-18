@@ -34,9 +34,13 @@ class SocketCAN {
 
     public static native int createRawSocket() throws LinuxNativeOperationException;
 
+	public static native int createBcmSocket() throws LinuxNativeOperationException;
+
     public static native int createIsotpSocket() throws LinuxNativeOperationException;
 
     public static native int bindSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
+
+	public static native int connectSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
     public static native int close(int sock) throws LinuxNativeOperationException;
 

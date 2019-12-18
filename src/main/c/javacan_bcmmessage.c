@@ -20,28 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _JAVACAN_HELPERS
-#define _JAVACAN_HELPERS
-
-#include <stdint.h>
-#include <sys/time.h>
-#include <stdbool.h>
+#include <tel_schich_javacan_BcmMessage.h>
 #include <jni.h>
 
-#define MICROS_PER_SECOND 1000000
-
-int create_can_raw_socket();
-int create_can_bcm_socket();
-int create_can_isotp_socket();
-int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
-int connect_can_socket(int, uint32_t, uint32_t, uint32_t);
-int set_timeout(int, int, uint64_t, uint64_t);
-int get_timeout(int, int, uint64_t*);
-int set_blocking_mode(int, bool);
-int is_blocking(int);
-int set_boolean_opt(int sock, int opt, bool enable);
-int get_boolean_opt(int sock, int opt);
-short poll_single(int, short, int);
-void throw_native_exception(JNIEnv *env, char *msg);
-
-#endif
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getLongSize(JNIEnv *env, jclass class) {
+	long dummy=0;
+	return sizeof(dummy);
+}

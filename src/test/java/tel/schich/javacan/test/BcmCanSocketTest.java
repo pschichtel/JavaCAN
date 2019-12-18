@@ -1,4 +1,4 @@
-/**
+/*
  * The MIT License
  * Copyright © 2018 Phillip Schichtel
  *
@@ -20,28 +20,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef _JAVACAN_HELPERS
-#define _JAVACAN_HELPERS
+package tel.schich.javacan.test;
 
-#include <stdint.h>
-#include <sys/time.h>
-#include <stdbool.h>
-#include <jni.h>
+import org.junit.jupiter.api.Test;
+import tel.schich.javacan.BcmCanChannel;
+import tel.schich.javacan.BcmMessage;
+import tel.schich.javacan.CanChannels;
+import tel.schich.javacan.CanFrame;
 
-#define MICROS_PER_SECOND 1000000
+import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
+import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
-int create_can_raw_socket();
-int create_can_bcm_socket();
-int create_can_isotp_socket();
-int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
-int connect_can_socket(int, uint32_t, uint32_t, uint32_t);
-int set_timeout(int, int, uint64_t, uint64_t);
-int get_timeout(int, int, uint64_t*);
-int set_blocking_mode(int, bool);
-int is_blocking(int);
-int set_boolean_opt(int sock, int opt, bool enable);
-int get_boolean_opt(int sock, int opt);
-short poll_single(int, short, int);
-void throw_native_exception(JNIEnv *env, char *msg);
+public class BcmCanSocketTest {
+	@Test
+	void testNonBlockingRead() throws Exception {
+		try (final BcmCanChannel socket = CanChannels.newBcmChannel()) {
+			socket.connect(CAN_INTERFACE);
+			assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
-#endif
+			final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+			socket.configureBlocking(false);
+			assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
+			CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+			Thread.sleep(50);
+			final BcmMessage output = socket.read();
+			assertEquals(input, output, "What comes in should come out");
+		}
+	}
+}

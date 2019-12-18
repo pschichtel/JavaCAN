@@ -83,7 +83,46 @@ public class CanChannels {
         return newRawChannel(NetworkDevice.lookup(device));
     }
 
+
     /**
+	 * Creates a new {@link BcmCanChannel} without binding it to a device.
+	 *
+	 * @return The new channel
+	 * @throws IOException if the native socket could not be created
+	 */
+	public static BcmCanChannel newBcmChannel() throws IOException {
+		int fd = SocketCAN.createBcmSocket();
+		if (fd == -1) {
+			throw new LinuxNativeOperationException("Unable to create socket!");
+		}
+		return new BcmCanChannel(PROVIDER, fd);
+	}
+
+	/**
+	 * Creates a new {@link BcmCanChannel} already bound to the given {@link NetworkDevice}.
+	 *
+	 * @param device the device to bind to
+	 * @return The new channel
+	 * @throws IOException if the native socket could not be created or not be bound
+	 */
+	public static BcmCanChannel newBcmChannel(NetworkDevice device) throws IOException {
+		BcmCanChannel ch = newBcmChannel();
+		ch.connect(device);
+		return ch;
+	}
+
+	/**
+	 * Creates a new {@link BcmCanChannel} already bound to the given device.
+	 *
+	 * @param device the device to bind to
+	 * @return The new channel
+	 * @throws IOException if the native socket could not be created or not be bound
+	 */
+	public static BcmCanChannel newBcmChannel(String device) throws IOException {
+		return newBcmChannel(NetworkDevice.lookup(device));
+	}
+
+	/**
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} without binding it to a device and addresses.
      *
      * @return The new channel
