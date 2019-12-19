@@ -33,7 +33,7 @@ public class CanId {
     public static final int EFF_FLAG = 0b10000000_00000000_00000000_00000000;
 
     /**
-     * This mask matches the return transmission request flag bit.
+     * This mask matches the remote transmission request flag bit.
      */
     public static final int RTR_FLAG = 0b01000000_00000000_00000000_00000000;
 
@@ -100,12 +100,12 @@ public class CanId {
     }
 
     /**
-     * Checks if this CAN ID is a return-transmission-request ID.
+     * Checks if this CAN ID is a remote-transmission-request ID.
      *
      * @param id the kernel CAN ID.
      * @return true if it is an RTR ID
      */
-    public static boolean isRemoveTransmissionRequest(int id) {
+    public static boolean isRemoteTransmissionRequest(int id) {
         return (id & RTR_FLAG) != 0;
     }
 }

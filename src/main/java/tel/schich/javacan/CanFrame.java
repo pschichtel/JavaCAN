@@ -222,12 +222,12 @@ public class CanFrame {
     }
 
     /**
-     * Checks if this frame is a remove-transmission-request.
+     * Checks if this frame is a remote-transmission-request.
      *
-     * @return true if this frame is a remove-transmission-request
+     * @return true if this frame is a remote-transmission-request
      */
-    public boolean isRemoveTransmissionRequest() {
-        return CanId.isRemoveTransmissionRequest(getId());
+    public boolean isRemoteTransmissionRequest() {
+        return CanId.isRemoteTransmissionRequest(getId());
     }
 
     @Override
