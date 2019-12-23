@@ -44,7 +44,7 @@ The implementation can handle word sizes up to 64 bit and is byte order aware.
 
 1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
 2. Create a `RawCanChannel` e.g. by calling `CanChannels.newRawChannel()`
-3. Create a `CanDevice` using its static `lookup(String)` method
+3. Create a `NetworkDevice` using its static `lookup(String)` method
 4. Bind the channel to an interface using the `bind(CanDevice)` method
 
 Usage example can be found in the unit tests.
