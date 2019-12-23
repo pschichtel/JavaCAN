@@ -21,7 +21,7 @@ Even though the JDK provides an epoll based Selector implementation, that implem
 * [obd4s](https://github.com/pschichtel/obd4s): A Scala library for OBD-II communication with vehicles.
 * [VirtualECU](https://github.com/pschichtel/VirtualECU): An ECU simulator to test OBD-II clients against.
 
-## Supported Operation Systems
+## Supported Operating Systems
 
 This project is a wrapper around SocketCAN, which is a Linux kernel module that implements CAN communication. As such, only Linux can be supported. For this reason, the custom Selector will also only use epoll (Linux API for event-driven IO), as support for other OS' is not possible anyway.
 
