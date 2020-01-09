@@ -5,3 +5,7 @@ CMakeLists.txt
 target/
 *.log
 .attach_pid*
+/.classpath
+/.cproject
+/.project
+.settings/
