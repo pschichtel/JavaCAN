@@ -23,6 +23,7 @@
 package tel.schich.javacan.linux.epoll;
 
 import tel.schich.javacan.JavaCAN;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
 
 class EPoll {
 
@@ -37,7 +38,7 @@ class EPoll {
 
     public static native int createEventfd(boolean block);
 
-    public static native int signalEvent(int eventfd, long value);
+    public static native int signalEvent(int eventfd, long value) throws LinuxNativeOperationException;
 
     public static native long clearEvent(int eventfd);
 
@@ -45,15 +46,15 @@ class EPoll {
 
     public static native void freeEvents(long eventsPointer);
 
-    public static native int close(int fd);
+    public static native int close(int fd) throws LinuxNativeOperationException;
 
-    public static native int addFileDescriptor(int epollfd, int fd, int interests);
+    public static native int addFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
 
-    public static native int removeFileDescriptor(int epollfd, int fd);
+    public static native int removeFileDescriptor(int epollfd, int fd) throws LinuxNativeOperationException;
 
-    public static native int updateFileDescriptor(int epollfd, int fd, int interests);
+    public static native int updateFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
 
-    public static native int poll(int epollfd, long eventsPointer, int maxEvents, long timeout);
+    public static native int poll(int epollfd, long eventsPointer, int maxEvents, long timeout) throws LinuxNativeOperationException;
 
     public static native int extractEvents(long eventsPointer, int n, int[] events, int[] fds);
 }

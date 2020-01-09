@@ -22,16 +22,10 @@
  */
 package tel.schich.javacan.linux;
 
-import tel.schich.javacan.JavaCAN;
-
 /**
  * This class represents an OS error with an ID and an error message.
  */
 public class OSError {
-
-    static {
-        JavaCAN.initialize();
-    }
 
     /**
      * Try again
@@ -43,11 +37,12 @@ public class OSError {
     public final String errorMessage;
 
     /**
-     * Creates a new instance with a given error number and message
+     * Creates a new instance with a given error number and message.
+     * Instances of this class will be created from native code.
      * @param number the number
      * @param message the message
      */
-    public OSError(int number, String message) {
+    OSError(int number, String message) {
         this.errorNumber = number;
         this.errorMessage = message;
     }
@@ -55,20 +50,6 @@ public class OSError {
     @Override
     public String toString() {
         return "OSError{" + "errorNumber=" + errorNumber + ", errorMessage='" + errorMessage + '\'' + '}';
-    }
-
-    /**
-     * Creates a new instance by getting the last error from the OS if available.
-     *
-     * @return a new instance representing the last OS error or null
-     */
-    public static OSError getLast() {
-        int lastErrno = errno();
-        if (lastErrno == 0) {
-            return null;
-        }
-
-        return new OSError(lastErrno, errstr(lastErrno));
     }
 
     private static boolean isTemporary(int errno) {
@@ -88,17 +69,4 @@ public class OSError {
     public boolean mayTryAgain() {
         return isTemporary(errorNumber);
     }
-
-    /**
-     * Checks if the last error was a temporary one.
-     *
-     * @return true if the last error was temporary
-     */
-    public static boolean wasTemporaryError() {
-        return isTemporary(errno());
-    }
-
-    public static native int errno();
-
-    public static native String errstr(int errno);
 }

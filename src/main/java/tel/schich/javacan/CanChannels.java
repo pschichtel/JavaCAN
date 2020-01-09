@@ -55,9 +55,6 @@ public class CanChannels {
      */
     public static RawCanChannel newRawChannel() throws IOException {
         int fd = SocketCAN.createRawSocket();
-        if (fd == -1) {
-            throw new LinuxNativeOperationException("Unable to create socket!");
-        }
         return new RawCanChannelImpl(PROVIDER, fd);
     }
 
@@ -94,9 +91,6 @@ public class CanChannels {
      */
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
-        if (fd == -1) {
-            throw new LinuxNativeOperationException("Unable to create ISOTP socket!");
-        }
         return new IsotpCanChannelImpl(PROVIDER, fd);
     }
 

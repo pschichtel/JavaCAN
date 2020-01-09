@@ -43,18 +43,12 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<IsotpOptions> OPTS = new CanSocketOption<>("OPTS", IsotpOptions.class, new LinuxSocketOptionHandler<IsotpOptions>() {
         @Override
         public void set(int sock, IsotpOptions val) throws IOException {
-            final int result = SocketCAN.setIsotpOpts(sock, val.getFlags(), val.getFrameTransmissionTime(), val.getExtendedTransmissionAddress(), val.getTransmissionPadding(), val.getReceivePadding(), val.getExtendedReceiveAddress());
-            if (result == -1) {
-                throw new LinuxNativeOperationException("Unable to set the ISOTP options!");
-            }
+            SocketCAN.setIsotpOpts(sock, val.getFlags(), val.getFrameTransmissionTime(), val.getExtendedTransmissionAddress(), val.getTransmissionPadding(), val.getReceivePadding(), val.getExtendedReceiveAddress());
         }
 
         @Override
         public IsotpOptions get(int sock) throws IOException {
             IsotpOptions opts = SocketCAN.getIsotpOpts(sock);
-            if (opts == null) {
-                throw new LinuxNativeOperationException("Unable to get the ISOTP options!");
-            }
             return opts;
         }
     });
@@ -65,18 +59,12 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<IsotpFlowControlOptions> RECV_FC = new CanSocketOption<>("RECV_FC", IsotpFlowControlOptions.class, new LinuxSocketOptionHandler<IsotpFlowControlOptions>() {
         @Override
         public void set(int sock, IsotpFlowControlOptions val) throws IOException {
-            final int result = SocketCAN.setIsotpRecvFc(sock, val.getBlockSize(), val.getMinimumSeparationTime(), val.getMaximumWaitFrameTransmission());
-            if (result == -1) {
-                throw new LinuxNativeOperationException("Unable to set the ISOTP flow control options!");
-            }
+            SocketCAN.setIsotpRecvFc(sock, val.getBlockSize(), val.getMinimumSeparationTime(), val.getMaximumWaitFrameTransmission());
         }
 
         @Override
         public IsotpFlowControlOptions get(int sock) throws IOException {
             IsotpFlowControlOptions opts = SocketCAN.getIsotpRecvFc(sock);
-            if (opts == null) {
-                throw new LinuxNativeOperationException("Unable to get the ISOTP flow control options!");
-            }
             return opts;
         }
     });
@@ -87,18 +75,12 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<Integer> TX_STMIN = new CanSocketOption<>("TX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
-            final int result = SocketCAN.setIsotpTxStmin(sock, val);
-            if (result == -1) {
-                throw new LinuxNativeOperationException("Unable to set the minimum transmission separation time!");
-            }
+            SocketCAN.setIsotpTxStmin(sock, val);
         }
 
         @Override
         public Integer get(int sock) throws IOException {
             final int mask = SocketCAN.getIsotpTxStmin(sock);
-            if (mask == -1) {
-                throw new LinuxNativeOperationException("Unable to get the minimum transmission separation time!");
-            }
             return mask;
         }
     });
@@ -109,18 +91,12 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<Integer> RX_STMIN = new CanSocketOption<>("RX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
         public void set(int sock, Integer val) throws IOException {
-            final int result = SocketCAN.setIsotpRxStmin(sock, val);
-            if (result == -1) {
-                throw new LinuxNativeOperationException("Unable to set the minimum receive separation time!");
-            }
+            SocketCAN.setIsotpRxStmin(sock, val);
         }
 
         @Override
         public Integer get(int sock) throws IOException {
             final int mask = SocketCAN.getIsotpRxStmin(sock);
-            if (mask == -1) {
-                throw new LinuxNativeOperationException("Unable to get the minimum receive separation time!");
-            }
             return mask;
         }
     });
@@ -131,18 +107,12 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<IsotpLinkLayerOptions> LL_OPTS = new CanSocketOption<>("LL_OPTS", IsotpLinkLayerOptions.class, new LinuxSocketOptionHandler<IsotpLinkLayerOptions>() {
         @Override
         public void set(int sock, IsotpLinkLayerOptions val) throws IOException {
-            final int result = SocketCAN.setIsotpLlOpts(sock, val.getMaximumTranmissionUnit(), val.getTransmissionDataLength(), val.getTransmissionFlags());
-            if (result == -1) {
-                throw new LinuxNativeOperationException("Unable to set the ISOTP link layer options!");
-            }
+            SocketCAN.setIsotpLlOpts(sock, val.getMaximumTranmissionUnit(), val.getTransmissionDataLength(), val.getTransmissionFlags());
         }
 
         @Override
         public IsotpLinkLayerOptions get(int sock) throws IOException {
             IsotpLinkLayerOptions opts = SocketCAN.getIsotpLlOpts(sock);
-            if (opts == null) {
-                throw new LinuxNativeOperationException("Unable to get the ISOTP link layer options!");
-            }
             return opts;
         }
     });

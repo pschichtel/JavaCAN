@@ -24,82 +24,84 @@ package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
 
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+
 class SocketCAN {
 
     static {
         JavaCAN.initialize();
     }
 
-    public static native int createRawSocket();
+    public static native int createRawSocket() throws LinuxNativeOperationException;
 
-    public static native int createIsotpSocket();
+    public static native int createIsotpSocket() throws LinuxNativeOperationException;
 
-    public static native int bindSocket(int sock, long interfaceId, int rx, int tx);
+    public static native int bindSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
-    public static native int close(int sock);
+    public static native int close(int sock) throws LinuxNativeOperationException;
 
-    public static native int setBlockingMode(int sock, boolean block);
+    public static native int setBlockingMode(int sock, boolean block) throws LinuxNativeOperationException;
 
     public static native int getBlockingMode(int sock);
 
-    public static native int setReadTimeout(int sock, long seconds, long nanos);
+    public static native int setReadTimeout(int sock, long seconds, long nanos) throws LinuxNativeOperationException;
 
-    public static native long getReadTimeout(int sock);
+    public static native long getReadTimeout(int sock) throws LinuxNativeOperationException;
 
-    public static native int setWriteTimeout(int sock, long seconds, long nanos);
+    public static native int setWriteTimeout(int sock, long seconds, long nanos) throws LinuxNativeOperationException;
 
-    public static native long getWriteTimeout(int sock);
+    public static native long getWriteTimeout(int sock) throws LinuxNativeOperationException;
 
-    public static native int setReceiveBufferSize(int sock, int size);
+    public static native int setReceiveBufferSize(int sock, int size) throws LinuxNativeOperationException;
 
-    public static native int getReceiveBufferSize(int sock);
+    public static native int getReceiveBufferSize(int sock) throws LinuxNativeOperationException;
 
-    public static native long write(int sock, ByteBuffer buf, int offset, int len);
+    public static native long write(int sock, ByteBuffer buf, int offset, int len) throws LinuxNativeOperationException;
 
-    public static native long read(int sock, ByteBuffer buf, int offset, int len);
+    public static native long read(int sock, ByteBuffer buf, int offset, int len) throws LinuxNativeOperationException;
 
-    public static native int setFilters(int sock, ByteBuffer data);
+    public static native int setFilters(int sock, ByteBuffer data) throws LinuxNativeOperationException;
 
     @Deprecated
-    public static native ByteBuffer getFilters(int sock);
+    public static native ByteBuffer getFilters(int sock) throws LinuxNativeOperationException;
 
-    public static native int setLoopback(int sock, boolean enable);
+    public static native int setLoopback(int sock, boolean enable) throws LinuxNativeOperationException;
 
-    public static native int getLoopback(int sock);
+    public static native int getLoopback(int sock) throws LinuxNativeOperationException;
 
-    public static native int setReceiveOwnMessages(int sock, boolean enable);
+    public static native int setReceiveOwnMessages(int sock, boolean enable) throws LinuxNativeOperationException;
 
-    public static native int getReceiveOwnMessages(int sock);
+    public static native int getReceiveOwnMessages(int sock) throws LinuxNativeOperationException;
 
-    public static native int setJoinFilters(int sock, boolean enable);
+    public static native int setJoinFilters(int sock, boolean enable) throws LinuxNativeOperationException;
 
-    public static native int getJoinFilters(int sock);
+    public static native int getJoinFilters(int sock) throws LinuxNativeOperationException;
 
-    public static native int setAllowFDFrames(int sock, boolean enable);
+    public static native int setAllowFDFrames(int sock, boolean enable) throws LinuxNativeOperationException;
 
-    public static native int getAllowFDFrames(int sock);
+    public static native int getAllowFDFrames(int sock) throws LinuxNativeOperationException;
 
-    public static native int setErrorFilter(int sock, int mask);
+    public static native int setErrorFilter(int sock, int mask) throws LinuxNativeOperationException;
 
-    public static native int getErrorFilter(int sock);
+    public static native int getErrorFilter(int sock) throws LinuxNativeOperationException;
 
-    public static native int setIsotpOpts(int sock, int flags, int frameTxTime, byte extAddress, byte txpadContent, byte rxpadContent, byte rxExtAddress);
+    public static native int setIsotpOpts(int sock, int flags, int frameTxTime, byte extAddress, byte txpadContent, byte rxpadContent, byte rxExtAddress) throws LinuxNativeOperationException;
 
-    public static native IsotpOptions getIsotpOpts(int sock);
+    public static native IsotpOptions getIsotpOpts(int sock) throws LinuxNativeOperationException;
 
-    public static native int setIsotpRecvFc(int sock, byte bs, byte stmin, byte wftmax);
+    public static native int setIsotpRecvFc(int sock, byte bs, byte stmin, byte wftmax) throws LinuxNativeOperationException;
 
-    public static native IsotpFlowControlOptions getIsotpRecvFc(int sock);
+    public static native IsotpFlowControlOptions getIsotpRecvFc(int sock) throws LinuxNativeOperationException;
 
-    public static native int setIsotpTxStmin(int sock, int txStmin);
+    public static native int setIsotpTxStmin(int sock, int txStmin) throws LinuxNativeOperationException;
 
-    public static native int getIsotpTxStmin(int sock);
+    public static native int getIsotpTxStmin(int sock) throws LinuxNativeOperationException;
 
-    public static native int setIsotpRxStmin(int sock, int rxStmin);
+    public static native int setIsotpRxStmin(int sock, int rxStmin) throws LinuxNativeOperationException;
 
-    public static native int getIsotpRxStmin(int sock);
+    public static native int getIsotpRxStmin(int sock) throws LinuxNativeOperationException;
 
-    public static native int setIsotpLlOpts(int sock, byte mtu, byte txDl, byte txFlags);
+    public static native int setIsotpLlOpts(int sock, byte mtu, byte txDl, byte txFlags) throws LinuxNativeOperationException;
 
-    public static native IsotpLinkLayerOptions getIsotpLlOpts(int sock);
+    public static native IsotpLinkLayerOptions getIsotpLlOpts(int sock) throws LinuxNativeOperationException;
 }

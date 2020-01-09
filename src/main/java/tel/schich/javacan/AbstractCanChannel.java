@@ -87,16 +87,12 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
 
     @Override
     protected void implCloseSelectableChannel() throws IOException {
-        if (SocketCAN.close(sock) != 0) {
-            throw new LinuxNativeOperationException("Unable to close socket!");
-        }
+        SocketCAN.close(sock);
     }
 
     @Override
     protected void implConfigureBlocking(boolean block) throws IOException {
-        if (SocketCAN.setBlockingMode(sock, block) == -1) {
-            throw new LinuxNativeOperationException("Unable to set the blocking mode!");
-        }
+        SocketCAN.setBlockingMode(sock, block);
     }
 
     @Override
@@ -163,9 +159,6 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         try {
             int pos = buffer.position();
             bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
-            if (bytesRead == -1) {
-                throw new LinuxNativeOperationException("Unable to read from the socket!");
-            }
             buffer.position(pos + bytesRead);
             return bytesRead;
         } finally {
@@ -191,9 +184,6 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         try {
             int pos = buffer.position();
             bytesWritten = (int)SocketCAN.write(sock, buffer, pos, buffer.remaining());
-            if (bytesWritten == -1) {
-                throw new LinuxNativeOperationException("Unable to write to the socket!");
-            }
             buffer.position(pos + bytesWritten);
             return bytesWritten;
         } finally {

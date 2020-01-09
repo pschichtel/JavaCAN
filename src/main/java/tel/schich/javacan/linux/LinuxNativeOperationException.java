@@ -32,11 +32,22 @@ import java.io.IOException;
 public class LinuxNativeOperationException extends IOException {
     private final OSError error;
 
+    /**
+     * Create an instance without an OS specific error.
+     * @param message of the exception
+     */
     public LinuxNativeOperationException(String message) {
-        this(message, OSError.getLast());
+        this(message, null);
     }
 
-    public LinuxNativeOperationException(String message, OSError error) {
+    /**
+     * Create an instance with an OS error. This constructor will be called from
+     * native code.
+     * 
+     * @param message of the exception
+     * @param error as reported by the native OS function
+     */
+    LinuxNativeOperationException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;
     }
