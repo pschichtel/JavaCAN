@@ -30,33 +30,45 @@ import java.io.IOException;
  * complete.
  */
 public class LinuxNativeOperationException extends IOException {
-    private final OSError error;
+
+    /** Try again */
+    public static final int EAGAIN = 11;
+
+    /** The native error number or 0 if no native error code was provided. */
+    public final int errorNumber;
+    /**
+     * The native error message or {@code null} if no native message was provided.
+     */
+    public final String errorMessage;
 
     /**
      * Create an instance without an OS specific error.
      * @param message of the exception
      */
     public LinuxNativeOperationException(String message) {
-        this(message, null);
+        super(message);
+        errorNumber = 0;
+        errorMessage = null;
     }
 
     /**
-     * Create an instance with an OS error. This constructor will be called from
-     * native code.
+     * Create an instance with an OS error. This constructor will be called from native code.
      * 
      * @param message of the exception
-     * @param error as reported by the native OS function
+     * @param errno as reported by the native OS function
+     * @param strerror as returned by the native OS function {@code strerror(errno)}
      */
-    LinuxNativeOperationException(String message, OSError error) {
-        super(makeSuperMessage(message, error));
-        this.error = error;
+    LinuxNativeOperationException(String message, int errno, String strerror) {
+        super(makeSuperMessage(message, errno, strerror));
+        errorNumber = errno;
+        errorMessage = strerror;
     }
 
-    private static String makeSuperMessage(String message, OSError lastError) {
-        if (lastError == null) {
+    private static String makeSuperMessage(String message, int errno, String strerror) {
+        if (errno == 0) {
             return message;
         } else {
-            return message + " - " + lastError.toString();
+            return message + " - errorNumber=" + errno + ", errorMessage='" + strerror + '\'';
         }
     }
 
@@ -66,18 +78,19 @@ public class LinuxNativeOperationException extends IOException {
      * @return true if a retry might be a viable resolution of this exception
      */
     public boolean mayTryAgain() {
-        if (error == null) {
+        if (errorNumber == 0) {
             return false;
         }
-        return error.mayTryAgain();
+        return isTemporary();
     }
 
-    /**
-     * Returns the underlying {@link OSError} if available.
-     *
-     * @return the underlying error or null
-     */
-    public OSError getError() {
-        return error;
+
+    private boolean isTemporary() {
+        switch (errorNumber) {
+        case EAGAIN:
+            return true;
+        default:
+            return false;
+        }
     }
 }

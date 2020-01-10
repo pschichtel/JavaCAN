@@ -22,9 +22,11 @@
  */
 package tel.schich.javacan;
 
+
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
+
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.select.ExtensibleSelectorProvider;
 import tel.schich.javacan.test.CanTestHelper;
@@ -45,8 +47,8 @@ class LinuxNativeOperationExceptionTest {
 		} catch (IOException ex) {
 			assertTrue(ex instanceof LinuxNativeOperationException);
 			LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-			assertNotNull(nativeEx.getError(), "error not set");
-			assertEquals(9, nativeEx.getError().errorNumber); // Bad file descriptor
+            assertNotNull(nativeEx.errorMessage, "error message not set");
+            assertEquals(9, nativeEx.errorNumber); // Bad file descriptor
 		}
 	}
 
@@ -60,8 +62,8 @@ class LinuxNativeOperationExceptionTest {
 			assertTrue(ex instanceof LinuxNativeOperationException);
 			assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
 			LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-			assertNotNull(nativeEx.getError(), "error not set");
-			assertEquals(19, nativeEx.getError().errorNumber); // No such device
+            assertNotNull(nativeEx.errorMessage, "error message not set");
+            assertEquals(19, nativeEx.errorNumber); // No such device
 		}
 	}
 }

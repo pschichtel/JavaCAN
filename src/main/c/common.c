@@ -141,27 +141,19 @@ void throwLinuxNativeOperationException(JNIEnv *env, char *msg) {
 	// It is necessary to get the errno before any Java or JNI function is called, as it
 	// may become changed due to the VM operations.
 	int errorNo = errno;
-
-	char *errClassName = "tel/schich/javacan/linux/OSError";
-	jclass errClass = (*env)->FindClass(env, errClassName);
-	if (errClassName == NULL) {
-		return;
-	}
 	jstring errStr = (*env)->NewStringUTF(env, strerror(errorNo));
-	jmethodID errConst = (*env)->GetMethodID(env, errClass, "<init>", "(ILjava/lang/String;)V");
-	jobject errObj = (*env)->NewObject(env, errClass, errConst, errorNo, errStr);
-	if (errObj == NULL) {
-		return;
-	}
+	jstring msgStr = (*env)->NewStringUTF(env, msg);
 
 	char *exClassName = "tel/schich/javacan/linux/LinuxNativeOperationException";
 	jclass exClass = (*env)->FindClass(env, exClassName);
 	if (exClass == NULL) {
 		return;
 	}
-	jstring msgStr = (*env)->NewStringUTF(env, msg);
-	jmethodID exConst = (*env)->GetMethodID(env, exClass, "<init>", "(Ljava/lang/String;Ltel/schich/javacan/linux/OSError;)V");
-	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, msgStr, errObj);
+	jmethodID exConst = (*env)->GetMethodID(env, exClass, "<init>", "(Ljava/lang/String;ILjava/lang/String;)V");
+	if (exConst == NULL) {
+		return;
+	}
+	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, msgStr, errorNo, errStr);
 	if (exObj == NULL) {
 		return;
 	}
