@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
+/* SPDX-License-Identifier: ((GPL-2.0-only WITH Linux-syscall-note) OR BSD-3-Clause) */
 /*
  * linux/can/error.h
  *
@@ -42,8 +42,8 @@
  * DAMAGE.
  */
 
-#ifndef _CAN_ERROR_H
-#define _CAN_ERROR_H
+#ifndef _UAPI_CAN_ERROR_H
+#define _UAPI_CAN_ERROR_H
 
 #define CAN_ERR_DLC 8 /* dlc for error message frames */
 
@@ -122,4 +122,4 @@
 
 /* controller specific additional information / data[5..7] */
 
-#endif /* _CAN_ERROR_H */
+#endif /* _UAPI_CAN_ERROR_H */
