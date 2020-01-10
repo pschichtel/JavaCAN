@@ -28,7 +28,6 @@ import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.linux.LinuxNetworkDevice;
 
 /**
@@ -38,51 +37,49 @@ import tel.schich.javacan.linux.LinuxNetworkDevice;
  * @author Maik Scheibler
  */
 public class BcmCanChannel extends AbstractCanChannel {
-	public static final int MTU = BcmMessage.HEADER_LENGTH + 257 * (CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
-	private volatile NetworkDevice device;
+    public static final int MTU = BcmMessage.HEADER_LENGTH + 257 * (CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
+    private volatile NetworkDevice device;
 
-	public BcmCanChannel(SelectorProvider provider, int sock) {
-		super(provider, sock);
-	}
+    public BcmCanChannel(SelectorProvider provider, int sock) {
+        super(provider, sock);
+    }
 
-	@Override
-	public NetworkDevice getDevice() {
-		if (!isBound()) {
-			throw new NotYetBoundException();
-		}
-		return this.device;
-	}
+    @Override
+    public NetworkDevice getDevice() {
+        if (!isBound()) {
+            throw new NotYetBoundException();
+        }
+        return this.device;
+    }
 
-	/**
-	 * Returns whether the channel has been connected to the socket. A BCM channel does not get bound, it is
-	 * connected to the socket.
-	 */
-	@Override
-	public boolean isBound() {
-		return this.device != null;
-	}
+    /**
+     * Returns whether the channel has been connected to the socket. A BCM channel does not get bound, it is
+     * connected to the socket.
+     */
+    @Override
+    public boolean isBound() {
+        return this.device != null;
+    }
 
-	public BcmCanChannel connect(NetworkDevice device) throws IOException {
-		if (!(device instanceof LinuxNetworkDevice)) {
-			throw new IllegalArgumentException("Unsupported network device given!");
-		}
-		if (SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0) == -1) {
-			throw new LinuxNativeOperationException("Unable to connect!");
-		}
-		this.device = device;
-		return this;
-	}
+    public BcmCanChannel connect(NetworkDevice device) throws IOException {
+        if (!(device instanceof LinuxNetworkDevice)) {
+            throw new IllegalArgumentException("Unsupported network device given!");
+        }
+        SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
+        this.device = device;
+        return this;
+    }
 
-	public BcmMessage read() throws IOException {
-		int length = MTU;
-		ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
-		return read(frameBuf);
-	}
+    public BcmMessage read() throws IOException {
+        int length = MTU;
+        ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
+        return read(frameBuf);
+    }
 
-	public BcmMessage read(ByteBuffer buffer) throws IOException {
-		buffer.order(ByteOrder.nativeOrder());
-		readSocket(buffer);
-		buffer.flip();
-		return new BcmMessage(buffer);
-	}
+    public BcmMessage read(ByteBuffer buffer) throws IOException {
+        buffer.order(ByteOrder.nativeOrder());
+        readSocket(buffer);
+        buffer.flip();
+        return new BcmMessage(buffer);
+    }
 }

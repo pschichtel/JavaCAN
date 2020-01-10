@@ -42,7 +42,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv 
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createBcmSocket(JNIEnv *env, jclass class) {
-    return create_can_bcm_socket();
+    jint fd = create_can_bcm_socket();
+    if (fd == -1) {
+    	throwLinuxNativeOperationException(env, "Unable to create BCM socket");
+    }
+    return fd;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createIsotpSocket(JNIEnv *env, jclass class) {

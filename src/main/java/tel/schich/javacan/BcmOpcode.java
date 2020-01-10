@@ -29,49 +29,49 @@ package tel.schich.javacan;
  * @author Maik Scheibler
  */
 public enum BcmOpcode {
-	/** create (cyclic) transmission task */
-	TX_SETUP(1),
-	/** remove (cyclic) transmission task */
-	TX_DELETE(2),
-	/** read properties of (cyclic) transmission task */
-	TX_READ(3),
-	/** send one CAN frame */
-	TX_SEND(4),
-	/** create RX content filter subscription */
-	RX_SETUP(5),
-	/** remove RX content filter subscription */
-	RX_DELETE(6),
-	/** read properties of RX content filter subscription */
-	RX_READ(7),
-	/** reply to TX_READ request */
-	TX_STATUS(8),
-	/** notification on performed transmissions (count=0) */
-	TX_EXPIRED(9),
-	/** reply to RX_READ request */
-	RX_STATUS(10),
-	/** cyclic message is absent */
-	RX_TIMEOUT(11),
-	/** updated CAN frame (detected content change) */
-	RX_CHANGED(12);
+    /** create (cyclic) transmission task */
+    TX_SETUP(1),
+    /** remove (cyclic) transmission task */
+    TX_DELETE(2),
+    /** read properties of (cyclic) transmission task */
+    TX_READ(3),
+    /** send one CAN frame */
+    TX_SEND(4),
+    /** create RX content filter subscription */
+    RX_SETUP(5),
+    /** remove RX content filter subscription */
+    RX_DELETE(6),
+    /** read properties of RX content filter subscription */
+    RX_READ(7),
+    /** reply to TX_READ request */
+    TX_STATUS(8),
+    /** notification on performed transmissions (count=0) */
+    TX_EXPIRED(9),
+    /** reply to RX_READ request */
+    RX_STATUS(10),
+    /** cyclic message is absent */
+    RX_TIMEOUT(11),
+    /** updated CAN frame (detected content change) */
+    RX_CHANGED(12);
 
-	private final int nativeOpcode;
+    private final int nativeOpcode;
 
-	BcmOpcode(int nativeOpcode) {
-		this.nativeOpcode = nativeOpcode;
-	}
+    BcmOpcode(int nativeOpcode) {
+        this.nativeOpcode = nativeOpcode;
+    }
 
-	/**
-	 * Get the Java representation for the native op-code.
-	 *
-	 * @param nativeOpcode from the CAN socket
-	 * @throws IllegalArgumentException on an unknown op-code
-	 */
-	public static BcmOpcode fromNative(int nativeOpcode) {
-		for (BcmOpcode opcode : values()) {
-			if (nativeOpcode == opcode.nativeOpcode) {
-				return opcode;
-			}
-		}
-		throw new IllegalArgumentException("unknown BCM op-code: " + nativeOpcode);
-	}
+    /**
+     * Get the Java representation for the native op-code.
+     *
+     * @param nativeOpcode from the CAN socket
+     * @throws IllegalArgumentException on an unknown op-code
+     */
+    public static BcmOpcode fromNative(int nativeOpcode) {
+        for (BcmOpcode opcode : values()) {
+            if (nativeOpcode == opcode.nativeOpcode) {
+                return opcode;
+            }
+        }
+        throw new IllegalArgumentException("unknown BCM op-code: " + nativeOpcode);
+    }
 }

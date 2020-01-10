@@ -33,19 +33,19 @@ import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 public class BcmCanSocketTest {
-	@Test
-	void testNonBlockingRead() throws Exception {
-		try (final BcmCanChannel socket = CanChannels.newBcmChannel()) {
-			socket.connect(CAN_INTERFACE);
-			assertTrue(socket.isBlocking(), "Socket is blocking by default");
+    @Test
+    void testNonBlockingRead() throws Exception {
+        try (final BcmCanChannel socket = CanChannels.newBcmChannel()) {
+            socket.connect(CAN_INTERFACE);
+            assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
-			final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
-			socket.configureBlocking(false);
-			assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
-			CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
-			Thread.sleep(50);
-			final BcmMessage output = socket.read();
-			assertEquals(input, output, "What comes in should come out");
-		}
-	}
+            final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+            socket.configureBlocking(false);
+            assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
+            CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+            Thread.sleep(50);
+            final BcmMessage output = socket.read();
+            assertEquals(input, output, "What comes in should come out");
+        }
+    }
 }
