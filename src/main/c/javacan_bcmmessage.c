@@ -22,8 +22,13 @@
  */
 #include <tel_schich_javacan_BcmMessage.h>
 #include <jni.h>
+#include <linux/can/bcm.h>
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getLongSize(JNIEnv *env, jclass class) {
 	long dummy=0;
 	return sizeof(dummy);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getHeaderSize(JNIEnv *env, jclass class) {
+	return sizeof(struct bcm_msg_head);
 }

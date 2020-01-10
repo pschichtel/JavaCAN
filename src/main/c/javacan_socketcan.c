@@ -66,7 +66,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindSocket(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
-    return connect_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
+    jint result = connect_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
+    if (result) {
+    	throwLinuxNativeOperationException(env, "Unable to connect");
+    }
+    return result;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {

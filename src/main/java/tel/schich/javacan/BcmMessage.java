@@ -23,58 +23,39 @@
 package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /**
  * A BcmMessage represents the data struct used by the CAN broadcast manager.
  *
- * @author Maik Scheibler
- * @see linux/can/bcm.h
+ * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram
  */
+@Value
 public class BcmMessage {
+
+    /** The platform dependent byte count for a native long. */
+    public static final int LONG_SIZE;
+
     /**
-     * The length of the header of a BCM message:
-     * __u32 opcode;
-     * __u32 flags;
-     * __u32 count;
-     * struct bcm_timeval ival1, ival2;
-     * canid_t can_id;
-     * __u32 nframes;
+     * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
      */
     public static final int HEADER_LENGTH;
     static {
         JavaCAN.initialize();
-        int longSize = getLongSize();
-        HEADER_LENGTH = 4 + 4 + 4 + (4 * longSize) + 4 + 4;
+        LONG_SIZE = getLongSize();
+        HEADER_LENGTH = getHeaderSize();
     }
-
-    public static class BcmTimeval {
-        public final long tv_sec;
-        public final long tv_usec;
-
-        public BcmTimeval(long tv_sec, long tv_usec) {
-            this.tv_sec = tv_sec;
-            this.tv_usec = tv_usec;
-        }
-    }
-
-    /**
-     * struct bcm_msg_head - head of messages to/from the broadcast manager
-     *
-     * @opcode: opcode, see enum below.
-     * @flags: special flags, see below.
-     * @count: number of frames to send before changing interval.
-     * @ival1: interval for the first @count frames.
-     * @ival2: interval for the following frames.
-     * @can_id: CAN ID of frames to be sent or received.
-     * @nframes: number of frames appended to the message head.
-     * @frames: array of CAN frames.
-     */
 
     private final BcmOpcode opcode;
-    private final Set<BcmFlags> flags;
+    private final Set<BcmFlag> flags;
     /** number of frames to send before changing interval. */
     private final int count;
     /** interval for the first @count frames. */
@@ -88,11 +69,13 @@ public class BcmMessage {
 
     public BcmMessage(ByteBuffer buffer) {
         opcode = BcmOpcode.fromNative(buffer.getInt());
-        flags = BcmFlags.fromNative(buffer.getInt());
+        flags = BcmFlag.fromNative(buffer.getInt());
         count = buffer.getInt();
-        int longSize = getLongSize();
-        ival1 = new BcmTimeval(getPlatformLong(buffer, longSize), getPlatformLong(buffer, longSize));
-        ival2 = new BcmTimeval(getPlatformLong(buffer, longSize), getPlatformLong(buffer, longSize));
+        if (paddingRequired()) {
+            buffer.getInt();
+        }
+        ival1 = BcmTimeval.getFromBuffer(buffer);
+        ival2 = BcmTimeval.getFromBuffer(buffer);
         can_id = buffer.getInt();
         int nframes = buffer.getInt();
         List<CanFrame> frames = new ArrayList<>(nframes);
@@ -105,29 +88,56 @@ public class BcmMessage {
         this.frames = frames;
     }
 
-    /** Determine the platform dependent size for the 'long' datatype. */
-    private static native int getLongSize();
+    @Builder
+    BcmMessage(BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, BcmTimeval ival1, BcmTimeval ival2,
+            int can_id, @Singular List<CanFrame> frames) {
+        this.opcode = opcode;
+        this.flags = Collections.unmodifiableSet(flags);
+        this.count = count;
+        this.ival1 = ival1;
+        this.ival2 = ival2;
+        this.can_id = can_id;
+        this.frames = Collections.unmodifiableList(frames);
+    }
 
-    private static long getPlatformLong(ByteBuffer buffer, int longSize) {
-        switch (longSize) {
+    public ByteBuffer getAsBuffer() {
+        boolean canFdFrames = flags.contains(BcmFlag.CAN_FD_FRAME);
+        int frameSize = canFdFrames ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
+        ByteBuffer buf = ByteBuffer.allocateDirect(HEADER_LENGTH + frames.size() * frameSize)
+                .order(ByteOrder.nativeOrder());
+
+        buf.putInt(opcode.nativeOpcode);
+        buf.putInt(BcmFlag.toNative(flags));
+        buf.putInt(count);
+        if (paddingRequired()) {
+            buf.putInt(0);
+        }
+        BcmTimeval.putToBuffer(buf, ival1);
+        BcmTimeval.putToBuffer(buf, ival2);
+        buf.putInt(can_id);
+        buf.putInt(frames.size());
+        for (CanFrame canFrame : frames) {
+            canFrame.getData(buf);
+        }
+        buf.flip();
+        return buf;
+    }
+
+    /** check whether the platform requires padding bytes in the header struct. */
+    private static boolean paddingRequired() {
+        switch (getLongSize()) {
         case 4:
-            return buffer.getInt();
+            return false;
         case 8:
-            return buffer.getLong();
+            return true;
         default:
             throw new UnsupportedPlatformException();
         }
     }
 
-    @Override
-    public String toString() {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("(opcode=").append(opcode)
-                .append(", flags=").append(flags)
-                .append(", ival1=").append(ival1)
-                .append(", ival2=").append(ival2)
-                .append(", can_id=").append(can_id)
-                .append(", frames=").append(frames).toString();
+    /** Determine the platform dependent size for the 'long' datatype in bytes. */
+    private static native int getLongSize();
 
-    }
+    /** Determine the platform dependent size for the 'bcm_msg_head' struct in bytes. */
+    private static native int getHeaderSize();
 }

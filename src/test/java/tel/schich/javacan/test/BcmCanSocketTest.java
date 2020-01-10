@@ -23,10 +23,15 @@
 package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
+
 import tel.schich.javacan.BcmCanChannel;
+import tel.schich.javacan.BcmFlag;
 import tel.schich.javacan.BcmMessage;
+import tel.schich.javacan.BcmOpcode;
+import tel.schich.javacan.BcmTimeval;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
@@ -35,17 +40,39 @@ import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 public class BcmCanSocketTest {
     @Test
     void testNonBlockingRead() throws Exception {
-        try (final BcmCanChannel socket = CanChannels.newBcmChannel()) {
-            socket.connect(CAN_INTERFACE);
-            assertTrue(socket.isBlocking(), "Socket is blocking by default");
+        int timeoutSeconds = 2;
+        int canId = 0x7EA;
+        try (final BcmCanChannel channel = CanChannels.newBcmChannel()) {
+            channel.connect(CAN_INTERFACE);
+            assertTrue(channel.isBlocking(), "Socket is blocking by default");
+            channel.write(BcmMessage.builder().opcode(BcmOpcode.RX_SETUP).flag(BcmFlag.SETTIMER)
+                    .flag(BcmFlag.RX_ANNOUNCE_RESUME).flag(BcmFlag.RX_FILTER_ID)
+                    .ival1(BcmTimeval.builder().tv_sec(timeoutSeconds).build()).can_id(canId).build());
 
-            final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
-            socket.configureBlocking(false);
-            assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
+            final CanFrame input = CanFrame.create(canId, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+            channel.configureBlocking(false);
+            assertFalse(channel.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
-            final BcmMessage output = socket.read();
-            assertEquals(input, output, "What comes in should come out");
+            // check for change message
+            BcmMessage output = channel.read();
+            assertEquals(BcmOpcode.RX_CHANGED, output.getOpcode());
+            assertEquals(canId, output.getCan_id());
+            assertEquals(1, output.getFrames().size(), "unexpected frame count");
+            assertEquals(input, output.getFrames().get(0), "What comes in should come out");
+            // check for channel unreadable
+            try {
+                channel.read();
+                fail("there should be nothing to read at this time");
+            } catch (LinuxNativeOperationException ex) {
+                assertTrue(ex.getError().mayTryAgain());
+            }
+            // check for timeout message
+            Thread.sleep(timeoutSeconds * 1000);
+            output = channel.read();
+            assertEquals(BcmOpcode.RX_TIMEOUT, output.getOpcode());
+            assertEquals(canId, output.getCan_id());
+            assertEquals(0, output.getFrames().size(), "unexpected frame count");
         }
     }
 }

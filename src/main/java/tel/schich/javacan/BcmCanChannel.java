@@ -23,6 +23,7 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
@@ -31,13 +32,15 @@ import java.nio.channels.spi.SelectorProvider;
 import tel.schich.javacan.linux.LinuxNetworkDevice;
 
 /**
- *
  * The BcmCanChannel provides a wrapper around the CAN Broadcast Manager.
- *
- * @author Maik Scheibler
  */
 public class BcmCanChannel extends AbstractCanChannel {
-    public static final int MTU = BcmMessage.HEADER_LENGTH + 257 * (CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
+    /**
+     * The MTU according
+     *
+     * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission
+     */
+    public static final int MTU = BcmMessage.HEADER_LENGTH + 256 * (CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
     private volatile NetworkDevice device;
 
     public BcmCanChannel(SelectorProvider provider, int sock) {
@@ -53,14 +56,21 @@ public class BcmCanChannel extends AbstractCanChannel {
     }
 
     /**
-     * Returns whether the channel has been connected to the socket. A BCM channel does not get bound, it is
-     * connected to the socket.
+     * Returns whether the channel has been connected to the socket. A BCM channel does not get bound,
+     * it is connected to the socket.
      */
     @Override
     public boolean isBound() {
         return this.device != null;
     }
 
+    /**
+     * Initiate the connection on the CAN socket.
+     *
+     * @param device to connect to
+     * @return this channel
+     * @throws IOException if the device is no {@link LinuxNetworkDevice} or the operation faild
+     */
     public BcmCanChannel connect(NetworkDevice device) throws IOException {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
@@ -70,16 +80,50 @@ public class BcmCanChannel extends AbstractCanChannel {
         return this;
     }
 
+    /**
+     * Read one message from the BCM socket.
+     *
+     * @return the message
+     * @throws IOException if the socket is not readable
+     */
     public BcmMessage read() throws IOException {
         int length = MTU;
         ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
         return read(frameBuf);
     }
 
+    /**
+     * Read one message from the BCM socket into the provided buffer. The byte order of {@code buffer}
+     * will be set to {@link ByteOrder#nativeOrder()} by this operation.
+     *
+     * @param buffer used for reading from the socket
+     * @return the message
+     * @throws IllegalArgumentException if the buffer is not a direct buffer
+     * @throws IOException              if the socket is not readable
+     * @throws BufferUnderflowException if the buffer capacity is to small to hold the message
+     */
     public BcmMessage read(ByteBuffer buffer) throws IOException {
         buffer.order(ByteOrder.nativeOrder());
         readSocket(buffer);
         buffer.flip();
         return new BcmMessage(buffer);
+    }
+
+    /**
+     * Write the given message to the socket.
+     * 
+     * @param message to write
+     * @return this channel
+     * @throws IOException if the message was not completely written
+     */
+    public BcmCanChannel write(BcmMessage message) throws IOException {
+        ByteBuffer buffer = message.getAsBuffer();
+        int bytesToWrite = buffer.remaining();
+        long written = writeSocket(buffer);
+        if (written != bytesToWrite) {
+            throw new IOException("message incompletely written");
+        }
+
+        return this;
     }
 }
