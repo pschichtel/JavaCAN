@@ -20,12 +20,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.test.linux;
 
 
 import org.junit.jupiter.api.Test;
+import tel.schich.javacan.NetworkDevice;
+import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.TestHelper;
 import tel.schich.javacan.linux.LinuxNativeOperationException;
-import tel.schich.javacan.select.ExtensibleSelectorProvider;
 import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
@@ -35,14 +37,9 @@ import static tel.schich.javacan.linux.LinuxNativeOperationException.EBADF;
 import static tel.schich.javacan.linux.LinuxNativeOperationException.ENODEV;
 
 class LinuxNativeOperationExceptionTest {
-
     @Test
-    void testInvalidFileDesciptorError() throws LinuxNativeOperationException {
-        int validFd = SocketCAN.createRawSocket();
-        // TODO this doesn't feel robust. Is there a way to reliably get an unused or invalid FD ?
-        int invalidFd = validFd + 1000; // create a FD that is most unlikely to be valid
-        try (RawCanChannelImpl channel = new RawCanChannelImpl(new ExtensibleSelectorProvider(), invalidFd)) {
-
+    void testInvalidFileDesciptorError() {
+        try (RawCanChannel channel = TestHelper.createChannelWithFd(TestHelper.createInvalidFd())) {
             channel.bind(CanTestHelper.CAN_INTERFACE);
             fail("must fail due to invalid file descriptor");
 
