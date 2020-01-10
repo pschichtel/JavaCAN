@@ -22,15 +22,7 @@
  */
 package tel.schich.javacan.test.util;
 
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.IsotpCanChannel;
 import tel.schich.javacan.IsotpSocketAddress;
@@ -39,10 +31,17 @@ import tel.schich.javacan.test.CanTestHelper;
 import tel.schich.javacan.util.IsotpListener;
 import tel.schich.javacan.util.MessageHandler;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.IsotpAddress.DESTINATION_ECU_1;
-import static tel.schich.javacan.IsotpAddress.SFF_ECU_REQUEST_BASE;
-import static tel.schich.javacan.IsotpAddress.SFF_ECU_RESPONSE_BASE;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tel.schich.javacan.IsotpAddress.*;
 import static tel.schich.javacan.test.util.CanUtils.hexDump;
 
 class IsotpListenerTest {
@@ -88,7 +87,7 @@ class IsotpListenerTest {
     }
 
     private static byte randomByte() {
-        return (byte)(Math.random() * 255);
+        return (byte) (Math.random() * 255);
     }
 
     private static final class PingPing implements MessageHandler {

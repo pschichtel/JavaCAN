@@ -22,14 +22,13 @@
  */
 package tel.schich.javacan.test;
 
-import tel.schich.javacan.NetworkDevice;
+import org.junit.jupiter.api.function.Executable;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.NetworkDevice;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-
-import org.junit.jupiter.api.function.Executable;
 
 public class CanTestHelper {
     public static final NetworkDevice CAN_INTERFACE = lookupDev();

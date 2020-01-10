@@ -22,11 +22,11 @@
  */
 package tel.schich.javacan.linux;
 
-import java.io.IOException;
-import java.util.Objects;
-
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
+
+import java.io.IOException;
+import java.util.Objects;
 
 public class LinuxNetworkDevice implements NetworkDevice {
 

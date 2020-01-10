@@ -22,32 +22,20 @@
  */
 package tel.schich.javacan.test;
 
-import java.time.Duration;
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
-import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+
+import java.time.Duration;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.CanSocketOptions.ERR_FILTER;
-import static tel.schich.javacan.CanSocketOptions.FD_FRAMES;
-import static tel.schich.javacan.CanSocketOptions.FILTER;
-import static tel.schich.javacan.CanSocketOptions.JOIN_FILTERS;
-import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
-import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
-import static tel.schich.javacan.CanSocketOptions.SO_RCVBUF;
-import static tel.schich.javacan.CanSocketOptions.SO_RCVTIMEO;
-import static tel.schich.javacan.CanSocketOptions.SO_SNDTIMEO;
+import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {
@@ -128,7 +116,7 @@ class RawCanSocketTest {
             socket.bind(CAN_INTERFACE);
             assertTrue(socket.isBlocking(), "Socket is blocking by default");
 
-            final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+            final CanFrame input = CanFrame.create(0x7EA, FD_NO_FLAGS, new byte[]{0x34, 0x52, 0x34});
             socket.configureBlocking(false);
             assertFalse(socket.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
@@ -143,7 +131,7 @@ class RawCanSocketTest {
         try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
             socket.configureBlocking(true);
-            socket.setOption(FILTER, new CanFilter[] {CanFilter.NONE});
+            socket.setOption(FILTER, new CanFilter[]{CanFilter.NONE});
 
             {
                 Duration timeout = ofSeconds(3);
@@ -178,7 +166,7 @@ class RawCanSocketTest {
                 b.bind(CAN_INTERFACE);
                 b.configureBlocking(false);
 
-                final CanFrame input = CanFrame.create(0x7EB, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
+                final CanFrame input = CanFrame.create(0x7EB, FD_NO_FLAGS, new byte[]{0x20, 0x33});
                 a.write(input);
                 final CanFrame output = b.read();
                 assertEquals(input, output);
@@ -196,7 +184,7 @@ class RawCanSocketTest {
             socket.configureBlocking(false);
             socket.setOption(RECV_OWN_MSGS, true);
 
-            final CanFrame input = CanFrame.create(0x7EC, FD_NO_FLAGS, new byte[] { 0x20, 0x33 });
+            final CanFrame input = CanFrame.create(0x7EC, FD_NO_FLAGS, new byte[]{0x20, 0x33});
             socket.write(input);
             final CanFrame output = socket.read();
             assertEquals(input, output);
@@ -215,7 +203,7 @@ class RawCanSocketTest {
             socket.configureBlocking(false);
 
             // more than 8 data bytes
-            byte[] data = { 0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22 };
+            byte[] data = {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22};
             final CanFrame input = CanFrame.create(0x7ED, FD_NO_FLAGS, data);
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);

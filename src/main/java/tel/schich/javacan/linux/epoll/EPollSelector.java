@@ -22,6 +22,12 @@
  */
 package tel.schich.javacan.linux.epoll;
 
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.NativeChannel;
+import tel.schich.javacan.select.NativeHandle;
+import tel.schich.javacan.util.UngrowableSet;
+
 import java.io.IOException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.IllegalSelectorException;
@@ -30,17 +36,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import tel.schich.javacan.linux.LinuxNativeOperationException;
-import tel.schich.javacan.linux.UnixFileDescriptor;
-import tel.schich.javacan.select.NativeChannel;
-import tel.schich.javacan.select.NativeHandle;
-import tel.schich.javacan.util.UngrowableSet;
+import java.util.*;
 
 import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.unmodifiableSet;
@@ -49,11 +45,11 @@ import static java.util.Collections.unmodifiableSet;
  * This is an implementation of the {@link java.nio.channels.Selector} API relying on Linux' epoll API to poll for
  * IO events from an arbitrary amount of file descriptors. The implementation is based
  * on {@link java.nio.channels.spi.AbstractSelector} and is inspired by Java's own epoll-based Selector implementation.
- *
+ * <p>
  * This reimplementation is sadly necessary, because the original implementation does not allow custom
  * {@link java.nio.channels.Channel} implementations as Java's selector is requires the channels to implement non-public
  * interface to expose the underlying file descriptor.
- *
+ * <p>
  * This implementation does not expose any more public APIs.
  */
 public class EPollSelector extends AbstractSelector {
@@ -102,7 +98,7 @@ public class EPollSelector extends AbstractSelector {
         IOException e = null;
         try {
             EPoll.close(epollfd);
-        } catch(LinuxNativeOperationException ex) {
+        } catch (LinuxNativeOperationException ex) {
             e = ex;
         }
         try {

@@ -23,47 +23,47 @@
 package tel.schich.javacan;
 
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.select.ExtensibleSelectorProvider;
 import tel.schich.javacan.test.CanTestHelper;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.linux.LinuxNativeOperationException.EBADF;
+import static tel.schich.javacan.linux.LinuxNativeOperationException.ENODEV;
 
 class LinuxNativeOperationExceptionTest {
 
-	@Test
-	void testInvalidFileDesciptorError() throws LinuxNativeOperationException {
-		int validFd = SocketCAN.createRawSocket();
-		int invalidFd = validFd + 1000; // create a FD that is most unlikely to be valid
-		try (RawCanChannelImpl channel = new RawCanChannelImpl(new ExtensibleSelectorProvider(), invalidFd)) {
+    @Test
+    void testInvalidFileDesciptorError() throws LinuxNativeOperationException {
+        int validFd = SocketCAN.createRawSocket();
+        // TODO this doesn't feel robust. Is there a way to reliably get an unused or invalid FD ?
+        int invalidFd = validFd + 1000; // create a FD that is most unlikely to be valid
+        try (RawCanChannelImpl channel = new RawCanChannelImpl(new ExtensibleSelectorProvider(), invalidFd)) {
 
-			channel.bind(CanTestHelper.CAN_INTERFACE);
-			fail("must fail due to invalid file descriptor");
+            channel.bind(CanTestHelper.CAN_INTERFACE);
+            fail("must fail due to invalid file descriptor");
 
-		} catch (IOException ex) {
-			assertTrue(ex instanceof LinuxNativeOperationException);
-			LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-            assertNotNull(nativeEx.errorMessage, "error message not set");
-            assertEquals(9, nativeEx.errorNumber); // Bad file descriptor
-		}
-	}
+        } catch (IOException ex) {
+            assertTrue(ex instanceof LinuxNativeOperationException);
+            LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
+            assertEquals(EBADF, nativeEx.getErrorNumber()); // Bad file descriptor
+        }
+    }
 
-	@Test
-	void testUnknownDevice() {
-		String ifName = "doesNotExist";
-		try {
-			NetworkDevice.lookup(ifName);
-			fail("must fail due to unknown device");
-		} catch (IOException ex) {
-			assertTrue(ex instanceof LinuxNativeOperationException);
-			assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
-			LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-            assertNotNull(nativeEx.errorMessage, "error message not set");
-            assertEquals(19, nativeEx.errorNumber); // No such device
-		}
-	}
+    @Test
+    void testUnknownDevice() {
+        String ifName = "doesNotExist";
+        try {
+            NetworkDevice.lookup(ifName);
+            fail("must fail due to unknown device");
+        } catch (IOException ex) {
+            assertTrue(ex instanceof LinuxNativeOperationException);
+            assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
+            LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
+            assertEquals(ENODEV, nativeEx.getErrorNumber()); // No such device
+        }
+    }
 }
