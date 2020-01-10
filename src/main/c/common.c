@@ -140,9 +140,10 @@ void throwLinuxNativeOperationException(JNIEnv *env, char *msg) {
 
 	// It is necessary to get the errno before any Java or JNI function is called, as it
 	// may become changed due to the VM operations.
-	int errorNo = errno;
-	jstring errStr = (*env)->NewStringUTF(env, strerror(errorNo));
-	jstring msgStr = (*env)->NewStringUTF(env, msg);
+	int errorNumber = errno;
+
+	jstring errorString = (*env)->NewStringUTF(env, strerror(errorNumber));
+	jstring message = (*env)->NewStringUTF(env, msg);
 
 	char *exClassName = "tel/schich/javacan/linux/LinuxNativeOperationException";
 	jclass exClass = (*env)->FindClass(env, exClassName);
@@ -153,7 +154,7 @@ void throwLinuxNativeOperationException(JNIEnv *env, char *msg) {
 	if (exConst == NULL) {
 		return;
 	}
-	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, msgStr, errorNo, errStr);
+	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, message, errorNumber, errorString);
 	if (exObj == NULL) {
 		return;
 	}
