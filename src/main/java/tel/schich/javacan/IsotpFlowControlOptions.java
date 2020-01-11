@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import tel.schich.javacan.build.JNIAccess;
+
 import java.util.Objects;
 
 /**
@@ -32,6 +34,7 @@ public class IsotpFlowControlOptions {
     private final byte minimumSeparationTime;
     private final byte maximumWaitFrameTransmission;
 
+    @JNIAccess(performanceCritical = false)
     public IsotpFlowControlOptions(byte blockSize, byte minimumSeparationTime, byte maximumWaitFrameTransmission) {
         this.blockSize = blockSize;
         this.minimumSeparationTime = minimumSeparationTime;

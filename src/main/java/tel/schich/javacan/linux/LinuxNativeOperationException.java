@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.linux;
 
+import tel.schich.javacan.build.JNIAccess;
+
 import java.io.IOException;
 
 /**
@@ -73,6 +75,7 @@ public class LinuxNativeOperationException extends IOException {
      * @param errorNumber as reported by the native OS function
      * @param errorString as returned by the native OS function {@code strerror(errno)}
      */
+    @JNIAccess(performanceCritical = false)
     LinuxNativeOperationException(String message, int errorNumber, String errorString) {
         super(makeSuperMessage(message, errorNumber, errorString));
         this.errorNumber = errorNumber;

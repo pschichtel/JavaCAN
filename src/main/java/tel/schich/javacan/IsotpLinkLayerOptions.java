@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import tel.schich.javacan.build.JNIAccess;
+
 import java.util.Objects;
 
 /**
@@ -32,6 +34,7 @@ public class IsotpLinkLayerOptions {
     private final byte transmissionDataLength;
     private final byte transmissionFlags;
 
+    @JNIAccess(performanceCritical = false)
     public IsotpLinkLayerOptions(byte maximumTranmissionUnit, byte transmissionDataLength, byte transmissionFlags) {
         this.maximumTranmissionUnit = maximumTranmissionUnit;
         this.transmissionDataLength = transmissionDataLength;

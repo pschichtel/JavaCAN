@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import tel.schich.javacan.build.JNIAccess;
+
 import java.util.Objects;
 
 /**
@@ -35,6 +37,7 @@ public class IsotpOptions {
     private final byte receivePadding;
     private final byte extendedReceiveAddress;
 
+    @JNIAccess(performanceCritical = false)
     public IsotpOptions(int flags, int frameTransmissionTime, byte extendedTransmissionAddress,
             byte transmissionPadding, byte receivePadding, byte extendedReceiveAddress) {
         this.flags = flags;
