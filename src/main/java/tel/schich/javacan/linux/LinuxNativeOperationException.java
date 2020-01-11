@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.linux;
 
+import tel.schich.javacan.build.JNIAccess;
+
 import java.io.IOException;
 
 /**
@@ -36,6 +38,7 @@ public class LinuxNativeOperationException extends IOException {
         this(message, OSError.getLast());
     }
 
+    @JNIAccess(performanceCritical = false)
     public LinuxNativeOperationException(String message, OSError error) {
         super(makeSuperMessage(message, error));
         this.error = error;
