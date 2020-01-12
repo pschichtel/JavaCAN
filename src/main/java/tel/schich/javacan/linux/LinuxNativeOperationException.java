@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan.linux;
 
-import tel.schich.javacan.build.JNIAccess;
+import tel.schich.jniaccess.JNIAccess;
 
 import java.io.IOException;
 

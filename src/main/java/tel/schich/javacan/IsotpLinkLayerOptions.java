@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-import tel.schich.javacan.build.JNIAccess;
+import tel.schich.jniaccess.JNIAccess;
 
 import java.util.Objects;
 

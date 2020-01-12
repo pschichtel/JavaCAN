@@ -25,9 +25,9 @@ translate_arch() {
         arm64)
             echo "aarch64"
             ;;
-       *)
-        echo "$1"
-        ;;
+        *)
+            echo "$1"
+            ;;
     esac
 }
 
