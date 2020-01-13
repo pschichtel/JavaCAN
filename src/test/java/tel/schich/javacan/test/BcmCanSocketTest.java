@@ -23,7 +23,6 @@
 package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.BcmCanChannel;
 import tel.schich.javacan.BcmFlag;
 import tel.schich.javacan.BcmMessage;
@@ -42,31 +41,46 @@ public class BcmCanSocketTest {
     void testNonBlockingRead() throws Exception {
         int timeoutSeconds = 2;
         int canId = 0x7EA;
+        BcmMessage rxFilterSetupMessage = BcmMessage.builder()
+                .opcode(BcmOpcode.RX_SETUP)
+                .can_id(canId)
+                .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
+                .ival1(BcmTimeval.builder().tv_sec(timeoutSeconds).build())
+                .frame(CanFrame.create(canId, (byte) 0, new byte[]
+                {
+                        (byte) 0xff, (byte) 0xff, (byte) 0xff
+                }))
+                .build();
         try (final BcmCanChannel channel = CanChannels.newBcmChannel()) {
             channel.connect(CAN_INTERFACE);
             assertTrue(channel.isBlocking(), "Socket is blocking by default");
-            channel.write(BcmMessage.builder().opcode(BcmOpcode.RX_SETUP).flag(BcmFlag.SETTIMER)
-                    .flag(BcmFlag.RX_ANNOUNCE_RESUME).flag(BcmFlag.RX_FILTER_ID)
-                    .ival1(BcmTimeval.builder().tv_sec(timeoutSeconds).build()).can_id(canId).build());
+            channel.write(rxFilterSetupMessage);
 
             final CanFrame input = CanFrame.create(canId, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
             channel.configureBlocking(false);
             assertFalse(channel.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
+
             // check for change message
             BcmMessage output = channel.read();
             assertEquals(BcmOpcode.RX_CHANGED, output.getOpcode());
             assertEquals(canId, output.getCan_id());
             assertEquals(1, output.getFrames().size(), "unexpected frame count");
             assertEquals(input, output.getFrames().get(0), "What comes in should come out");
-            // check for channel unreadable
+
+            // resend the same frame again and ...
+            CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+            Thread.sleep(50);
+
+            // ... verify that the second frame does not trigger a change message and the timeout is not reached
             try {
-                channel.read();
+                output = channel.read();
                 fail("there should be nothing to read at this time");
             } catch (LinuxNativeOperationException ex) {
-                assertTrue(ex.getError().mayTryAgain());
+                assertTrue(ex.mayTryAgain());
             }
+
             // check for timeout message
             Thread.sleep(timeoutSeconds * 1000);
             output = channel.read();

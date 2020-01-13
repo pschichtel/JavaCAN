@@ -81,7 +81,8 @@ public class BcmMessage {
         List<CanFrame> frames = new ArrayList<>(nframes);
         for (int idx = 0; idx < nframes; idx++) {
             ByteBuffer frameBuffer = buffer.slice();
-            frameBuffer.limit(CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
+            frameBuffer.limit(frameMTU());
+            // advance BCM buffer by one frame MTU
             buffer.position(buffer.position() + frameBuffer.limit());
             frames.add(CanFrame.create(frameBuffer));
         }
@@ -90,7 +91,8 @@ public class BcmMessage {
 
     @Builder
     BcmMessage(BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, BcmTimeval ival1, BcmTimeval ival2,
-            int can_id, @Singular List<CanFrame> frames) {
+            int can_id, @Singular List<CanFrame> frames)
+    {
         this.opcode = opcode;
         this.flags = Collections.unmodifiableSet(flags);
         this.count = count;
@@ -101,9 +103,7 @@ public class BcmMessage {
     }
 
     public ByteBuffer getAsBuffer() {
-        boolean canFdFrames = flags.contains(BcmFlag.CAN_FD_FRAME);
-        int frameSize = canFdFrames ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
-        ByteBuffer buf = ByteBuffer.allocateDirect(HEADER_LENGTH + frames.size() * frameSize)
+        ByteBuffer buf = ByteBuffer.allocateDirect(HEADER_LENGTH + frames.size() * frameMTU())
                 .order(ByteOrder.nativeOrder());
 
         buf.putInt(opcode.nativeOpcode);
@@ -117,10 +117,14 @@ public class BcmMessage {
         buf.putInt(can_id);
         buf.putInt(frames.size());
         for (CanFrame canFrame : frames) {
-            canFrame.getData(buf);
+            buf.put(canFrame.getBuffer());
         }
         buf.flip();
         return buf;
+    }
+
+    private int frameMTU() {
+        return flags.contains(BcmFlag.CAN_FD_FRAME) ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
     }
 
     /** check whether the platform requires padding bytes in the header struct. */
