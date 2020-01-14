@@ -131,7 +131,7 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<IsotpLinkLayerOptions> LL_OPTS = new CanSocketOption<>("LL_OPTS", IsotpLinkLayerOptions.class, new LinuxSocketOptionHandler<IsotpLinkLayerOptions>() {
         @Override
         public void set(int sock, IsotpLinkLayerOptions val) throws IOException {
-            final int result = SocketCAN.setIsotpLlOpts(sock, val.getMaximumTranmissionUnit(), val.getTransmissionDataLength(), val.getTransmissionFlags());
+            final int result = SocketCAN.setIsotpLlOpts(sock, val.getMaximumTransmissionUnit(), val.getTransmissionDataLength(), val.getTransmissionFlags());
             if (result == -1) {
                 throw new LinuxNativeOperationException("Unable to set the ISOTP link layer options!");
             }

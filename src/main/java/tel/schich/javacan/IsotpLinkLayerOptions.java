@@ -30,19 +30,19 @@ import java.util.Objects;
  * This class represents ISOTP's link layer options.
  */
 public class IsotpLinkLayerOptions {
-    private final byte maximumTranmissionUnit;
+    private final byte maximumTransmissionUnit;
     private final byte transmissionDataLength;
     private final byte transmissionFlags;
 
     @JNIAccess(performanceCritical = false)
-    public IsotpLinkLayerOptions(byte maximumTranmissionUnit, byte transmissionDataLength, byte transmissionFlags) {
-        this.maximumTranmissionUnit = maximumTranmissionUnit;
+    public IsotpLinkLayerOptions(byte maximumTransmissionUnit, byte transmissionDataLength, byte transmissionFlags) {
+        this.maximumTransmissionUnit = maximumTransmissionUnit;
         this.transmissionDataLength = transmissionDataLength;
         this.transmissionFlags = transmissionFlags;
     }
 
-    public byte getMaximumTranmissionUnit() {
-        return maximumTranmissionUnit;
+    public byte getMaximumTransmissionUnit() {
+        return maximumTransmissionUnit;
     }
 
     public byte getTransmissionDataLength() {
@@ -60,18 +60,18 @@ public class IsotpLinkLayerOptions {
         if (o == null || getClass() != o.getClass())
             return false;
         IsotpLinkLayerOptions that = (IsotpLinkLayerOptions) o;
-        return maximumTranmissionUnit == that.maximumTranmissionUnit
+        return maximumTransmissionUnit == that.maximumTransmissionUnit
                 && transmissionDataLength == that.transmissionDataLength && transmissionFlags == that.transmissionFlags;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maximumTranmissionUnit, transmissionDataLength, transmissionFlags);
+        return Objects.hash(maximumTransmissionUnit, transmissionDataLength, transmissionFlags);
     }
 
     @Override
     public String toString() {
-        return "IsotpLinkLayerOptions{" + "maximumTranmissionUnit=" + maximumTranmissionUnit
+        return "IsotpLinkLayerOptions{" + "maximumTranmissionUnit=" + maximumTransmissionUnit
                 + ", transmissionDataLength=" + transmissionDataLength + ", transmissionFlags=" + transmissionFlags
                 + '}';
     }
