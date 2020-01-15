@@ -21,20 +21,18 @@
  * THE SOFTWARE.
  */
 #include "common.h"
-#include <tel_schich_javacan_linux_LinuxNetworkDevice.h>
 #include <net/if.h>
 #include <stdbool.h>
-#include <string.h>
 #include <jni.h>
+#include <malloc.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
-    const char *ifname = (*env)->GetStringUTFChars(env, interface_name, false);
+    const char* ifname = (*env)->GetStringUTFChars(env, interface_name, false);
     unsigned int ifindex = if_nametoindex(ifname);
     if (ifindex == 0) {
-    	const char *errMsg = "Failed to resolve the interface: %s";
-    	char msg[strlen(errMsg) + strlen(ifname)];
-    	sprintf(msg, errMsg, ifname);
-        throwLinuxNativeOperationException(env, msg);
+        char* message = str_concat("Failed to resolve the interface: %s", ifname);
+        throw_native_exception(env, message);
+        free(message);
     }
     (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
     return ifindex;

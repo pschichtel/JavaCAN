@@ -21,19 +21,12 @@
  * THE SOFTWARE.
  */
 #include "common.h"
-#include <tel_schich_javacan_linux_epoll_EPoll.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
 #include <stdlib.h>
-#include <net/if.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <errno.h>
 #include <string.h>
 #include <jni.h>
-#include <limits.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 
@@ -51,9 +44,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_createEventfd(J
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
-	jint result = eventfd_write(eventfd, (eventfd_t) value);
+    jint result = eventfd_write(eventfd, (eventfd_t) value);
     if (result < 0) {
-    	throwLinuxNativeOperationException(env, "Unable to signal the eventfd");
+        throw_native_exception(env, "Unable to signal the eventfd");
     }
     return result;
 }
@@ -78,7 +71,7 @@ JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_freeEvents(JNIE
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_close(JNIEnv *env, jclass class, jint fd) {
     jint result = close(fd);
     if (result) {
-    	throwLinuxNativeOperationException(env, "Unable to close epoll fd");
+        throw_native_exception(env, "Unable to close epoll fd");
     }
     return result;
 }
@@ -89,15 +82,15 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_addFileDescript
     ev.data.fd = fd;
     jint result = epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
     if (result) {
-    	throwLinuxNativeOperationException(env, "Unable to add epoll file descriptor");
+        throw_native_exception(env, "Unable to add epoll file descriptor");
     }
     return result;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_removeFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd) {
-	jint result = epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
+    jint result = epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
     if (result) {
-    	throwLinuxNativeOperationException(env, "Unable to remove file descriptor");
+        throw_native_exception(env, "Unable to remove file descriptor");
     }
     return result;
 }
@@ -108,15 +101,15 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_updateFileDescr
     ev.data.fd = fd;
     jint result = epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
     if (result) {
-    	throwLinuxNativeOperationException(env, "Unable to modify FD");
+        throw_native_exception(env, "Unable to modify FD");
     }
     return result;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {
-	jint result = epoll_wait(epollfd, (struct epoll_event*)(uintptr_t)eventsPointer, maxEvents, (int) timeout);
+    jint result = epoll_wait(epollfd, (struct epoll_event*)(uintptr_t)eventsPointer, maxEvents, (int) timeout);
     if (result == -1) {
-    	throwLinuxNativeOperationException(env, "Unable to poll");
+        throw_native_exception(env, "Unable to poll");
     }
     return result;
 }

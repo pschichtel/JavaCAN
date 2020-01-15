@@ -22,18 +22,16 @@
  */
 #include "common.h"
 #include <fcntl.h>
-#include <net/if.h>
 #include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <sys/poll.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <jni.h>
 #include <string.h>
+#include <jni-c-to-java.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -120,7 +118,6 @@ int get_boolean_opt(int sock, int opt) {
 }
 
 short poll_single(int sock, short events, int timeout) {
-
     struct pollfd fds;
     fds.fd = sock;
     fds.events = events;
@@ -133,31 +130,26 @@ short poll_single(int sock, short events, int timeout) {
     return fds.revents;
 }
 
-/**
- * Throw a LinuxNativeOperationException using the provided message and the last errno.
- */
-void throwLinuxNativeOperationException(JNIEnv *env, char *msg) {
+char* str_concat(const char* a, const char* b) {
+    size_t a_len = strlen(a);
+    size_t b_len = strlen(b);
 
-	// It is necessary to get the errno before any Java or JNI function is called, as it
-	// may become changed due to the VM operations.
-	int errorNumber = errno;
+    char* merged = malloc(a_len + b_len + 1);
+    if (merged == NULL) {
+        return NULL;
+    }
 
-	jstring errorString = (*env)->NewStringUTF(env, strerror(errorNumber));
-	jstring message = (*env)->NewStringUTF(env, msg);
+    merged[0] = 0;
+    strcat(merged, a);
+    strcat(merged, b);
 
-	char *exClassName = "tel/schich/javacan/linux/LinuxNativeOperationException";
-	jclass exClass = (*env)->FindClass(env, exClassName);
-	if (exClass == NULL) {
-		return;
-	}
-	jmethodID exConst = (*env)->GetMethodID(env, exClass, "<init>", "(Ljava/lang/String;ILjava/lang/String;)V");
-	if (exConst == NULL) {
-		return;
-	}
-	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, message, errorNumber, errorString);
-	if (exObj == NULL) {
-		return;
-	}
+    return merged;
+}
 
-	(*env)->Throw(env, exObj);
+void throw_native_exception(JNIEnv *env, char *msg) {
+    // It is necessary to get the errno before any Java or JNI function is called, as it
+    // may become changed due to the VM operations.
+    int errorNumber = errno;
+
+    throw_tel_schich_javacan_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
 }
