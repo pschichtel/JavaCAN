@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <stdbool.h>
+#include <jni.h>
 
 #define MICROS_PER_SECOND 1000000
 
@@ -39,5 +40,13 @@ int is_blocking(int);
 int set_boolean_opt(int sock, int opt, bool enable);
 int get_boolean_opt(int sock, int opt);
 short poll_single(int, short, int);
+
+/**
+ * Throw a LinuxNativeOperationException using the provided message,
+ * the last system errno and system error string.
+ *
+ * @param msg is the error message for the thrown exception
+ */
+void throwLinuxNativeOperationException(JNIEnv *env, char *msg);
 
 #endif

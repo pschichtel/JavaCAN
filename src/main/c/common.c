@@ -32,6 +32,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <jni.h>
+#include <string.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -71,7 +73,7 @@ int get_timeout(int sock, int type, uint64_t* micros) {
     }
 
     *micros = ((uint64_t)timeout.tv_sec) * MICROS_PER_SECOND + timeout.tv_usec;
-    return 0;
+    return result;
 }
 
 int set_blocking_mode(int sock, bool block) {
@@ -129,4 +131,33 @@ short poll_single(int sock, short events, int timeout) {
     }
 
     return fds.revents;
+}
+
+/**
+ * Throw a LinuxNativeOperationException using the provided message and the last errno.
+ */
+void throwLinuxNativeOperationException(JNIEnv *env, char *msg) {
+
+	// It is necessary to get the errno before any Java or JNI function is called, as it
+	// may become changed due to the VM operations.
+	int errorNumber = errno;
+
+	jstring errorString = (*env)->NewStringUTF(env, strerror(errorNumber));
+	jstring message = (*env)->NewStringUTF(env, msg);
+
+	char *exClassName = "tel/schich/javacan/linux/LinuxNativeOperationException";
+	jclass exClass = (*env)->FindClass(env, exClassName);
+	if (exClass == NULL) {
+		return;
+	}
+	jmethodID exConst = (*env)->GetMethodID(env, exClass, "<init>", "(Ljava/lang/String;ILjava/lang/String;)V");
+	if (exConst == NULL) {
+		return;
+	}
+	jthrowable exObj = (*env)->NewObject(env, exClass, exConst, message, errorNumber, errorString);
+	if (exObj == NULL) {
+		return;
+	}
+
+	(*env)->Throw(env, exObj);
 }

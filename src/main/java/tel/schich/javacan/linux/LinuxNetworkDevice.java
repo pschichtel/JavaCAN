@@ -22,11 +22,11 @@
  */
 package tel.schich.javacan.linux;
 
-import java.io.IOException;
-import java.util.Objects;
-
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
+
+import java.io.IOException;
+import java.util.Objects;
 
 public class LinuxNetworkDevice implements NetworkDevice {
 
@@ -65,9 +65,6 @@ public class LinuxNetworkDevice implements NetworkDevice {
      */
     public static NetworkDevice lookup(String name) throws IOException {
         long index = resolveInterfaceName(name);
-        if (index == 0) {
-            throw new LinuxNativeOperationException("Failed to resolve the interface: " + name);
-        }
         return new LinuxNetworkDevice(name, index);
     }
 
@@ -91,5 +88,5 @@ public class LinuxNetworkDevice implements NetworkDevice {
         return Objects.hash(index);
     }
 
-    private static native long resolveInterfaceName(String interfaceName);
+    private static native long resolveInterfaceName(String interfaceName) throws LinuxNativeOperationException;
 }

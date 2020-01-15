@@ -1,4 +1,4 @@
-/**
+/*
  * The MIT License
  * Copyright © 2018 Phillip Schichtel
  *
@@ -20,16 +20,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "common.h"
-#include <tel_schich_javacan_linux_OSError.h>
-#include <string.h>
-#include <jni.h>
-#include <errno.h>
+package tel.schich.javacan;
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_OSError_errno(JNIEnv *env, jclass class) {
-    return errno;
-}
+import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.select.ExtensibleSelectorProvider;
 
-JNIEXPORT jstring JNICALL Java_tel_schich_javacan_linux_OSError_errstr(JNIEnv *env, jclass class, jint err) {
-    return (*env)->NewStringUTF(env, strerror(err));
+public class TestHelper {
+
+    public static RawCanChannel createChannelWithFd(int fd) {
+        return new RawCanChannelImpl(new ExtensibleSelectorProvider(), fd);
+    }
+
+    public static int createInvalidFd() throws LinuxNativeOperationException {
+        int fd = SocketCAN.createRawSocket();
+        SocketCAN.close(fd);
+        return fd;
+    }
 }

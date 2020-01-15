@@ -26,7 +26,8 @@ import java.nio.ByteBuffer;
 
 public class CanUtils {
 
-    private CanUtils() {}
+    private CanUtils() {
+    }
 
     public static String hexDump(ByteBuffer data) {
         return hexDump(data, data.position(), data.remaining());

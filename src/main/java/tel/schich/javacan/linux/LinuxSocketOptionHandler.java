@@ -22,10 +22,10 @@
  */
 package tel.schich.javacan.linux;
 
-import java.io.IOException;
-
 import tel.schich.javacan.option.CanSocketOption;
 import tel.schich.javacan.select.NativeHandle;
+
+import java.io.IOException;
 
 /**
  * An abstract {@link tel.schich.javacan.option.CanSocketOption.Handler} implementation that verifies and unpacks

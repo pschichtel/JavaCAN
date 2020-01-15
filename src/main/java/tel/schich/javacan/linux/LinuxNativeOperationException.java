@@ -32,24 +32,82 @@ import java.io.IOException;
  * complete.
  */
 public class LinuxNativeOperationException extends IOException {
-    private final OSError error;
 
+    /**
+     * Bad file number
+     */
+    public static final int EBADF = 9;
+
+    /**
+     * Try again
+     */
+    public static final int EAGAIN = 11;
+
+    /**
+     * No such device
+     */
+    public static final int ENODEV = 19;
+
+    /**
+     * The native error number or 0 if no native error code was provided.
+     */
+    private final int errorNumber;
+    /**
+     * The native error message or {@code null} if no native message was provided.
+     */
+    private final String errorString;
+
+    /**
+     * Create an instance without an OS specific error.
+     *
+     * @param message of the exception
+     */
     public LinuxNativeOperationException(String message) {
-        this(message, OSError.getLast());
+        super(message);
+        this.errorNumber = 0;
+        this.errorString = null;
     }
 
+    /**
+     * Create an instance with an OS error. This constructor will be called from native code.
+     *
+     * @param message     of the exception
+     * @param errorNumber as reported by the native OS function
+     * @param errorString as returned by the native OS function {@code strerror(errno)}
+     */
     @JNIAccess(performanceCritical = false)
-    public LinuxNativeOperationException(String message, OSError error) {
-        super(makeSuperMessage(message, error));
-        this.error = error;
+    LinuxNativeOperationException(String message, int errorNumber, String errorString) {
+        super(makeSuperMessage(message, errorNumber, errorString));
+        this.errorNumber = errorNumber;
+        this.errorString = errorString;
     }
 
-    private static String makeSuperMessage(String message, OSError lastError) {
-        if (lastError == null) {
+    private static String makeSuperMessage(String message, int errorNumber, String errorString) {
+        if (errorNumber == 0) {
             return message;
         } else {
-            return message + " - " + lastError.toString();
+            return message + " - errorNumber=" + errorNumber + ", errorMessage='" + errorString + '\'';
         }
+    }
+
+    /**
+     * This is the value returned by the {@code errno} macro when the error was detected.
+     * Values being used within this code base should be added as constants to the class similar
+     * to {@link LinuxNativeOperationException#EAGAIN} based on the constants defined in errno-base.h
+     *
+     * @return An OS error code
+     */
+    public int getErrorNumber() {
+        return this.errorNumber;
+    }
+
+    /**
+     * This is the value returned by the {@code strerror(errno)} macro when the error was detected.
+     *
+     * @return An OS error code or null of no string available
+     */
+    public String getErrorString() {
+        return errorString;
     }
 
     /**
@@ -58,18 +116,19 @@ public class LinuxNativeOperationException extends IOException {
      * @return true if a retry might be a viable resolution of this exception
      */
     public boolean mayTryAgain() {
-        if (error == null) {
+        if (errorNumber == 0) {
             return false;
         }
-        return error.mayTryAgain();
+        return isTemporary();
     }
 
-    /**
-     * Returns the underlying {@link OSError} if available.
-     *
-     * @return the underlying error or null
-     */
-    public OSError getError() {
-        return error;
+
+    private boolean isTemporary() {
+        switch (errorNumber) {
+            case EAGAIN:
+                return true;
+            default:
+                return false;
+        }
     }
 }

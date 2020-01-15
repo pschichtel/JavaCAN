@@ -43,9 +43,9 @@ public class EPollSelectionKey extends AbstractSelectionKey {
      * Creates a new selection key given an {@link EPollSelector},
      * a {@link java.nio.channels.SelectableChannel}, the underlying socket file descriptor and the interested ops.
      *
-     * @param selector the selector
-     * @param channel the channel
-     * @param fd the underlying socket file descriptor
+     * @param selector    the selector
+     * @param channel     the channel
+     * @param fd          the underlying socket file descriptor
      * @param interestOps the interested ops
      */
     public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps) {

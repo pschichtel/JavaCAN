@@ -49,9 +49,7 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
-        if (SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId()) != 0) {
-            throw new LinuxNativeOperationException("Unable to bind ISOTP socket!");
-        }
+        SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
         this.device = device;
         this.rx = rx;
         this.tx = tx;

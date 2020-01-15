@@ -22,22 +22,20 @@
  */
 package tel.schich.javacan.test.select;
 
-import java.io.IOException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.AbstractSelector;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.select.ExtensibleSelectorProvider;
 
+import java.io.IOException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.spi.AbstractSelector;
+import java.util.Set;
+
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -60,7 +58,7 @@ public class EPollSelectorTest {
                 ch.bind(CAN_INTERFACE);
                 ch.register(selector, SelectionKey.OP_READ);
 
-                CanFrame inputFrame = CanFrame.create(0x7EF, FD_NO_FLAGS, new byte[] { 1, 2, 3, 4 });
+                CanFrame inputFrame = CanFrame.create(0x7EF, FD_NO_FLAGS, new byte[]{1, 2, 3, 4});
                 runDelayed(ofMillis(200), () -> {
                     ch.write(inputFrame);
                 });

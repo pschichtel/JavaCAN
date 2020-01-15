@@ -22,19 +22,20 @@
  */
 package tel.schich.javacan.test.util;
 
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadFactory;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
-
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.test.CanTestHelper;
 import tel.schich.javacan.util.CanBroker;
 
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadFactory;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class CanBrokerTest {
@@ -47,7 +48,7 @@ class CanBrokerTest {
     @Test
     void testLoopback() throws Exception {
         final int id = 0x7E0;
-        CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[] {1, 2, 3});
+        CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[]{1, 2, 3});
         CanFilter filter = new CanFilter(id);
 
         CanBroker brokerA = new CanBroker(FACTORY);
@@ -81,7 +82,7 @@ class CanBrokerTest {
     void testExternal() throws Exception {
 
         final int id = 0x7E0;
-        CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[] {1, 2, 3});
+        CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[]{1, 2, 3});
         CompletableFuture<CanFrame> f = new CompletableFuture<>();
 
         CanBroker can = new CanBroker(FACTORY);
