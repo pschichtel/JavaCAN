@@ -5,6 +5,7 @@ libname="${2?no lib name given}"
 output_dir="${3?no output directory given}"
 
 base="target"
+jni="$base/jni"
 jni_headers="$base/java-jni-headers"
 jni_libs="$base/java-jni-libs"
 src="src/main/c"
@@ -52,20 +53,21 @@ do
     chmod +x "$proxy"
 
     lib_output="$base/lib$libname-${translated_arch}.so"
-    c_files=(common javacan_socketcan javacan_epoll javacan_networkdevice javacan_error)
     includes=(
         -I"$src"
-        -I"$base/jni"
+        -I"$jni"
         -I"src/include"
         -I"$jni_headers"
         -I"$jni_headers/linux"
     )
     out_files=()
     CC="$("$proxy" bash -c 'echo "$CC"')"
-    for c_file in "${c_files[@]}"
+    for c_file in "$src"/*.c "$jni"/*.c
     do
-        out_file="$dir/$c_file.o"
-        "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$src/$c_file.c" -shared -fPIC -std=c99 || exit 1
+        name="$(basename "$c_file" .c)"
+        out_file="$dir/$(dirname "$c_file")/$name.o"
+        mkdir -p "$(dirname "$out_file")"
+        "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" -shared -fPIC -std=c99 || exit 1
         out_files+=("$out_file")
     done
     "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack -fPIC -fvisibility=hidden -std=c99 -shared || exit 1
