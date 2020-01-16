@@ -29,12 +29,14 @@ import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
+import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
 import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
@@ -211,5 +213,19 @@ class RawCanSocketTest {
 
             assertEquals(input, output, "what comes in should come out");
         }
+    }
+
+    @Test
+    void testBufferReuse() throws Exception {
+        byte[] data = new byte[MAX_FD_DATA_LENGTH];
+        CanFrame frame = CanFrame.createExtended(0x7FFFFF, FD_NO_FLAGS, data, 0, MAX_FD_DATA_LENGTH);
+        ByteBuffer buffer = frame.getBuffer();
+
+        ByteBuffer largeForReuse = ByteBuffer.allocateDirect(2 * MAX_FD_DATA_LENGTH);
+        largeForReuse.position(MAX_FD_DATA_LENGTH);
+        largeForReuse.put(buffer);
+        largeForReuse.position(MAX_FD_DATA_LENGTH);
+
+        CanFrame.create(largeForReuse);
     }
 }
