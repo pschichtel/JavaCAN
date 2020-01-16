@@ -22,83 +22,21 @@
  */
 package tel.schich.javacan;
 
-import java.nio.ByteBuffer;
-
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Value;
 
 /**
  * Java representation of a {@code bcm_timeval} from native {@code linux/can/bcm.h}
  *
  * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-receive-filter-timers
  */
+@Value
+@AllArgsConstructor
 @Builder
-@EqualsAndHashCode
-@ToString
 public class BcmTimeval {
     /** Seconds */
     public final long tv_sec;
     /** Micro-seconds. */
     public final long tv_usec;
-
-    public BcmTimeval(long tv_sec, long tv_usec) {
-        this.tv_sec = tv_sec;
-        this.tv_usec = tv_usec;
-    }
-
-    /**
-     * Retrieve a BcmTimeval from the provided buffer. If tv_sec and tv_usec are both 0 then this method
-     * will return {@code null}
-     *
-     * @param buf to read from
-     * @return the value or {@code null} if tv_sec and tv_usec are both 0
-     */
-    static BcmTimeval getFromBuffer(ByteBuffer buf) {
-        long sec = getPlatformLong(buf);
-        long usec = getPlatformLong(buf);
-        if (sec == 0 && usec == 0) {
-            return null;
-        }
-        return new BcmTimeval(sec, usec);
-    }
-
-    /**
-     * Writes the BcmTimeval to the current position of the buffer, increasing the buffers position
-     * accordingly. A {@code null} value will write 0 for tv_sec and tv_usec.
-     *
-     * @param buf   to write to
-     * @param value to be written; {@code null} will be written as 0 to {@code tv_sec} and
-     *              {@code tv_usec}
-     */
-    static void putToBuffer(ByteBuffer buf, BcmTimeval value) {
-        long sec = value != null ? value.tv_sec : 0;
-        long usec = value != null ? value.tv_usec : 0;
-        setPlatformLong(buf, sec);
-        setPlatformLong(buf, usec);
-    }
-
-    private static long getPlatformLong(ByteBuffer buffer) {
-        switch (BcmMessage.LONG_SIZE) {
-        case 4:
-            return buffer.getInt();
-        case 8:
-            return buffer.getLong();
-        default:
-            throw new UnsupportedPlatformException();
-        }
-    }
-
-    private static void setPlatformLong(ByteBuffer buffer, long value) {
-        switch (BcmMessage.LONG_SIZE) {
-        case 4:
-            buffer.putInt((int) value);
-            break;
-        case 8:
-            buffer.putLong(value);
-            break;
-        default:
-            throw new UnsupportedPlatformException();
-        }
-    }
 }

@@ -111,13 +111,13 @@ public class BcmCanChannel extends AbstractCanChannel {
 
     /**
      * Write the given message to the socket.
-     * 
+     *
      * @param message to write
      * @return this channel
      * @throws IOException if the message was not completely written
      */
     public BcmCanChannel write(BcmMessage message) throws IOException {
-        ByteBuffer buffer = message.getAsBuffer();
+        ByteBuffer buffer = message.getBuffer();
         int bytesToWrite = buffer.remaining();
         long written = writeSocket(buffer);
         if (written != bytesToWrite) {

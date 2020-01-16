@@ -30,15 +30,17 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Singular;
-import lombok.Value;
+import lombok.ToString;
 
 /**
  * A BcmMessage represents the data struct used by the CAN broadcast manager.
  *
  * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram
  */
-@Value
+@EqualsAndHashCode
+@ToString
 public class BcmMessage {
 
     /** The platform dependent byte count for a native long. */
@@ -48,100 +50,213 @@ public class BcmMessage {
      * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
      */
     public static final int HEADER_LENGTH;
+    /** Offset of {@code opcode} inside the bcm_msg_head struct. */
+    public static final int OFFSET_OPCODE = 0; // first member is always at offset 0
+    /** Offset of {@code flags} inside the bcm_msg_head struct. */
+    public static final int OFFSET_FLAGS;
+    /** Offset of {@code count} inside the bcm_msg_head struct. */
+    public static final int OFFSET_COUNT;
+    /** Offset of {@code ival1.tv_sec} inside the bcm_msg_head struct. */
+    public static final int OFFSET_IVAL1_TV_SEC;
+    /** Offset of {@code ival1.tv_usec} inside the bcm_msg_head struct. */
+    public static final int OFFSET_IVAL1_TV_USEC;
+    /** Offset of {@code ival2.tv_sec} inside the bcm_msg_head struct. */
+    public static final int OFFSET_IVAL2_TV_SEC;
+    /** Offset of {@code ival2.tv_usec} inside the bcm_msg_head struct. */
+    public static final int OFFSET_IVAL2_TV_USEC;
+    /** Offset of {@code can_id} inside the bcm_msg_head struct. */
+    public static final int OFFSET_CAN_ID;
+    /** Offset of {@code nframes} inside the bcm_msg_head struct. */
+    public static final int OFFSET_NFRAMES;
+    /** Offset of {@code frames} inside the bcm_msg_head struct. */
+    public static final int OFFSET_FRAMES;
+
     static {
         JavaCAN.initialize();
         LONG_SIZE = getLongSize();
         HEADER_LENGTH = getHeaderSize();
+        OFFSET_FLAGS = getOffsetFlags();
+        OFFSET_COUNT = getOffsetCount();
+        OFFSET_IVAL1_TV_SEC = getOffsetIval1Sec();
+        OFFSET_IVAL1_TV_USEC = getOffsetIval1Usec();
+        OFFSET_IVAL2_TV_SEC = getOffsetIval2Sec();
+        OFFSET_IVAL2_TV_USEC = getOffsetIval2Usec();
+        OFFSET_CAN_ID = getOffsetCanID();
+        OFFSET_NFRAMES = getOffsetNFrames();
+        OFFSET_FRAMES = getOffsetFrames();
     }
 
-    private final BcmOpcode opcode;
-    private final Set<BcmFlag> flags;
-    /** number of frames to send before changing interval. */
-    private final int count;
-    /** interval for the first @count frames. */
-    private final BcmTimeval ival1;
-    /** interval for the following frames. */
-    private final BcmTimeval ival2;
-    /** CAN ID of frames to be sent or received. */
-    private final int can_id;
-    /** array of CAN frames. */
-    private final List<CanFrame> frames;
+    private final ByteBuffer buffer;
+    private final int base;
+    private final int size;
 
     public BcmMessage(ByteBuffer buffer) {
-        opcode = BcmOpcode.fromNative(buffer.getInt());
-        flags = BcmFlag.fromNative(buffer.getInt());
-        count = buffer.getInt();
-        if (paddingRequired()) {
-            buffer.getInt();
+        // assigning the attributes before the validation enables the use of getters
+        this.buffer = buffer;
+        this.base = buffer.position();
+        this.size = buffer.remaining();
+
+        if (buffer.remaining() < HEADER_LENGTH) {
+            throw new IllegalArgumentException("the buffer content is too short for a BCM message");
         }
-        ival1 = BcmTimeval.getFromBuffer(buffer);
-        ival2 = BcmTimeval.getFromBuffer(buffer);
-        can_id = buffer.getInt();
-        int nframes = buffer.getInt();
-        List<CanFrame> frames = new ArrayList<>(nframes);
-        for (int idx = 0; idx < nframes; idx++) {
-            ByteBuffer frameBuffer = buffer.slice();
-            frameBuffer.limit(frameMTU());
-            // advance BCM buffer by one frame MTU
-            buffer.position(buffer.position() + frameBuffer.limit());
-            frames.add(CanFrame.create(frameBuffer));
-        }
-        this.frames = frames;
+
     }
 
     @Builder
-    BcmMessage(BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, BcmTimeval ival1, BcmTimeval ival2,
-            int can_id, @Singular List<CanFrame> frames)
-    {
-        this.opcode = opcode;
-        this.flags = Collections.unmodifiableSet(flags);
-        this.count = count;
-        this.ival1 = ival1;
-        this.ival2 = ival2;
-        this.can_id = can_id;
-        this.frames = Collections.unmodifiableList(frames);
+    private BcmMessage(BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, BcmTimeval ival1, BcmTimeval ival2,
+            int can_id, @Singular List<CanFrame> frames) {
+        boolean fdFrames = frames.stream().filter(CanFrame::isFDFrame).findAny().isPresent();
+        if (fdFrames) {
+            flags.add(BcmFlag.CAN_FD_FRAME);
+        }
+        int frameLength = frameLength(flags);
+        base = 0;
+        size = HEADER_LENGTH + frames.size() * frameLength;
+        buffer = ByteBuffer.allocateDirect(size);
+
+        buffer.order(ByteOrder.nativeOrder())
+                .putInt(OFFSET_OPCODE, opcode.nativeOpcode)
+                .putInt(OFFSET_FLAGS, BcmFlag.toNative(flags))
+                .putInt(OFFSET_COUNT, count)
+                .putInt(OFFSET_CAN_ID, can_id)
+                .putInt(OFFSET_NFRAMES, frames.size());
+        if (ival1 != null) {
+            putPlatformLong(OFFSET_IVAL1_TV_SEC, ival1.tv_sec);
+            putPlatformLong(OFFSET_IVAL1_TV_USEC, ival1.tv_usec);
+        }
+        if (ival2 != null) {
+            putPlatformLong(OFFSET_IVAL2_TV_SEC, ival2.tv_sec);
+            putPlatformLong(OFFSET_IVAL2_TV_USEC, ival2.tv_usec);
+        }
+        for (int i = 0; i < frames.size(); i++) {
+            buffer.position(OFFSET_FRAMES + i * frameLength);
+            buffer.put(frames.get(i).getBuffer());
+        }
+        buffer.clear();
     }
 
-    public ByteBuffer getAsBuffer() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(HEADER_LENGTH + frames.size() * frameMTU())
-                .order(ByteOrder.nativeOrder());
-
-        buf.putInt(opcode.nativeOpcode);
-        buf.putInt(BcmFlag.toNative(flags));
-        buf.putInt(count);
-        if (paddingRequired()) {
-            buf.putInt(0);
-        }
-        BcmTimeval.putToBuffer(buf, ival1);
-        BcmTimeval.putToBuffer(buf, ival2);
-        buf.putInt(can_id);
-        buf.putInt(frames.size());
-        for (CanFrame canFrame : frames) {
-            buf.put(canFrame.getBuffer());
-        }
-        buf.flip();
-        return buf;
+    /**
+     * Returns the op-code of this message.
+     *
+     * @return the op-code of this message
+     */
+    public BcmOpcode getOpcode() {
+        return BcmOpcode.fromNative(buffer.getInt(base + OFFSET_OPCODE));
     }
 
-    private int frameMTU() {
+    public Set<BcmFlag> getFlags() {
+        return BcmFlag.fromNative(buffer.getInt(base + OFFSET_FLAGS));
+    }
+
+    public int getCount() {
+        return buffer.getInt(base + OFFSET_COUNT);
+    }
+
+    public BcmTimeval getIval1() {
+        long sec = getPlatformLong(base + OFFSET_IVAL1_TV_SEC);
+        long usec = getPlatformLong(base + OFFSET_IVAL1_TV_USEC);
+        return (sec + usec) != 0 ? new BcmTimeval(sec, usec) : null;
+    }
+
+    public BcmTimeval getIval2() {
+        long sec = getPlatformLong(base + OFFSET_IVAL2_TV_SEC);
+        long usec = getPlatformLong(base + OFFSET_IVAL2_TV_USEC);
+        return (sec + usec) != 0 ? new BcmTimeval(sec, usec) : null;
+    }
+
+    public int getCanId() {
+        return buffer.getInt(base + OFFSET_CAN_ID);
+    }
+
+    public int getNFrames() {
+        return buffer.getInt(base + OFFSET_NFRAMES);
+    }
+
+    public CanFrame getFrame(int index) {
+        ByteBuffer frameBuffer = buffer.duplicate();
+        int frameLength = frameLength(getFlags());
+        frameBuffer
+                .position(base + OFFSET_FRAMES + index * frameLength)
+                .limit(frameBuffer.position() + frameLength);
+        return CanFrame.create(frameBuffer);
+    }
+
+    public List<CanFrame> getFrames() {
+        int nFrames = getNFrames();
+        if (nFrames == 0) {
+            return Collections.emptyList();
+        }
+        int frameLength = frameLength(getFlags());
+        List<CanFrame> frames = new ArrayList<>(nFrames);
+        for (int i = 0; i < nFrames; i++) {
+            ByteBuffer frameBuffer = buffer.duplicate();
+            frameBuffer
+                    .position(base + OFFSET_FRAMES + i * frameLength)
+                    .limit(frameBuffer.position() + frameLength);
+            frames.add(CanFrame.create(frameBuffer));
+
+        }
+        return frames;
+    }
+
+    /**
+     * Returns the backing {@link ByteBuffer} with proper position and limit set to read the entire BCM
+     * message.
+     *
+     * @return the backing buffer
+     */
+    public ByteBuffer getBuffer() {
+        this.buffer.clear().position(base).limit(base + size);
+        return this.buffer;
+    }
+
+    private static int frameLength(Set<BcmFlag> flags) {
         return flags.contains(BcmFlag.CAN_FD_FRAME) ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
     }
 
-    /** check whether the platform requires padding bytes in the header struct. */
-    private static boolean paddingRequired() {
-        switch (getLongSize()) {
+    private long getPlatformLong(int offset) {
+        switch (BcmMessage.LONG_SIZE) {
         case 4:
-            return false;
+            return buffer.getInt(offset);
         case 8:
-            return true;
+            return buffer.getLong(offset);
         default:
             throw new UnsupportedPlatformException();
         }
     }
 
-    /** Determine the platform dependent size for the 'long' datatype in bytes. */
+    private void putPlatformLong(int offset, long value) {
+        switch (BcmMessage.LONG_SIZE) {
+        case 4:
+            buffer.putInt(offset, (int) value);
+            break;
+        case 8:
+            buffer.putLong(offset, value);
+            break;
+        default:
+            throw new UnsupportedPlatformException();
+        }
+    }
+
     private static native int getLongSize();
 
-    /** Determine the platform dependent size for the 'bcm_msg_head' struct in bytes. */
     private static native int getHeaderSize();
+
+    private static native int getOffsetFlags();
+
+    private static native int getOffsetCount();
+
+    private static native int getOffsetIval1Sec();
+
+    private static native int getOffsetIval1Usec();
+
+    private static native int getOffsetIval2Sec();
+
+    private static native int getOffsetIval2Usec();
+
+    private static native int getOffsetCanID();
+
+    private static native int getOffsetNFrames();
+
+    private static native int getOffsetFrames();
 }

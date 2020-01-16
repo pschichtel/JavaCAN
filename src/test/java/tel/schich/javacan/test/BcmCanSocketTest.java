@@ -23,6 +23,7 @@
 package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
+
 import tel.schich.javacan.BcmCanChannel;
 import tel.schich.javacan.BcmFlag;
 import tel.schich.javacan.BcmMessage;
@@ -46,8 +47,7 @@ public class BcmCanSocketTest {
                 .can_id(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
                 .ival1(BcmTimeval.builder().tv_sec(timeoutSeconds).build())
-                .frame(CanFrame.create(canId, (byte) 0, new byte[]
-                {
+                .frame(CanFrame.create(canId, (byte) 0, new byte[] {
                         (byte) 0xff, (byte) 0xff, (byte) 0xff
                 }))
                 .build();
@@ -65,7 +65,7 @@ public class BcmCanSocketTest {
             // check for change message
             BcmMessage output = channel.read();
             assertEquals(BcmOpcode.RX_CHANGED, output.getOpcode());
-            assertEquals(canId, output.getCan_id());
+            assertEquals(canId, output.getCanId());
             assertEquals(1, output.getFrames().size(), "unexpected frame count");
             assertEquals(input, output.getFrames().get(0), "What comes in should come out");
 
@@ -85,7 +85,7 @@ public class BcmCanSocketTest {
             Thread.sleep(timeoutSeconds * 1000);
             output = channel.read();
             assertEquals(BcmOpcode.RX_TIMEOUT, output.getOpcode());
-            assertEquals(canId, output.getCan_id());
+            assertEquals(canId, output.getCanId());
             assertEquals(0, output.getFrames().size(), "unexpected frame count");
         }
     }
