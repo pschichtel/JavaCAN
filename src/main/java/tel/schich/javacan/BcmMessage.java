@@ -27,6 +27,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import lombok.Builder;
@@ -45,7 +46,6 @@ public class BcmMessage {
 
     /** The platform dependent byte count for a native long. */
     public static final int LONG_SIZE;
-
     /**
      * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
      */
@@ -90,21 +90,35 @@ public class BcmMessage {
     private final int base;
     private final int size;
 
+    /**
+     * Create a BCM message from the given {@link ByteBuffer} expecting a valid BCM message at the
+     * buffer's position and a correct amount of remaining bytes.
+     *
+     * @param buffer the backing buffer for the message
+     */
     public BcmMessage(ByteBuffer buffer) {
         // assigning the attributes before the validation enables the use of getters
         this.buffer = buffer;
         this.base = buffer.position();
         this.size = buffer.remaining();
 
-        if (buffer.remaining() < HEADER_LENGTH) {
-            throw new IllegalArgumentException("the buffer content is too short for a BCM message");
+        int capacity = buffer.remaining();
+        if (capacity < HEADER_LENGTH) {
+            throw new IllegalArgumentException("the buffer capacity is too low for a BCM message");
         }
-
+        int expectedCapacity = HEADER_LENGTH + getNFrames() * frameLength(getFlags());
+        if (expectedCapacity > capacity) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "the buffer capacity cannot hold all frames of this BCM message,required %d but was %d",
+                            expectedCapacity, capacity));
+        }
     }
 
     @Builder
     private BcmMessage(BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, BcmTimeval ival1, BcmTimeval ival2,
             int can_id, @Singular List<CanFrame> frames) {
+        Objects.requireNonNull(opcode, "opcode must not be null");
         boolean fdFrames = frames.stream().filter(CanFrame::isFDFrame).findAny().isPresent();
         if (fdFrames) {
             flags.add(BcmFlag.CAN_FD_FRAME);
@@ -137,41 +151,68 @@ public class BcmMessage {
 
     /**
      * Returns the op-code of this message.
-     *
-     * @return the op-code of this message
      */
     public BcmOpcode getOpcode() {
         return BcmOpcode.fromNative(buffer.getInt(base + OFFSET_OPCODE));
     }
 
+    /**
+     * Returns the flags of this message.
+     */
     public Set<BcmFlag> getFlags() {
         return BcmFlag.fromNative(buffer.getInt(base + OFFSET_FLAGS));
     }
 
+    /**
+     * Returns the count for ival1 repetitions of this message.
+     */
     public int getCount() {
         return buffer.getInt(base + OFFSET_COUNT);
     }
 
+    /**
+     * Returns ival1 from this message.
+     *
+     * @return the {@code ival1} value or {@code null} if it is not set
+     */
     public BcmTimeval getIval1() {
         long sec = getPlatformLong(base + OFFSET_IVAL1_TV_SEC);
         long usec = getPlatformLong(base + OFFSET_IVAL1_TV_USEC);
         return (sec + usec) != 0 ? new BcmTimeval(sec, usec) : null;
     }
 
+    /**
+     * Returns ival2 from this message.
+     *
+     * @return the {@code ival2} value or {@code null} if it is not set
+     */
     public BcmTimeval getIval2() {
         long sec = getPlatformLong(base + OFFSET_IVAL2_TV_SEC);
         long usec = getPlatformLong(base + OFFSET_IVAL2_TV_USEC);
         return (sec + usec) != 0 ? new BcmTimeval(sec, usec) : null;
     }
 
+    /**
+     * Returns the CAN ID of this message.
+     */
     public int getCanId() {
         return buffer.getInt(base + OFFSET_CAN_ID);
     }
 
+    /**
+     * Returns the number of frames in this message.
+     */
     public int getNFrames() {
         return buffer.getInt(base + OFFSET_NFRAMES);
     }
 
+    /**
+     * Returns a single frame of this message.
+     *
+     * @param index of the frame; ({@code 0 <= index < nFrames})
+     * @return the frame
+     * @throws IllegalArgumentException if the message buffer contains no frame for that index
+     */
     public CanFrame getFrame(int index) {
         ByteBuffer frameBuffer = buffer.duplicate();
         int frameLength = frameLength(getFlags());
@@ -181,6 +222,11 @@ public class BcmMessage {
         return CanFrame.create(frameBuffer);
     }
 
+    /**
+     * Returns all frames of this message.
+     *
+     * @return all frames of this message
+     */
     public List<CanFrame> getFrames() {
         int nFrames = getNFrames();
         if (nFrames == 0) {
