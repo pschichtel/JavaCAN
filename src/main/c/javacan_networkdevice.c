@@ -24,15 +24,18 @@
 #include <net/if.h>
 #include <stdbool.h>
 #include <jni.h>
-#include <malloc.h>
+#include <string.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char* ifname = (*env)->GetStringUTFChars(env, interface_name, false);
     unsigned int ifindex = if_nametoindex(ifname);
     if (ifindex == 0) {
-        char* message = str_concat("Failed to resolve the interface: %s", ifname);
+        const char* prefix = "Failed to resolve the interface: ";
+        char message[strlen(prefix) + strlen(ifname) + 1];
+        message[0] = 0;
+        strcat((char *) &message, prefix);
+        strcat((char *) &message, ifname);
         throw_native_exception(env, message);
-        free(message);
     }
     (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
     return ifindex;

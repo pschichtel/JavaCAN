@@ -37,7 +37,7 @@ public class IsotpOptions {
     private final byte receivePadding;
     private final byte extendedReceiveAddress;
 
-    @JNIAccess(performanceCritical = false)
+    @JNIAccess
     public IsotpOptions(int flags, int frameTransmissionTime, byte extendedTransmissionAddress,
             byte transmissionPadding, byte receivePadding, byte extendedReceiveAddress) {
         this.flags = flags;

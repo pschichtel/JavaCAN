@@ -130,22 +130,6 @@ short poll_single(int sock, short events, int timeout) {
     return fds.revents;
 }
 
-char* str_concat(const char* a, const char* b) {
-    size_t a_len = strlen(a);
-    size_t b_len = strlen(b);
-
-    char* merged = malloc(a_len + b_len + 1);
-    if (merged == NULL) {
-        return NULL;
-    }
-
-    merged[0] = 0;
-    strcat(merged, a);
-    strcat(merged, b);
-
-    return merged;
-}
-
 void throw_native_exception(JNIEnv *env, char *msg) {
     // It is necessary to get the errno before any Java or JNI function is called, as it
     // may become changed due to the VM operations.

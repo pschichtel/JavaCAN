@@ -40,7 +40,6 @@ int is_blocking(int);
 int set_boolean_opt(int sock, int opt, bool enable);
 int get_boolean_opt(int sock, int opt);
 short poll_single(int, short, int);
-char* str_concat(const char* a, const char* b);
 void throw_native_exception(JNIEnv *env, char *msg);
 
 #endif

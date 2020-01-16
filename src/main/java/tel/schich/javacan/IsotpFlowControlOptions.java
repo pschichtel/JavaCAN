@@ -34,7 +34,7 @@ public class IsotpFlowControlOptions {
     private final byte minimumSeparationTime;
     private final byte maximumWaitFrameTransmission;
 
-    @JNIAccess(performanceCritical = false)
+    @JNIAccess
     public IsotpFlowControlOptions(byte blockSize, byte minimumSeparationTime, byte maximumWaitFrameTransmission) {
         this.blockSize = blockSize;
         this.minimumSeparationTime = minimumSeparationTime;

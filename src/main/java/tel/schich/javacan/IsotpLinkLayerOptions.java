@@ -34,7 +34,7 @@ public class IsotpLinkLayerOptions {
     private final byte transmissionDataLength;
     private final byte transmissionFlags;
 
-    @JNIAccess(performanceCritical = false)
+    @JNIAccess
     public IsotpLinkLayerOptions(byte maximumTransmissionUnit, byte transmissionDataLength, byte transmissionFlags) {
         this.maximumTransmissionUnit = maximumTransmissionUnit;
         this.transmissionDataLength = transmissionDataLength;
