@@ -381,18 +381,16 @@ public class CanFrame {
      */
     public static CanFrame create(ByteBuffer buffer) {
         int length = buffer.remaining();
+        // does the buffer slice size match the non-FD or FD MTU?
         if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
             throw new IllegalArgumentException("length must be either MTU or FD_MTU, but was " + length + "!");
         }
         CanFrame frame = new CanFrame(buffer);
         int maxDlen = frame.isFDFrame() ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
         int dlen = frame.getDataLength();
+        // even though the buffer size matches a valid MTU, it might still have conflicting configuration (FD data in a non-FD MTU)
         if (dlen > maxDlen) {
-            throw new IllegalArgumentException("payload must fit in " + maxDlen + " bytes, but specifies a length of " + dlen
-                    + "!");
-        }
-        if (frame.getBase() + dlen >= length) {
-            throw new BufferOverflowException();
+            throw new IllegalArgumentException("payload must fit in " + maxDlen + " bytes, but specifies a length of " + dlen + "!");
         }
         return frame;
     }

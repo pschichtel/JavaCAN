@@ -216,15 +216,15 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testBufferReuse() throws Exception {
+    void testBufferReuseWithNonZeroBase() throws Exception {
         byte[] data = new byte[MAX_FD_DATA_LENGTH];
         CanFrame frame = CanFrame.createExtended(0x7FFFFF, FD_NO_FLAGS, data, 0, MAX_FD_DATA_LENGTH);
         ByteBuffer buffer = frame.getBuffer();
 
-        ByteBuffer largeForReuse = ByteBuffer.allocateDirect(2 * MAX_FD_DATA_LENGTH);
-        largeForReuse.position(MAX_FD_DATA_LENGTH);
+        ByteBuffer largeForReuse = ByteBuffer.allocateDirect(2 * RawCanChannel.FD_MTU);
+        largeForReuse.position(RawCanChannel.FD_MTU);
         largeForReuse.put(buffer);
-        largeForReuse.position(MAX_FD_DATA_LENGTH);
+        largeForReuse.position(RawCanChannel.FD_MTU);
 
         CanFrame.create(largeForReuse);
     }
