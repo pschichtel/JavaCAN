@@ -36,6 +36,7 @@ import tel.schich.javacan.BcmOpcode;
 import tel.schich.javacan.BcmTimeval;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,6 +98,41 @@ class BcmCanSocketTest {
                 .frame(CanFrame.create(0, (byte) 0, frameData[1]))
                 .frame(CanFrame.create(0, (byte) 0, frameData[2]))
                 .build();
+
+        Iterator<CanFrame> frameIterator = message.getFrames().iterator();
+        // check all frames access
+        for (byte[] expectedData : frameData) {
+            CanFrame frame = frameIterator.next();
+            ByteBuffer dataBuffer = ByteBuffer.allocate(frame.getDataLength());
+            frame.getData(dataBuffer);
+            assertArrayEquals(expectedData, dataBuffer.array());
+        }
+        // check single frames access
+        for (int i = 0; i < frameData.length; i++) {
+            CanFrame frame = message.getFrame(i);
+            ByteBuffer dataBuffer = ByteBuffer.allocate(frame.getDataLength());
+            frame.getData(dataBuffer);
+            assertArrayEquals(frameData[i], dataBuffer.array());
+        }
+    }
+
+    @Test
+    void testMessageFDFrameAccess() {
+        byte[][] frameData = new byte[][] {
+                new byte[] { 1, 2, },
+                new byte[] { 3, 4, 5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+                new byte[] { 6, 7, 8, 9 },
+        };
+        int expectedBufferSize = BcmMessage.HEADER_LENGTH + frameData.length * RawCanChannel.FD_MTU;
+        BcmMessage message = BcmMessage.builder()
+                .opcode(BcmOpcode.TX_SETUP)
+                .frame(CanFrame.create(0, (byte) 0, frameData[0]))
+                .frame(CanFrame.create(0, (byte) 0, frameData[1]))
+                .frame(CanFrame.create(0, (byte) 0, frameData[2]))
+                .build();
+
+        assertEquals(expectedBufferSize, message.getBuffer().remaining());
+        assertTrue(message.getFlags().contains(BcmFlag.CAN_FD_FRAME));
 
         Iterator<CanFrame> frameIterator = message.getFrames().iterator();
         // check all frames access

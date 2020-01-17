@@ -36,14 +36,21 @@ import tel.schich.javacan.linux.LinuxNetworkDevice;
  */
 public class BcmCanChannel extends AbstractCanChannel {
     /**
-     * The MTU according
+     * The MTU is calculated according the CAN documentation and assumes the use of FD frames. This way
+     * the buffer is large enough (~ 18 kB) for all use cases.
      *
      * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission
      */
-    public static final int MTU = BcmMessage.HEADER_LENGTH + 256 * (CanFrame.HEADER_LENGTH + CanFrame.MAX_DATA_LENGTH);
+    public static final int MTU = BcmMessage.HEADER_LENGTH + 256 * RawCanChannel.FD_MTU;
     private volatile NetworkDevice device;
 
-    public BcmCanChannel(SelectorProvider provider, int sock) {
+    /**
+     * Create a BCM channel.
+     *
+     * @param provider the NIO selector provider
+     * @param sock     the native file descriptor
+     */
+    BcmCanChannel(SelectorProvider provider, int sock) {
         super(provider, sock);
     }
 
@@ -123,7 +130,6 @@ public class BcmCanChannel extends AbstractCanChannel {
         if (written != bytesToWrite) {
             throw new IOException("message incompletely written");
         }
-
         return this;
     }
 }

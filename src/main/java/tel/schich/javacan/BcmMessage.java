@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -102,16 +103,14 @@ public class BcmMessage {
         this.base = buffer.position();
         this.size = buffer.remaining();
 
-        int capacity = buffer.remaining();
-        if (capacity < HEADER_LENGTH) {
-            throw new IllegalArgumentException("the buffer capacity is too low for a BCM message");
+        if (size < HEADER_LENGTH) {
+            throw new IllegalArgumentException("the buffer is too small for a BCM message");
         }
-        int expectedCapacity = HEADER_LENGTH + getNFrames() * frameLength(getFlags());
-        if (expectedCapacity > capacity) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "the buffer capacity cannot hold all frames of this BCM message,required %d but was %d",
-                            expectedCapacity, capacity));
+        int expectedSize = HEADER_LENGTH + getNFrames() * frameLength(getFlags());
+        if (expectedSize > size) {
+            throw new IllegalArgumentException(String.format(
+                    "the buffer capacity cannot hold all frames of this BCM message,required %d but was %d",
+                    expectedSize, size));
         }
     }
 
@@ -120,7 +119,8 @@ public class BcmMessage {
             int can_id, @Singular List<CanFrame> frames) {
         Objects.requireNonNull(opcode, "opcode must not be null");
         boolean fdFrames = frames.stream().filter(CanFrame::isFDFrame).findAny().isPresent();
-        if (fdFrames) {
+        if (fdFrames && !flags.contains(BcmFlag.CAN_FD_FRAME)) {
+            flags = new HashSet<>(flags); // the set from the builder is immutable
             flags.add(BcmFlag.CAN_FD_FRAME);
         }
         int frameLength = frameLength(flags);
