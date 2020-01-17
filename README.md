@@ -1,12 +1,13 @@
 # JavaCAN [![Maven Central](https://img.shields.io/maven-central/v/tel.schich/javacan.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22tel.schich%22%20AND%20a:%22javacan%22)
 
-A complete implementation of Java's [SelectableChannel](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/SelectableChannel.html) API for CAN_RAW and CAN_ISOTP sockets.
+A complete implementation of Java's [SelectableChannel](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/SelectableChannel.html) API
+for CAN_RAW, CAN_BCM and CAN_ISOTP sockets.
 
 Even though the JDK provides an epoll based Selector implementation, that implementation is unfortunately not compatible with custom Channel implementations. For that reason a custom `SelectorProvider` is required, that supplies an epoll based `Selector` compatible with CAN Channels.
 
 ## What works?
 
-* Creating and binding CAN_RAW and CAN_ISOTP sockets
+* Creating and binding CAN_RAW, CAN_BCM and CAN_ISOTP sockets
 * Sending and receiving standard CAN and CAN-FD frames with and without EFF
 * Getting and setting all supported socket options
 * Event-driven networking using a [Selector](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Selector.html)
@@ -14,7 +15,7 @@ Even though the JDK provides an epoll based Selector implementation, that implem
 
 ## What is missing?
 
-* Support for other CAN protocols (e.g. BCM)
+* Support for other CAN protocols (e.g. CAN_MCNET)
 
 ## Related Projects
 
@@ -40,10 +41,10 @@ The implementation can handle word sizes up to 64 bit and is byte order aware.
 
 ## How to use
 
-### CAN_RAW and CAN_ISOTP channels
+### CAN_RAW, CAN_BCM and CAN_ISOTP channels
 
 1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
-2. Create a `RawCanChannel` e.g. by calling `CanChannels.newRawChannel()`
+2. Create a channel by calling one of the `CanChannels.new...Channel()` methods
 3. Create a `NetworkDevice` using its static `lookup(String)` method
 4. Bind the channel to an interface using the `bind(CanDevice)` method
 
