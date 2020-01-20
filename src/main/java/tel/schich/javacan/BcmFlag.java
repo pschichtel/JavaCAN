@@ -32,7 +32,9 @@ import java.util.Set;
  */
 public enum BcmFlag {
 
-    /** Set the values of ival1, ival2 and count */
+    /**
+     * Set the values of ival1, ival2 and count
+     */
     SETTIMER(0x0001),
 
     /**
@@ -41,10 +43,14 @@ public enum BcmFlag {
      */
     STARTTIMER(0x0002),
 
-    /** Create the message TX_EXPIRED when count expires */
+    /**
+     * Create the message TX_EXPIRED when count expires
+     */
     TX_COUNTEVT(0x0004),
 
-    /** A change of data by the process is emitted immediately. */
+    /**
+     * A change of data by the process is emitted immediately.
+     */
     TX_ANNOUNCE(0x0008),
 
     /**
@@ -54,13 +60,19 @@ public enum BcmFlag {
      */
     TX_CP_CAN_ID(0x0010),
 
-    /** Filter by can_id alone, no frames required (nframes=0). */
+    /**
+     * Filter by can_id alone, no frames required (nframes=0).
+     */
     RX_FILTER_ID(0x0020),
 
-    /** A change of the DLC leads to an RX_CHANGED. */
+    /**
+     * A change of the data-length-code (DLC) leads to a RX_CHANGED.
+     */
     RX_CHECK_DLC(0x0040),
 
-    /** Prevent automatically starting the timeout monitor. */
+    /**
+     * Prevent automatically starting the timeout monitor.
+     */
     RX_NO_AUTOTIMER(0x0080),
 
     /**
@@ -69,13 +81,20 @@ public enum BcmFlag {
      */
     RX_ANNOUNCE_RESUME(0x0100),
 
-    /** Reset the index for the multiple frame transmission. */
+    /**
+     * Reset the index for the multiple frame transmission.
+     */
     TX_RESET_MULTI_IDX(0x0200),
 
-    /** Send reply for RTR-request (placed in op->frames[0]). */
+    /**
+     * Send reply for RTR-request (placed in op->frames[0]).
+     */
     RX_RTR_FRAME(0x0400),
 
-    /**  */
+    /**
+     * Indicate that the subsequent frames of the message are defined using the
+     * {@code struct canfd_frame}.
+     */
     CAN_FD_FRAME(0x0800);
 
     private final int bit;

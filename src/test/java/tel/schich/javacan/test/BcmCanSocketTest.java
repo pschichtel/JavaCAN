@@ -24,6 +24,7 @@ package tel.schich.javacan.test;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -41,6 +42,7 @@ import tel.schich.javacan.linux.LinuxNativeOperationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
+import static tel.schich.javacan.CanSocketOptions.SO_RCVTIMEO;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class BcmCanSocketTest {
@@ -114,6 +116,10 @@ class BcmCanSocketTest {
             frame.getData(dataBuffer);
             assertArrayEquals(frameData[i], dataBuffer.array());
         }
+        // check no frame after the last index
+        assertThrows(IllegalArgumentException.class, () -> {
+            message.getFrame(frameData.length);
+        });
     }
 
     @Test
@@ -149,27 +155,31 @@ class BcmCanSocketTest {
             frame.getData(dataBuffer);
             assertArrayEquals(frameData[i], dataBuffer.array());
         }
+        // check no frame after the last index
+        assertThrows(IllegalArgumentException.class, () -> {
+            message.getFrame(frameData.length);
+        });
     }
 
     @Test
     void testNonBlockingRead() throws Exception {
-        int timeoutSeconds = 1;
+        Duration timeout = Duration.ofSeconds(1);
         int canId = 0x7EA;
         BcmMessage rxFilterSetupMessage = BcmMessage.builder()
                 .opcode(BcmOpcode.RX_SETUP)
                 .can_id(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
-                .ival1(BcmTimeval.builder().tv_sec(timeoutSeconds).build())
+                .ival1(BcmTimeval.fromDuration(timeout))
                 .frame(CanFrame.create(canId, (byte) 0, new byte[] {
                         (byte) 0xff, (byte) 0xff, (byte) 0xff
                 }))
                 .build();
+        CanFrame input = CanFrame.create(canId, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
         try (final BcmCanChannel channel = CanChannels.newBcmChannel()) {
             channel.connect(CAN_INTERFACE);
             assertTrue(channel.isBlocking(), "Socket is blocking by default");
             channel.write(rxFilterSetupMessage);
 
-            final CanFrame input = CanFrame.create(canId, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
             channel.configureBlocking(false);
             assertFalse(channel.isBlocking(), "Socket is non blocking after setting it so");
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
@@ -181,25 +191,57 @@ class BcmCanSocketTest {
             assertEquals(canId, output.getCanId());
             assertEquals(1, output.getFrames().size(), "unexpected frame count");
             assertEquals(input, output.getFrames().get(0), "What comes in should come out");
+            // check asynchronous fail on non readable socket
+            assertThrows(LinuxNativeOperationException.class, channel::read);
+        }
+    }
 
-            // resend the same frame again and ...
+    @Test
+    void testBlockingRead() throws Exception {
+        Duration timeout = Duration.ofSeconds(1);
+        int canId = 0x7EA;
+        BcmMessage rxFilterSetupMessage = BcmMessage.builder()
+                .opcode(BcmOpcode.RX_SETUP)
+                .can_id(canId)
+                .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
+                // double timeout on BCM, so we can test whether the read times out before the
+                // RX_TIMEOUT message arrives
+                .ival1(BcmTimeval.fromDuration(timeout.plus(timeout)))
+                .frame(CanFrame.create(canId, (byte) 0, new byte[] {
+                        (byte) 0xff, (byte) 0xff, (byte) 0xff
+                }))
+                .build();
+        CanFrame input = CanFrame.create(canId, FD_NO_FLAGS, new byte[] { 0x34, 0x52, 0x34 });
+        try (final BcmCanChannel channel = CanChannels.newBcmChannel()) {
+            channel.connect(CAN_INTERFACE);
+            assertTrue(channel.isBlocking(), "Socket is blocking by default");
+            channel.setOption(SO_RCVTIMEO, timeout);
+            channel.write(rxFilterSetupMessage);
+
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
 
-            // ... verify that the second frame does not trigger a change message and the timeout is not reached
-            try {
-                output = channel.read();
-                fail("there should be nothing to read at this time");
-            } catch (LinuxNativeOperationException ex) {
-                assertTrue(ex.mayTryAgain());
-            }
-
-            // check for timeout message
-            Thread.sleep(timeoutSeconds * 1000);
-            output = channel.read();
-            assertEquals(BcmOpcode.RX_TIMEOUT, output.getOpcode());
+            BcmMessage output = channel.read();
+            assertEquals(BcmOpcode.RX_CHANGED, output.getOpcode());
             assertEquals(canId, output.getCanId());
-            assertEquals(0, output.getFrames().size(), "unexpected frame count");
+            assertEquals(1, output.getFrames().size(), "unexpected frame count");
+            assertEquals(input, output.getFrames().get(0), "What comes in should come out");
+            // check synchronous read timeout
+            long start = System.currentTimeMillis();
+            final LinuxNativeOperationException err = assertThrows(LinuxNativeOperationException.class, channel::read);
+            long delta = (System.currentTimeMillis() - start) / 1000;
+            assertEquals(timeout.getSeconds(), delta);
+            assertTrue(err.mayTryAgain());
+
+            Thread.sleep(50);
+            start = System.currentTimeMillis();
+            assertNotNull(channel.read());
+            delta = (System.currentTimeMillis() - start);
+            // If we assume an infinite execution speed the read would occur at exactly 900 ms.
+            // (1000 ms - 100 ms from the two sleep calls before the read)
+            // But the goal of this test is to show that the read blocks at all, not to be precise
+            // in the timings. So this coarse timing range serves its purpose.
+            assertTrue(delta > 500 & delta < 1000, "thread should block for at least 500 ms");
         }
     }
 }

@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import java.time.Duration;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
@@ -39,4 +41,22 @@ public class BcmTimeval {
     public final long tv_sec;
     /** Micro-seconds. */
     public final long tv_usec;
+
+    /**
+     * Create a BCM timeval from a Java duration.
+     *
+     * @param duration to be represented
+     */
+    public static BcmTimeval fromDuration(Duration duration) {
+        return new BcmTimeval(duration.getSeconds(), duration.getNano() / 1000);
+    }
+
+    /**
+     * Convert this BCM timeval to a Java duration
+     * 
+     * @return the duration representation of this timeval
+     */
+    public Duration toDuration() {
+        return Duration.ofSeconds(tv_sec).plusMillis(tv_usec);
+    }
 }

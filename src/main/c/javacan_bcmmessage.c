@@ -26,46 +26,46 @@
 #include <linux/can/bcm.h>
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getLongSize(JNIEnv *env, jclass class) {
-	long dummy=0;
-	return sizeof(dummy);
+    long dummy=0;
+    return sizeof(dummy);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getHeaderSize(JNIEnv *env, jclass class) {
-	return sizeof(struct bcm_msg_head);
+    return sizeof(struct bcm_msg_head);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetFlags(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, flags);
+    return offsetof(struct bcm_msg_head, flags);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetCount(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, count);
+    return offsetof(struct bcm_msg_head, count);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetIval1Sec(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, ival1) + offsetof(struct bcm_timeval, tv_sec);
+    return offsetof(struct bcm_msg_head, ival1) + offsetof(struct bcm_timeval, tv_sec);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetIval1Usec(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, ival1) + offsetof(struct bcm_timeval, tv_usec);
+    return offsetof(struct bcm_msg_head, ival1) + offsetof(struct bcm_timeval, tv_usec);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetIval2Sec(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, ival2) + offsetof(struct bcm_timeval, tv_sec);
+    return offsetof(struct bcm_msg_head, ival2) + offsetof(struct bcm_timeval, tv_sec);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetIval2Usec(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, ival2) + offsetof(struct bcm_timeval, tv_usec);
+    return offsetof(struct bcm_msg_head, ival2) + offsetof(struct bcm_timeval, tv_usec);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetCanID(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, can_id);
+    return offsetof(struct bcm_msg_head, can_id);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetNFrames(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, nframes);
+    return offsetof(struct bcm_msg_head, nframes);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getOffsetFrames(JNIEnv *env, jclass class) {
-	return offsetof(struct bcm_msg_head, frames);
+    return offsetof(struct bcm_msg_head, frames);
 }

@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  *
  * @author Maik Scheibler
  */
-public class CANDumpConverter {
+public class CanDumpConverter {
 
 	private static final Pattern LINEPATTERN = Pattern.compile(
 			" \\((\\d+-\\d+-\\d+ \\d+:\\d+:\\d+)(\\.\\d+)\\)\\s+(\\w+)\\s+(\\w+)\\s+\\[\\d\\]\\s+(.+)");
