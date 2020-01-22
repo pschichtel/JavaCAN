@@ -23,73 +23,78 @@
 package tel.schich.javacan;
 
 /**
- * The BcmOpcode provides provide a Java representation of the opcodes defined in the Linux
+ * The BcmOpcode defines the operation for the broadcast manager to carry out, or details the
+ * broadcast managers response to several events, including user requests.
+ * <p>
+ * This enum provides a Java representation of the opcodes defined in the Linux
  * {@code can/bcm.h include}.
  *
  * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations
  */
 public enum BcmOpcode {
     /**
-     * create (cyclic) transmission task
+     * Create (cyclic) transmission task.
      */
     TX_SETUP(1),
 
     /**
-     * remove (cyclic) transmission task
+     * Remove (cyclic) transmission task.
      */
     TX_DELETE(2),
 
     /**
-     * read properties of (cyclic) transmission task
+     * Read properties of (cyclic) transmission task.
      */
     TX_READ(3),
 
     /**
-     * send one CAN frame
+     * Send one CAN frame.
      */
     TX_SEND(4),
 
     /**
-     * create RX content filter subscription
+     * Create RX content filter subscription.
      */
     RX_SETUP(5),
 
     /**
-     * remove RX content filter subscription
+     * Remove RX content filter subscription.
      */
     RX_DELETE(6),
 
     /**
-     * read properties of RX content filter subscription
+     * Read properties of RX content filter subscription.
      */
     RX_READ(7),
 
     /**
-     * reply to TX_READ request
+     * Reply to TX_READ request.
      */
     TX_STATUS(8),
 
     /**
-     * notification on performed transmissions (count=0)
+     * Notification on performed transmissions. ({@link BcmMessage#getCount() count==0})
      */
     TX_EXPIRED(9),
 
     /**
-     * reply to RX_READ request
+     * Reply to RX_READ request.
      */
     RX_STATUS(10),
 
     /**
-     * cyclic message is absent
+     * Cyclic message is absent.
      */
     RX_TIMEOUT(11),
 
     /**
-     * updated CAN frame (detected content change)
+     * Updated CAN frame. (detected content change)
      */
     RX_CHANGED(12);
 
-    /** The native representation as given in {@code bcm.h} */
+    /**
+     * The native representation as given in {@code bcm.h}
+     */
     public final int nativeOpcode;
 
     BcmOpcode(int nativeOpcode) {

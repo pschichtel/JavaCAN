@@ -35,13 +35,19 @@ import tel.schich.javacan.linux.LinuxNetworkDevice;
  * The BcmCanChannel provides a wrapper around the CAN Broadcast Manager.
  */
 public class BcmCanChannel extends AbstractCanChannel {
+
     /**
-     * The MTU is calculated according the CAN documentation and assumes the use of FD frames. This way
-     * the buffer is large enough (~ 18 kB) for all use cases.
+     * The allowed maximum frame count per BCM message.
      *
      * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission
      */
-    public static final int MTU = BcmMessage.HEADER_LENGTH + 256 * RawCanChannel.FD_MTU;
+    public static final int MAX_FRAMES_PER_MESSAGE = 256;
+
+    /**
+     * The MTU is calculated according the CAN documentation and assumes the use of FD frames. This way
+     * the buffer is large enough (~ 18 kB) for all use cases.
+     */
+    public static final int MTU = BcmMessage.HEADER_LENGTH + MAX_FRAMES_PER_MESSAGE * RawCanChannel.FD_MTU;
     private volatile NetworkDevice device;
 
     /**

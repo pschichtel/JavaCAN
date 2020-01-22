@@ -34,7 +34,6 @@ import tel.schich.javacan.BcmCanChannel;
 import tel.schich.javacan.BcmFlag;
 import tel.schich.javacan.BcmMessage;
 import tel.schich.javacan.BcmOpcode;
-import tel.schich.javacan.BcmTimeval;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
@@ -61,7 +60,7 @@ class BcmCanSocketTest {
 
         assertNotNull(result);
         assertEquals(canID, result.getCanId());
-        assertEquals(frameCount, result.getNFrames());
+        assertEquals(frameCount, result.getFrameCount());
         assertEquals(frameCount, result.getFrames().size());
 
         // additional test with large buffer
@@ -69,7 +68,7 @@ class BcmCanSocketTest {
         buffer = ByteBuffer.wrap(data).order(ByteOrder.nativeOrder());
 
         result = new BcmMessage(buffer);
-        assertEquals(frameCount, result.getNFrames());
+        assertEquals(frameCount, result.getFrameCount());
         assertEquals(frameCount, result.getFrames().size());
     }
 
@@ -167,9 +166,9 @@ class BcmCanSocketTest {
         int canId = 0x7EA;
         BcmMessage rxFilterSetupMessage = BcmMessage.builder()
                 .opcode(BcmOpcode.RX_SETUP)
-                .can_id(canId)
+                .canId(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
-                .ival1(BcmTimeval.fromDuration(timeout))
+                .interval1(timeout)
                 .frame(CanFrame.create(canId, (byte) 0, new byte[] {
                         (byte) 0xff, (byte) 0xff, (byte) 0xff
                 }))
@@ -202,11 +201,11 @@ class BcmCanSocketTest {
         int canId = 0x7EA;
         BcmMessage rxFilterSetupMessage = BcmMessage.builder()
                 .opcode(BcmOpcode.RX_SETUP)
-                .can_id(canId)
+                .canId(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
                 // double timeout on BCM, so we can test whether the read times out before the
                 // RX_TIMEOUT message arrives
-                .ival1(BcmTimeval.fromDuration(timeout.plus(timeout)))
+                .interval1(timeout.plus(timeout))
                 .frame(CanFrame.create(canId, (byte) 0, new byte[] {
                         (byte) 0xff, (byte) 0xff, (byte) 0xff
                 }))

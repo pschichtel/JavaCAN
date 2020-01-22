@@ -26,25 +26,28 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * The BcmFlag enum represent the Broadcast Manager message flags.
+ * The BcmFlag enum represent the Broadcast Manager message flags. When sending a message to the
+ * broadcast manager the ‘flags’ element influence the behavior.
  *
  * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags
  */
 public enum BcmFlag {
 
     /**
-     * Set the values of ival1, ival2 and count
+     * Set the values of {@link BcmMessage#getInterval1() interval1}, {@link BcmMessage#getInterval2()
+     * interval2} and {@link BcmMessage#getCount() count}.
      */
     SETTIMER(0x0001),
 
     /**
-     * Start the timer with the actual values of ival1, ival2 and count. Starting the timer leads
-     * simultaneously to emit a CAN frame.
+     * Start the timer with the actual values of {@link BcmMessage#getInterval1() interval1},
+     * {@link BcmMessage#getInterval2() interval2} and {@link BcmMessage#getCount() count}. Starting the
+     * timer leads simultaneously to emit a CAN frame.
      */
     STARTTIMER(0x0002),
 
     /**
-     * Create the message TX_EXPIRED when count expires
+     * Create the message {@link BcmOpcode#TX_EXPIRED} when count expires.
      */
     TX_COUNTEVT(0x0004),
 
@@ -54,19 +57,20 @@ public enum BcmFlag {
     TX_ANNOUNCE(0x0008),
 
     /**
-     * Copies the can_id from the message header to each subsequent frame in frames. This is intended as
-     * usage simplification. For TX tasks the unique can_id from the message header may differ from the
-     * can_id(s) stored for transmission in the subsequent struct can_frame(s).
+     * Copies the CAN ID from the message header to each subsequent frame in
+     * {@link BcmMessage#getFrames() frames}. This is intended as usage simplification. For TX tasks the
+     * unique CAN ID from the message header may differ from the CAN ID(s) stored for transmission in
+     * the subsequent CAN frame(s).
      */
     TX_CP_CAN_ID(0x0010),
 
     /**
-     * Filter by can_id alone, no frames required (nframes=0).
+     * Filter by CAN ID alone, no frames required ({@link BcmMessage#getFrameCount() frameCount==0}).
      */
     RX_FILTER_ID(0x0020),
 
     /**
-     * A change of the data-length-code (DLC) leads to a RX_CHANGED.
+     * A change of the data-length-code (DLC) leads to a {@link BcmOpcode#RX_CHANGED}.
      */
     RX_CHECK_DLC(0x0040),
 
@@ -76,8 +80,8 @@ public enum BcmFlag {
     RX_NO_AUTOTIMER(0x0080),
 
     /**
-     * If passed at RX_SETUP and a receive timeout occurred, a RX_CHANGED message will be generated when
-     * the (cyclic) receive restarts.
+     * If passed at {@link BcmOpcode#RX_SETUP} and a receive timeout occurred, a
+     * {@link BcmOpcode#RX_CHANGED} message will be generated when the (cyclic) receive restarts.
      */
     RX_ANNOUNCE_RESUME(0x0100),
 
@@ -92,8 +96,8 @@ public enum BcmFlag {
     RX_RTR_FRAME(0x0400),
 
     /**
-     * Indicate that the subsequent frames of the message are defined using the
-     * {@code struct canfd_frame}.
+     * Indicate that the subsequent frames of the message are defined as {@link CanFrame#isFDFrame() FD
+     * frames}.
      */
     CAN_FD_FRAME(0x0800);
 
