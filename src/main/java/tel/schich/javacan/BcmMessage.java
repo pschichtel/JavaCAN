@@ -44,7 +44,7 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
  * A BcmMessage represents the data struct used by the CAN broadcast manager.
  *
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram">
- *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram</a>
+ *     Kernel CAN documentation: BCM sockets</a>
  */
 @EqualsAndHashCode
 @ToString

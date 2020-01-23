@@ -30,7 +30,7 @@ import java.util.Set;
  * broadcast manager the ‘flags’ element influence the behavior.
  *
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags">
- *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags</a>
+ *     Kernel CAN documentation: BCM message flags</a>
  */
 public enum BcmFlag {
 

@@ -30,7 +30,7 @@ package tel.schich.javacan;
  * {@code can/bcm.h include}.
  *
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations">
- *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations</a>
+ *     Kernel CAN documentation: BCM operations</a>
  */
 public enum BcmOpcode {
     /**
