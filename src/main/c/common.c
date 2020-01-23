@@ -27,14 +27,18 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <errno.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <jni.h>
-#include <string.h>
 #include <jni-c-to-java.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
+}
+
+inline int create_can_bcm_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_BCM);
 }
 
 inline int create_can_isotp_socket() {
@@ -42,14 +46,23 @@ inline int create_can_isotp_socket() {
 }
 
 int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
-    struct sockaddr_can addr;
+    struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
     addr.can_ifindex = interface;
     addr.can_addr.tp.rx_id = rx;
     addr.can_addr.tp.tx_id = tx;
-    socklen_t length = sizeof(struct sockaddr_can);
 
-    return bind(sock, (const struct sockaddr *) &addr, length);
+    return bind(sock, (const struct sockaddr *) &addr, sizeof(addr));
+}
+
+int connect_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
+    struct sockaddr_can addr = {0};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = interface;
+    addr.can_addr.tp.rx_id = rx;
+    addr.can_addr.tp.tx_id = tx;
+
+    return connect(sock, (const struct sockaddr *) &addr, sizeof(addr));
 }
 
 int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {

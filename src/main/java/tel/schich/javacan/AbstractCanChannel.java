@@ -30,11 +30,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.linux.UnixFileDescriptor;
 import tel.schich.javacan.option.CanSocketOption;
 import tel.schich.javacan.select.NativeChannel;
 import tel.schich.javacan.select.NativeHandle;
-import tel.schich.javacan.linux.UnixFileDescriptor;
 
 /**
  * This abstract base class for CAN channels implements all shared APIs common to CAN communication: It implements
@@ -183,7 +182,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         begin();
         try {
             int pos = buffer.position();
-            bytesWritten = (int)SocketCAN.write(sock, buffer, pos, buffer.remaining());
+            bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
             buffer.position(pos + bytesWritten);
             return bytesWritten;
         } finally {
