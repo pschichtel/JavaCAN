@@ -27,6 +27,9 @@ import tel.schich.javacan.UnsupportedPlatformException;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Various helper methods to work with buffers.
+ */
 public abstract class BufferHelper {
     /**
      * The platform dependent byte count for a native long.
@@ -36,6 +39,9 @@ public abstract class BufferHelper {
     static {
         JavaCAN.initialize();
         LONG_SIZE = getLongSize();
+    }
+
+    private BufferHelper() {
     }
 
     /**
@@ -80,6 +86,13 @@ public abstract class BufferHelper {
         return result;
     }
 
+    /**
+     * Reads a platform-sized long.
+     *
+     * @param buffer the buffer to read from
+     * @param offset the memory location
+     * @return the long value
+     */
     public static long getPlatformLong(ByteBuffer buffer, int offset) {
         switch (LONG_SIZE) {
             case 4:
@@ -91,14 +104,22 @@ public abstract class BufferHelper {
         }
     }
 
-    public static void putPlatformLong(ByteBuffer buffer, int offset, long value) {
+    /**
+     * Writes a platform-sized long.
+     *
+     * @param buffer the buffer to write to
+     * @param offset the memory location
+     * @param value the value to write
+     * @return the amount of bytes written
+     */
+    public static int putPlatformLong(ByteBuffer buffer, int offset, long value) {
         switch (LONG_SIZE) {
             case 4:
                 buffer.putInt(offset, (int) value);
-                break;
+                return 4;
             case 8:
                 buffer.putLong(offset, value);
-                break;
+                return 8;
             default:
                 throw new UnsupportedPlatformException();
         }
