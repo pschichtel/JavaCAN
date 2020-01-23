@@ -29,7 +29,8 @@ import java.util.Set;
  * The BcmFlag enum represent the Broadcast Manager message flags. When sending a message to the
  * broadcast manager the ‘flags’ element influence the behavior.
  *
- * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags
+ * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags">
+ *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags</a>
  */
 public enum BcmFlag {
 
@@ -91,7 +92,7 @@ public enum BcmFlag {
     TX_RESET_MULTI_IDX(0x0200),
 
     /**
-     * Send reply for RTR-request (placed in op->frames[0]).
+     * Send reply for RTR-request (placed in {@code op->frames[0]}).
      */
     RX_RTR_FRAME(0x0400),
 
@@ -111,6 +112,7 @@ public enum BcmFlag {
      * Get the Java representation for the native flags.
      *
      * @param nativeFlags from CAN socket
+     * @return the set of flags
      */
     public static Set<BcmFlag> fromNative(int nativeFlags) {
         EnumSet<BcmFlag> flags = EnumSet.noneOf(BcmFlag.class);
@@ -124,6 +126,9 @@ public enum BcmFlag {
 
     /**
      * Get the native representation for the given set of flags.
+     *
+     * @param flags the flags to convert
+     * @return an integer bitmask
      */
     public static int toNative(Set<BcmFlag> flags) {
         int nativeFlags = 0;

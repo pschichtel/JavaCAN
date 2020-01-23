@@ -38,10 +38,13 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+
 /**
  * A BcmMessage represents the data struct used by the CAN broadcast manager.
  *
- * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram
+ * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram">
+ *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram</a>
  */
 @EqualsAndHashCode
 @ToString
@@ -185,6 +188,8 @@ public class BcmMessage {
 
     /**
      * Returns the OP-code of this message.
+     *
+     * @return the opcode
      */
     public BcmOpcode getOpcode() {
         return BcmOpcode.fromNative(buffer.getInt(base + OFFSET_OPCODE));
@@ -192,6 +197,8 @@ public class BcmMessage {
 
     /**
      * Returns the flags of this message.
+     *
+     * @return the flags
      */
     public Set<BcmFlag> getFlags() {
         return BcmFlag.fromNative(buffer.getInt(base + OFFSET_FLAGS));
@@ -199,6 +206,8 @@ public class BcmMessage {
 
     /**
      * Returns the count for {@link #getInterval1()} repetitions of this message.
+     *
+     * @return the count
      */
     public int getCount() {
         return buffer.getInt(base + OFFSET_COUNT);
@@ -208,12 +217,12 @@ public class BcmMessage {
      * The {@code interval1} has different meanings depending on the {@link #getOpcode()} of the
      * message:
      * <ul>
-     * <li><b>When used with {@link BcmOpcode#TX_SETUP}:</b></br>
+     * <li><strong>When used with {@link BcmOpcode#TX_SETUP}</strong>:<br>
      * The broadcast manager sends {@link #getCount()} messages with this interval, then continue to
      * send at {@link #getInterval2()}. If only one timer is needed set
      * {@link BcmMessageBuilder#count(int) count} to {@code 0} and {@link BcmMessageBuilder#ival1
      * interval1} to {@code null}.</li>
-     * <li><b>When used with {@link BcmOpcode#RX_SETUP}:</b></br>
+     * <li><strong>When used with {@link BcmOpcode#RX_SETUP}</strong>:<br>
      * Send {@link BcmOpcode#RX_TIMEOUT} when a received message is not received again within the given
      * interval. When {@link BcmFlag#STARTTIMER} is set, the timeout detection is activated directly -
      * even without a former CAN frame reception.</li>
@@ -222,19 +231,16 @@ public class BcmMessage {
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
     public Duration getInterval1() {
-        long sec = getPlatformLong(base + OFFSET_IVAL1_TV_SEC);
-        long usec = getPlatformLong(base + OFFSET_IVAL1_TV_USEC);
-        return (sec + usec) != 0 ? Duration.ofSeconds(sec)
-                .plusNanos(TimeUnit.MICROSECONDS.toNanos(usec)) : Duration.ZERO;
+        return getIntervalAt(OFFSET_IVAL1_TV_SEC, OFFSET_IVAL1_TV_USEC);
     }
 
     /**
      * The {@code interval2} has different meanings depending on the {@link #getOpcode()} of the
      * message:
      * <ul>
-     * <li><b>When used with {@link BcmOpcode#TX_SETUP}:</b></br>
+     * <li><strong>When used with {@link BcmOpcode#TX_SETUP}</strong>:<br>
      * see {@link #getInterval1()}</li>
-     * <li><b>When used with {@link BcmOpcode#RX_SETUP}:</b></br>
+     * <li><strong>When used with {@link BcmOpcode#RX_SETUP}</strong>:<br>
      * Throttle the received message rate down to the value of {@code interval2}. This is useful to
      * reduce messages for the application when the signal inside the CAN frame is stateless as state
      * changes within the {@code interval2} duration may get lost.</li>
@@ -243,14 +249,22 @@ public class BcmMessage {
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
     public Duration getInterval2() {
-        long sec = getPlatformLong(base + OFFSET_IVAL2_TV_SEC);
-        long usec = getPlatformLong(base + OFFSET_IVAL2_TV_USEC);
-        return (sec + usec) != 0 ? Duration.ofSeconds(sec)
-                .plusNanos(TimeUnit.MICROSECONDS.toNanos(usec)) : Duration.ZERO;
+        return getIntervalAt(OFFSET_IVAL2_TV_SEC, OFFSET_IVAL2_TV_USEC);
+    }
+
+    private Duration getIntervalAt(int secOffset, int usecOffset) {
+        long sec = getPlatformLong(base + secOffset);
+        long usec = getPlatformLong(base + usecOffset);
+        if (sec + usec == 0) {
+            return Duration.ZERO;
+        }
+        return Duration.ofSeconds(sec).plusNanos(MICROSECONDS.toNanos(usec));
     }
 
     /**
      * Returns the CAN ID of this message.
+     *
+     * @return the CAN id
      */
     public int getCanId() {
         return buffer.getInt(base + OFFSET_CAN_ID);
@@ -258,6 +272,8 @@ public class BcmMessage {
 
     /**
      * Returns the number of frames in this message.
+     *
+     * @return the number of frames
      */
     public int getFrameCount() {
         return buffer.getInt(base + OFFSET_NFRAMES);

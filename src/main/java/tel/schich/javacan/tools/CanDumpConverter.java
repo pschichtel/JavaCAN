@@ -37,11 +37,11 @@ import java.util.regex.Pattern;
  * Converts a human readable CAN dump into a {@code canplayer} replayable format.
  * Such a dump may have be created from the output of {@code candump} with the parameter {@code -t A}
  * <p>
- * The input lines are transformed from<br/>
- * {@code " (2019-12-11 17:26:46.545849)  can0  301   [8]  08 4C 01 4E 02 C2 0C 5C"} <br/>
- * to<br/>
+ * The input lines are transformed from<br>
+ * {@code " (2019-12-11 17:26:46.545849)  can0  301   [8]  08 4C 01 4E 02 C2 0C 5C"}<br>
+ * to<br>
  * {@code "(1576495052.545849) can0 301#084C014E02C20C5C"}
- * <p>
+ * </p>
  * The resulting dump can be replayed with the {@code canplayer} from the {@code can-utils} package.
  *
  * @author Maik Scheibler

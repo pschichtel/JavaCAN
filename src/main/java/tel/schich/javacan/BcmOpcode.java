@@ -29,7 +29,8 @@ package tel.schich.javacan;
  * This enum provides a Java representation of the opcodes defined in the Linux
  * {@code can/bcm.h include}.
  *
- * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations
+ * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations">
+ *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-operations</a>
  */
 public enum BcmOpcode {
     /**
@@ -105,6 +106,7 @@ public enum BcmOpcode {
      * Get the Java representation for the native op-code.
      *
      * @param nativeOpcode from the CAN socket
+     * @return the opcode
      * @throws IllegalArgumentException on an unknown op-code
      */
     public static BcmOpcode fromNative(int nativeOpcode) {

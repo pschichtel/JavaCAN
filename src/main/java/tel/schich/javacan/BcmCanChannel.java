@@ -39,7 +39,8 @@ public class BcmCanChannel extends AbstractCanChannel {
     /**
      * The allowed maximum frame count per BCM message.
      *
-     * @see https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission
+     * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission">
+     *     https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-sequence-transmission</a>
      */
     public static final int MAX_FRAMES_PER_MESSAGE = 256;
 
