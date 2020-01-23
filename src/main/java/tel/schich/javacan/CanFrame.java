@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -132,7 +131,7 @@ public class CanFrame {
      * @return the data offset in the buffer
      */
     int getDataOffset() {
-        return this.base + HEADER_LENGTH;
+        return this.base + OFFSET_DATA;
     }
 
     /**
