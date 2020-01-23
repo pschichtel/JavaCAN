@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import tel.schich.javacan.util.BufferHelper;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -144,6 +146,15 @@ public class CanFrame {
     }
 
     /**
+     * Returns the maximum data length depending on whether this is an FD frame or not.
+     *
+     * @return the maximum data length
+     */
+    public int getMaxDataLength() {
+        return isFDFrame() ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
+    }
+
+    /**
      * Returns the size of this frame, this must be either {@link tel.schich.javacan.RawCanChannel#MTU} or
      * {@link tel.schich.javacan.RawCanChannel#FD_MTU} for valid frames.
      *
@@ -160,12 +171,13 @@ public class CanFrame {
      */
     public void getData(ByteBuffer dest) {
         final int offset = getDataOffset();
-        final int limit = offset + getDataLength();
+        final int length = getDataLength();
+        final int limit = offset + length;
         final int currentLimit = this.buffer.limit();
         this.buffer.position(offset);
         // try to save a bunch of limit changes
         // TODO benchmark if this is even remotely worth the complexity
-        if (dest.remaining() <= getDataLength() && currentLimit == limit) {
+        if (dest.remaining() <= length && currentLimit == limit) {
             dest.put(this.buffer);
         } else {
             this.buffer.limit(limit);
@@ -258,31 +270,29 @@ public class CanFrame {
         return sb.append("])").toString();
     }
 
+    /**
+     * This equals implementation compares the buffer content while completely ignoring any fields in this class.
+     *
+     * @param o the other object
+     * @return true of the objects are equal
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof CanFrame)) return false;
         CanFrame b = (CanFrame) o;
 
-        if (size != b.size) {
-            return false;
-        }
-        for (int i = 0; i < size; ++i) {
-            if (buffer.get(base + i) != b.buffer.get(b.base + i)) {
-                return false;
-            }
-        }
-        return true;
+        return BufferHelper.equals(buffer, base, size, b.buffer, b.base, b.size);
     }
 
+    /**
+     * This hashCode implementation hashes the buffer content while completely ignoring any fields in this class.
+     *
+     * @return the hashCode
+     */
     @Override
     public int hashCode() {
-        int result = 1;
-
-        for (int i = 0; i < size; ++i) {
-            result = 31 * result + buffer.get(base + i);
-        }
-        return result;
+        return BufferHelper.hashCode(buffer, base, size);
     }
 
     /**
@@ -381,18 +391,32 @@ public class CanFrame {
      * @return the newly created frame
      */
     public static CanFrame create(ByteBuffer buffer) {
-        int length = buffer.remaining();
-        // does the buffer slice size match the non-FD or FD MTU?
-        if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
-            throw new IllegalArgumentException("length must be either MTU or FD_MTU, but was " + length + "!");
-        }
-        CanFrame frame = new CanFrame(buffer);
-        int maxDlen = frame.isFDFrame() ? MAX_FD_DATA_LENGTH : MAX_DATA_LENGTH;
+        CanFrame frame = createUnsafe(buffer);
+        int maxDlen = frame.getMaxDataLength();
         int dlen = frame.getDataLength();
         // even though the buffer size matches a valid MTU, it might still have conflicting configuration (FD data in a non-FD MTU)
         if (dlen > maxDlen) {
             throw new IllegalArgumentException("payload must fit in " + maxDlen + " bytes, but specifies a length of " + dlen + "!");
         }
         return frame;
+    }
+
+    /**
+     * Create a new frame from the given {@link java.nio.ByteBuffer} expecting a valid CAN frame at the buffer's
+     * position and a correct amount of remaining bytes.
+     *
+     * This method is unsafe, because it does not verify the data length field, which may in rare cases not fit into
+     * the buffer.
+     *
+     * @param buffer the backing buffer for the frame
+     * @return the newly created frame
+     */
+    public static CanFrame createUnsafe(ByteBuffer buffer) {
+        int length = buffer.remaining();
+        // does the buffer slice size match the non-FD or FD MTU?
+        if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {
+            throw new IllegalArgumentException("length must be either MTU or FD_MTU, but was " + length + "!");
+        }
+        return new CanFrame(buffer);
     }
 }

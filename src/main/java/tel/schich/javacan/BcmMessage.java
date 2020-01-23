@@ -33,12 +33,14 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import tel.schich.javacan.util.BufferHelper;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static tel.schich.javacan.util.BufferHelper.getPlatformLong;
+import static tel.schich.javacan.util.BufferHelper.putPlatformLong;
 
 /**
  * A BcmMessage represents the data struct used by the CAN broadcast manager.
@@ -46,14 +48,8 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram">
  *     Kernel CAN documentation: BCM sockets</a>
  */
-@EqualsAndHashCode
 @ToString
 public class BcmMessage {
-
-    /**
-     * The platform dependent byte count for a native long.
-     */
-    public static final int LONG_SIZE;
     /**
      * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
      */
@@ -101,7 +97,6 @@ public class BcmMessage {
 
     static {
         JavaCAN.initialize();
-        LONG_SIZE = getLongSize();
         HEADER_LENGTH = getHeaderSize();
         OFFSET_FLAGS = getOffsetFlags();
         OFFSET_COUNT = getOffsetCount();
@@ -172,12 +167,12 @@ public class BcmMessage {
                 .putInt(OFFSET_CAN_ID, canId)
                 .putInt(OFFSET_NFRAMES, frames.size());
         if (interval1 != null) {
-            putPlatformLong(OFFSET_IVAL1_TV_SEC, interval1.getSeconds());
-            putPlatformLong(OFFSET_IVAL1_TV_USEC, TimeUnit.NANOSECONDS.toMicros(interval1.getNano()));
+            putPlatformLong(buffer, OFFSET_IVAL1_TV_SEC, interval1.getSeconds());
+            putPlatformLong(buffer, OFFSET_IVAL1_TV_USEC, TimeUnit.NANOSECONDS.toMicros(interval1.getNano()));
         }
         if (interval2 != null) {
-            putPlatformLong(OFFSET_IVAL2_TV_SEC, interval2.getSeconds());
-            putPlatformLong(OFFSET_IVAL2_TV_USEC, TimeUnit.NANOSECONDS.toMicros(interval2.getNano()));
+            putPlatformLong(buffer, OFFSET_IVAL2_TV_SEC, interval2.getSeconds());
+            putPlatformLong(buffer, OFFSET_IVAL2_TV_USEC, TimeUnit.NANOSECONDS.toMicros(interval2.getNano()));
         }
         for (int i = 0; i < frames.size(); i++) {
             buffer.position(OFFSET_FRAMES + i * frameLength);
@@ -213,7 +208,7 @@ public class BcmMessage {
         return buffer.getInt(base + OFFSET_COUNT);
     }
 
-    /**
+    /*
      * The {@code interval1} has different meanings depending on the {@link #getOpcode()} of the
      * message:
      * <ul>
@@ -253,8 +248,8 @@ public class BcmMessage {
     }
 
     private Duration getIntervalAt(int secOffset, int usecOffset) {
-        long sec = getPlatformLong(base + secOffset);
-        long usec = getPlatformLong(base + usecOffset);
+        long sec = getPlatformLong(buffer, base + secOffset);
+        long usec = getPlatformLong(buffer, base + usecOffset);
         if (sec + usec == 0) {
             return Duration.ZERO;
         }
@@ -330,32 +325,30 @@ public class BcmMessage {
     private static int frameLength(Set<BcmFlag> flags) {
         return flags.contains(BcmFlag.CAN_FD_FRAME) ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
     }
+    /**
+     * This equals implementation compares the buffer content while completely ignoring any fields in this class.
+     *
+     * @param o the other object
+     * @return true of the objects are equal
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BcmMessage)) return false;
+        BcmMessage b = (BcmMessage) o;
 
-    private long getPlatformLong(int offset) {
-        switch (BcmMessage.LONG_SIZE) {
-        case 4:
-            return buffer.getInt(offset);
-        case 8:
-            return buffer.getLong(offset);
-        default:
-            throw new UnsupportedPlatformException();
-        }
+        return BufferHelper.equals(buffer, base, size, b.buffer, b.base, b.size);
     }
 
-    private void putPlatformLong(int offset, long value) {
-        switch (BcmMessage.LONG_SIZE) {
-        case 4:
-            buffer.putInt(offset, (int) value);
-            break;
-        case 8:
-            buffer.putLong(offset, value);
-            break;
-        default:
-            throw new UnsupportedPlatformException();
-        }
+    /**
+     * This hashCode implementation hashes the buffer content while completely ignoring any fields in this class.
+     *
+     * @return the hashCode
+     */
+    @Override
+    public int hashCode() {
+        return BufferHelper.hashCode(buffer, base, size);
     }
-
-    private static native int getLongSize();
 
     private static native int getHeaderSize();
 
