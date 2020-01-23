@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.ToString;
 import tel.schich.javacan.util.BufferHelper;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -48,7 +47,6 @@ import static tel.schich.javacan.util.BufferHelper.putPlatformLong;
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-protocol-sockets-sock-dgram">
  *     Kernel CAN documentation: BCM sockets</a>
  */
-@ToString
 public class BcmMessage {
     /**
      * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
@@ -150,7 +148,7 @@ public class BcmMessage {
     @Builder
     private BcmMessage(@NonNull BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, Duration interval1,
             Duration interval2, int canId, @Singular List<CanFrame> frames) {
-        boolean fdFrames = frames.stream().filter(CanFrame::isFDFrame).findAny().isPresent();
+        boolean fdFrames = frames.stream().anyMatch(CanFrame::isFDFrame);
         if (fdFrames && !flags.contains(BcmFlag.CAN_FD_FRAME)) {
             flags = new HashSet<>(flags); // the set from the builder is immutable
             flags.add(BcmFlag.CAN_FD_FRAME);
@@ -325,6 +323,20 @@ public class BcmMessage {
     private static int frameLength(Set<BcmFlag> flags) {
         return flags.contains(BcmFlag.CAN_FD_FRAME) ? RawCanChannel.FD_MTU : RawCanChannel.MTU;
     }
+
+    @Override
+    public String toString() {
+        return "BcmMessage{" +
+                "OP=" + getOpcode() +
+                ", FLAGS=" + getFlags() +
+                ", COUNT=" + getCount() +
+                ", IVAL1=" + getInterval1() +
+                ", IVAL2=" + getInterval2() +
+                ", CANID=" + getCanId() +
+                ", FRAMES=" + getFrameCount() +
+                '}';
+    }
+
     /**
      * This equals implementation compares the buffer content while completely ignoring any fields in this class.
      *
