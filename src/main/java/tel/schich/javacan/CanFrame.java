@@ -312,22 +312,6 @@ public class CanFrame {
     }
 
     /**
-     * Creates a new EFF frame from the given ID (29 bit), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
-     * as the backing buffer for the frame.
-     *
-     * @param id the CAN ID
-     * @param flags the CAN FD flags, ignored for non-FD frames
-     * @param data the data
-     * @param offset the offset within data
-     * @param length amount of bytes to use from data
-     * @return the newly created frame
-     */
-    public static CanFrame createExtended(int id, byte flags, byte[] data, int offset, int length) {
-        return create(id, true, flags, data, offset, length);
-    }
-
-    /**
      * Creates a new SFF frame from the given ID (11 bit), flags (ignored for non-FD frames)
      * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
@@ -341,6 +325,36 @@ public class CanFrame {
      */
     public static CanFrame create(int id, byte flags, byte[] data, int offset, int length) {
         return create(id, false, flags, data, offset, length);
+    }
+
+    /**
+     * Creates a new EFF frame from the given ID (29 bit), flags (ignored for non-FD frames)
+     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * as the backing buffer for the frame.
+     *
+     * @param id the CAN ID
+     * @param flags the CAN FD flags, ignored for non-FD frames
+     * @param data the data
+     * @return the newly created frame
+     */
+    public static CanFrame createExtended(int id, byte flags, byte[] data) {
+        return createExtended(id, flags, data, 0, data.length);
+    }
+
+    /**
+     * Creates a new EFF frame from the given ID (29 bit), flags (ignored for non-FD frames)
+     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * as the backing buffer for the frame.
+     *
+     * @param id the CAN ID
+     * @param flags the CAN FD flags, ignored for non-FD frames
+     * @param data the data
+     * @param offset the offset within data
+     * @param length amount of bytes to use from data
+     * @return the newly created frame
+     */
+    public static CanFrame createExtended(int id, byte flags, byte[] data, int offset, int length) {
+        return create(id, true, flags, data, offset, length);
     }
 
     private static CanFrame create(int id, boolean extended, byte flags, byte[] data, int offset, int length) {
