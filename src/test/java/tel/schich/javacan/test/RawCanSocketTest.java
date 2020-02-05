@@ -216,9 +216,9 @@ class RawCanSocketTest {
     }
 
     @Test
-    void testBufferReuseWithNonZeroBase() throws Exception {
+    void testBufferReuseWithNonZeroBase() {
         byte[] data = new byte[MAX_FD_DATA_LENGTH];
-        CanFrame frame = CanFrame.createExtended(0x7FFFFF, FD_NO_FLAGS, data, 0, MAX_FD_DATA_LENGTH);
+        CanFrame frame = CanFrame.createExtended(0x7FFFFF, FD_NO_FLAGS, data);
         ByteBuffer buffer = frame.getBuffer();
 
         ByteBuffer largeForReuse = ByteBuffer.allocateDirect(2 * RawCanChannel.FD_MTU);
