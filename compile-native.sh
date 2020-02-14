@@ -4,6 +4,8 @@ java_home="${1?no java home given}"
 libname="${2?no lib name given}"
 output_dir="${3?no output directory given}"
 
+cc_opts="-shared -std=c99 -O2 -flto -fPIC"
+
 base="target"
 jni="$base/jni"
 jni_headers="$base/java-jni-headers"
@@ -67,9 +69,9 @@ do
         name="$(basename "$c_file" .c)"
         out_file="$dir/$(dirname "$c_file")/$name.o"
         mkdir -p "$(dirname "$out_file")"
-        "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" -shared -fPIC -std=c99 || exit 1
+        "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" $cc_opts || exit 1
         out_files+=("$out_file")
     done
-    "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack -fPIC -fvisibility=hidden -std=c99 -shared || exit 1
+    "$proxy" "$CC" -I "$jni_libs" -o"$lib_output" "${out_files[@]}" -z noexecstack $cc_opts -fvisibility=hidden || exit 1
     mv "$lib_output" "$output_dir"
 done
