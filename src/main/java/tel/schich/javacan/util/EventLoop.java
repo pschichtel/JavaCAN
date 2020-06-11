@@ -35,7 +35,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
-abstract class EventLoop implements Closeable {
+public abstract class EventLoop implements Closeable {
     private final String name;
 
     private final ThreadFactory threadFactory;
