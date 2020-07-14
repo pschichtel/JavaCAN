@@ -241,17 +241,18 @@ public class CanBroker extends EventLoop {
      * @throws IOException if the native call fails
      */
     public void removeDevice(NetworkDevice device) throws IOException {
+        final RawCanChannel ch;
         synchronized (handlerLock) {
             if (!this.channelMap.containsKey(device)) {
                 throw new IllegalArgumentException("Device not known!");
             }
 
-            RawCanChannel ch = this.channelMap.remove(device);
+            ch = this.channelMap.remove(device);
             this.handlerMap.remove(ch);
-            cancel(ch);
-            lazyShutdown();
-            ch.close();
         }
+        cancel(ch);
+        lazyShutdown();
+        ch.close();
     }
 
     public boolean isEmpty() {
