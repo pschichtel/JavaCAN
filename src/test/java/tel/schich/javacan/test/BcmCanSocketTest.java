@@ -93,8 +93,7 @@ class BcmCanSocketTest {
                 new byte[] { 3, 4, 5 },
                 new byte[] { 6, 7, 8, 9 },
         };
-        BcmMessage message = BcmMessage.builder()
-                .opcode(BcmOpcode.TX_SETUP)
+        BcmMessage message = BcmMessage.builder(BcmOpcode.TX_SETUP)
                 .frame(CanFrame.create(0, (byte) 0, frameData[0]))
                 .frame(CanFrame.create(0, (byte) 0, frameData[1]))
                 .frame(CanFrame.create(0, (byte) 0, frameData[2]))
@@ -129,8 +128,7 @@ class BcmCanSocketTest {
                 new byte[] { 6, 7, 8, 9 },
         };
         int expectedBufferSize = BcmMessage.HEADER_LENGTH + frameData.length * RawCanChannel.FD_MTU;
-        BcmMessage message = BcmMessage.builder()
-                .opcode(BcmOpcode.TX_SETUP)
+        BcmMessage message = BcmMessage.builder(BcmOpcode.TX_SETUP)
                 .frame(CanFrame.create(0, (byte) 0, frameData[0]))
                 .frame(CanFrame.create(0, (byte) 0, frameData[1]))
                 .frame(CanFrame.create(0, (byte) 0, frameData[2]))
@@ -164,8 +162,7 @@ class BcmCanSocketTest {
     void testNonBlockingRead() throws Exception {
         Duration timeout = Duration.ofSeconds(1);
         int canId = 0x7EA;
-        BcmMessage rxFilterSetupMessage = BcmMessage.builder()
-                .opcode(BcmOpcode.RX_SETUP)
+        BcmMessage rxFilterSetupMessage = BcmMessage.builder(BcmOpcode.RX_SETUP)
                 .canId(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
                 .interval1(timeout)
@@ -199,8 +196,7 @@ class BcmCanSocketTest {
     void testBlockingRead() throws Exception {
         Duration timeout = Duration.ofSeconds(1);
         int canId = 0x7EA;
-        BcmMessage rxFilterSetupMessage = BcmMessage.builder()
-                .opcode(BcmOpcode.RX_SETUP)
+        BcmMessage rxFilterSetupMessage = BcmMessage.builder(BcmOpcode.RX_SETUP)
                 .canId(canId)
                 .flag(BcmFlag.SETTIMER).flag(BcmFlag.RX_ANNOUNCE_RESUME)
                 // double timeout on BCM, so we can test whether the read times out before the

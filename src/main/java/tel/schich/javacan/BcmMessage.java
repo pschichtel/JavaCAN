@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import tel.schich.javacan.util.BufferHelper;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -145,12 +142,11 @@ public class BcmMessage {
      * @param canId see {@link #getCanId()}
      * @param frames see {@link #getFrames()}
      */
-    @Builder
-    private BcmMessage(@NonNull BcmOpcode opcode, @Singular Set<BcmFlag> flags, int count, Duration interval1,
-            Duration interval2, int canId, @Singular List<CanFrame> frames) {
+    public BcmMessage(BcmOpcode opcode, Set<BcmFlag> flags, int count, Duration interval1, Duration interval2,
+                      int canId, List<CanFrame> frames) {
         boolean fdFrames = frames.stream().anyMatch(CanFrame::isFDFrame);
         if (fdFrames && !flags.contains(BcmFlag.CAN_FD_FRAME)) {
-            flags = new HashSet<>(flags); // the set from the builder is immutable
+            flags = new HashSet<>(flags); // the set might not be mutable
             flags.add(BcmFlag.CAN_FD_FRAME);
         }
         int frameLength = frameLength(flags);
@@ -381,4 +377,70 @@ public class BcmMessage {
     private static native int getOffsetNFrames();
 
     private static native int getOffsetFrames();
+
+    /**
+     * Provides a simple mutable builder instance, that takes all fields accept for the opcode.
+     *
+     * @param opcode The opcode, which is always required.
+     * @return a simple builder
+     */
+    public static Builder builder(BcmOpcode opcode) {
+        if (opcode == null) {
+            throw new IllegalArgumentException("opcode must not be null");
+        }
+        return new Builder(opcode);
+    }
+
+    public static class Builder {
+        private final BcmOpcode opcode;
+        private final Set<BcmFlag> flags = new HashSet<>();
+        private int count;
+        private Duration interval1;
+        private Duration interval2;
+        private int canId;
+        private final List<CanFrame> frames = new ArrayList<>();
+
+        public Builder(BcmOpcode opcode) {
+            this.opcode = opcode;
+        }
+
+        public Builder flag(BcmFlag flag) {
+            flags.add(flag);
+            return this;
+        }
+
+        public Builder count(int count) {
+            this.count = count;
+            return this;
+        }
+
+        public Builder frame(CanFrame frame) {
+            this.frames.add(frame);
+            return this;
+        }
+
+        public Builder interval1(Duration interval) {
+            this.interval1 = interval;
+            return this;
+        }
+
+        public Builder interval2(Duration interval) {
+            this.interval2 = interval;
+            return this;
+        }
+
+        public Builder canId(int canId) {
+            this.canId = canId;
+            return this;
+        }
+
+        /**
+         * Actually creates the message object based on the provided configuration.
+         *
+         * @return a new BCM message
+         */
+        public BcmMessage build() {
+            return new BcmMessage(opcode, flags, count, interval1, interval2, canId, frames);
+        }
+    }
 }
