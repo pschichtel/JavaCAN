@@ -99,6 +99,11 @@ public abstract class EventLoop implements Closeable {
      */
     protected final void cancel(SelectableChannel ch) {
         ch.keyFor(selector).cancel();
+        try {
+            this.selector.selectNow();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
