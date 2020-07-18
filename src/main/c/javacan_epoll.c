@@ -43,12 +43,10 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_createEventfd(J
     return eventfd(0, flags);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
-    jint result = eventfd_write(eventfd, (eventfd_t) value);
-    if (result < 0) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_signalEvent(JNIEnv *env, jclass class, jint eventfd, jlong value) {
+    if (eventfd_write(eventfd, (eventfd_t) value)) {
         throw_native_exception(env, "Unable to signal the eventfd");
     }
-    return result;
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_clearEvent(JNIEnv *env, jclass class, jint eventfd) {
@@ -68,42 +66,34 @@ JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_freeEvents(JNIE
     free((struct epoll_event*)(uintptr_t)eventsPointer);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_close(JNIEnv *env, jclass class, jint fd) {
-    jint result = close(fd);
-    if (result) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_close(JNIEnv *env, jclass class, jint fd) {
+    if (close(fd)) {
         throw_native_exception(env, "Unable to close epoll fd");
     }
-    return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_addFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_addFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
     struct epoll_event ev;
     ev.events = (uint32_t) interests;
     ev.data.fd = fd;
-    jint result = epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
-    if (result) {
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev)) {
         throw_native_exception(env, "Unable to add epoll file descriptor");
     }
-    return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_removeFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd) {
-    jint result = epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
-    if (result) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_removeFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd) {
+    if (epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL)) {
         throw_native_exception(env, "Unable to remove file descriptor");
     }
-    return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_updateFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_updateFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {
     struct epoll_event ev;
     ev.events = (uint32_t) interests;
     ev.data.fd = fd;
-    jint result = epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
-    if (result) {
+    if (epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev)) {
         throw_native_exception(env, "Unable to modify FD");
     }
-    return result;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {

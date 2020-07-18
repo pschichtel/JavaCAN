@@ -38,7 +38,7 @@ class EPoll {
 
     public static native int createEventfd(boolean block);
 
-    public static native int signalEvent(int eventfd, long value) throws LinuxNativeOperationException;
+    public static native void signalEvent(int eventfd, long value) throws LinuxNativeOperationException;
 
     public static native long clearEvent(int eventfd);
 
@@ -46,13 +46,13 @@ class EPoll {
 
     public static native void freeEvents(long eventsPointer);
 
-    public static native int close(int fd) throws LinuxNativeOperationException;
+    public static native void close(int fd) throws LinuxNativeOperationException;
 
-    public static native int addFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
+    public static native void addFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
 
-    public static native int removeFileDescriptor(int epollfd, int fd) throws LinuxNativeOperationException;
+    public static native void removeFileDescriptor(int epollfd, int fd) throws LinuxNativeOperationException;
 
-    public static native int updateFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
+    public static native void updateFileDescriptor(int epollfd, int fd, int interests) throws LinuxNativeOperationException;
 
     public static native int poll(int epollfd, long eventsPointer, int maxEvents, long timeout) throws LinuxNativeOperationException;
 
