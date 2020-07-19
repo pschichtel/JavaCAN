@@ -44,6 +44,9 @@ public class CanTestHelper {
 
     public static void sendFrameViaUtils(NetworkDevice device, CanFrame frame) throws IOException, InterruptedException {
         StringBuilder data = new StringBuilder();
+        if (frame.isRemoteTransmissionRequest()) {
+            data.append('R');
+        }
         ByteBuffer buf = ByteBuffer.allocateDirect(CanFrame.MAX_FD_DATA_LENGTH);
         frame.getData(buf);
         buf.flip();
@@ -51,11 +54,18 @@ public class CanTestHelper {
             data.append(String.format("%02X", buf.get()));
         }
 
+        String idString;
+        if (frame.isExtended()) {
+            idString = String.format("%08X", frame.getId());
+        } else {
+            idString = String.format("%03X", frame.getId());
+        }
+
         String textFrame;
         if (frame.isFDFrame()) {
-            textFrame = String.format("%X##%X%s", frame.getId(), frame.getFlags(), data);
+            textFrame = String.format("%s##%X%s", idString, frame.getFlags(), data);
         } else {
-            textFrame = String.format("%X#%s", frame.getId(), data);
+            textFrame = String.format("%s#%s", idString, data);
         }
         final ProcessBuilder cansend = new ProcessBuilder("cansend", device.getName(), textFrame);
         cansend.redirectError(ProcessBuilder.Redirect.INHERIT);

@@ -50,7 +50,7 @@ import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 /**
  * This class implements an event driven interface over several CAN interface to send and receive
  * {@link tel.schich.javacan.CanFrame}s over multiple {@link tel.schich.javacan.NetworkDevice}s. Received
- * frames are passed on to a {@link tel.schich.javacan.util.FrameHandler} for for each specific interface.
+ * frames are passed on to a {@link tel.schich.javacan.util.FrameHandler} for each specific interface.
  * Frames can be send either to individual interfaces or all at once.
  */
 public class CanBroker extends EventLoop {
