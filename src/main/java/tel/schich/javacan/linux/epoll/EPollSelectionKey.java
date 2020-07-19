@@ -128,4 +128,13 @@ public class EPollSelectionKey extends AbstractSelectionKey {
     public int hashCode() {
         return fd;
     }
+
+    @Override
+    public String toString() {
+        return "EPollSelectionKey(" +
+                "channel=" + channel +
+                ", fd=" + fd +
+                ", interestOps=" + interestOps +
+                ')';
+    }
 }

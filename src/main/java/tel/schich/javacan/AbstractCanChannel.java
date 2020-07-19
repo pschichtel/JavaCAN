@@ -189,4 +189,9 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             end(bytesWritten > 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(device=" + getDevice() + ", handle=" + getHandle() + ")";
+    }
 }

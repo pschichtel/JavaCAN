@@ -124,11 +124,12 @@ public class EPollSelectorTest {
 
     private static RawCanChannel configureAndRegisterChannel(AbstractSelector selector) throws IOException {
         final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
-        System.out.println("Created channel: " + ch.getHandle());
+        System.out.println("Created channel: " + ch);
 
         ch.configureBlocking(false);
         ch.setOption(CanSocketOptions.LOOPBACK, true);
-        ch.register(selector, SelectionKey.OP_READ);
+        SelectionKey key = ch.register(selector, SelectionKey.OP_READ);
+        System.out.println("Selection key: " + key);
 
         return ch;
     }

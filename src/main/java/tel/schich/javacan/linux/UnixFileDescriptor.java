@@ -51,6 +51,6 @@ public class UnixFileDescriptor implements NativeHandle {
 
     @Override
     public String toString() {
-        return "UnixFileDescriptor{" + "fd=" + fd + '}';
+        return "UnixFileDescriptor(" + fd + ')';
     }
 }
