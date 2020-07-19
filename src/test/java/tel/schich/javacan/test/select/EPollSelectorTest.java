@@ -26,8 +26,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.select.ExtensibleSelectorProvider;
+import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
@@ -36,6 +38,7 @@ import java.util.Set;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.CanChannels.PROVIDER;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -81,5 +84,52 @@ public class EPollSelectorTest {
             runDelayed(ofMillis(100), selector::wakeup);
             assertTimeoutPreemptively(ofMillis(200), (Executable) selector::select);
         }
+    }
+
+    @Test
+    public void testPollWithClosedChannel() throws IOException {
+
+        try (final AbstractSelector selector = PROVIDER.openSelector()) {
+
+            RawCanChannel firstChannel = configureAndRegisterChannel(selector);
+            firstChannel.close();
+
+            assertDoesNotThrow((Executable) selector::selectNow);
+
+        }
+    }
+
+    @Test
+    public void testEPollFdReuse() throws IOException, InterruptedException {
+
+        try (final AbstractSelector selector = PROVIDER.openSelector()) {
+
+            try (RawCanChannel firstChannel = configureAndRegisterChannel(selector)) {
+                CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
+                assertEquals(1, selector.selectNow());
+
+                // this will add the key to the cancelled set in the selector
+                firstChannel.keyFor(selector).cancel();
+
+                // closing the channel will free up the socket and epoll file descriptor
+            }
+
+            // epoll will reuse the previous file descriptor, while the fd is still in the cancelled set
+            try (RawCanChannel ignored = configureAndRegisterChannel(selector)) {
+                CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
+                assertEquals(1, selector.select(500));
+            }
+        }
+    }
+
+    private static RawCanChannel configureAndRegisterChannel(AbstractSelector selector) throws IOException {
+        final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
+        System.out.println("Created channel: " + ch.getHandle());
+
+        ch.configureBlocking(false);
+        ch.setOption(CanSocketOptions.LOOPBACK, true);
+        ch.register(selector, SelectionKey.OP_READ);
+
+        return ch;
     }
 }

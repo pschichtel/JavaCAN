@@ -116,7 +116,7 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
             ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
             return this;
         } else {
-            throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
+            throw new IllegalArgumentException("option " + option.name() + " is not supported by CAN channels!");
         }
     }
 
