@@ -29,7 +29,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <jni.h>
 #include <jni-c-to-java.h>
 
