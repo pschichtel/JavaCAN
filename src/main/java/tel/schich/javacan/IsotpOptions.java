@@ -94,9 +94,9 @@ public class IsotpOptions {
 
     @Override
     public String toString() {
-        return "IsotpOptions{" + "flags=" + flags + ", frameTransmissionTime=" + frameTransmissionTime
+        return "IsotpOptions(" + "flags=" + flags + ", frameTransmissionTime=" + frameTransmissionTime
                 + ", extendedTransmissionAddress=" + extendedTransmissionAddress + ", transmissionPadding="
                 + transmissionPadding + ", receivePadding=" + receivePadding + ", extendedReceiveAddress="
-                + extendedReceiveAddress + '}';
+                + extendedReceiveAddress + ')';
     }
 }

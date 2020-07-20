@@ -322,7 +322,7 @@ public class BcmMessage {
 
     @Override
     public String toString() {
-        return "BcmMessage{" +
+        return "BcmMessage(" +
                 "OP=" + getOpcode() +
                 ", FLAGS=" + getFlags() +
                 ", COUNT=" + getCount() +
@@ -330,7 +330,7 @@ public class BcmMessage {
                 ", IVAL2=" + getInterval2() +
                 ", CANID=" + getCanId() +
                 ", FRAMES=" + getFrameCount() +
-                '}';
+                ')';
     }
 
     /**

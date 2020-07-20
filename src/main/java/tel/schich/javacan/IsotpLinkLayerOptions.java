@@ -71,8 +71,8 @@ public class IsotpLinkLayerOptions {
 
     @Override
     public String toString() {
-        return "IsotpLinkLayerOptions{" + "maximumTranmissionUnit=" + maximumTransmissionUnit
+        return "IsotpLinkLayerOptions(" + "maximumTranmissionUnit=" + maximumTransmissionUnit
                 + ", transmissionDataLength=" + transmissionDataLength + ", transmissionFlags=" + transmissionFlags
-                + '}';
+                + ')';
     }
 }

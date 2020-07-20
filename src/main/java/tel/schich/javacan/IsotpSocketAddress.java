@@ -88,7 +88,7 @@ public class IsotpSocketAddress extends SocketAddress {
 
     @Override
     public String toString() {
-        return "IsotpSocketAddress{" + "id=" + id + '}';
+        return "IsotpSocketAddress(" + "id=" + id + ')';
     }
 
     /**

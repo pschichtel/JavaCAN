@@ -71,7 +71,7 @@ public class IsotpFlowControlOptions {
 
     @Override
     public String toString() {
-        return "IsotpFlowControlOptions{" + "blockSize=" + blockSize + ", minimumSeparationTime="
-                + minimumSeparationTime + ", maximumWaitFrameTransmission=" + maximumWaitFrameTransmission + '}';
+        return "IsotpFlowControlOptions(" + "blockSize=" + blockSize + ", minimumSeparationTime="
+                + minimumSeparationTime + ", maximumWaitFrameTransmission=" + maximumWaitFrameTransmission + ')';
     }
 }

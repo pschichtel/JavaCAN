@@ -70,7 +70,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
 
     @Override
     public String toString() {
-        return "LinuxNetworkDevice{" + "name='" + name + '\'' + ", index=" + index + '}';
+        return "LinuxNetworkDevice(" + "name='" + name + '\'' + ", index=" + index + ')';
     }
 
     @Override
