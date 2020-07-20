@@ -133,19 +133,19 @@ public class EPollSelector extends AbstractSelector {
         if (!(nativeHandle instanceof UnixFileDescriptor)) {
             throw new IllegalSelectorException();
         }
-        int socket = ((UnixFileDescriptor) nativeHandle).getFD();
+        int duplicateFd = EPoll.duplicateFD(((UnixFileDescriptor) nativeHandle).getFD());
 
         try {
-            EPoll.addFileDescriptor(epollfd, socket, translateInterestsToEPoll(ops));
+            EPoll.addFileDescriptor(epollfd, duplicateFd, translateInterestsToEPoll(ops));
         } catch (LinuxNativeOperationException ex) {
             throw new RuntimeException(ex);
         }
 
-        EPollSelectionKey key = new EPollSelectionKey(this, ch, socket, ops);
+        EPollSelectionKey key = new EPollSelectionKey(this, ch, duplicateFd, ops);
         key.attach(att);
         synchronized (keyCollectionsLock) {
             this.keys.add(key);
-            this.fdToKey.put(socket, key);
+            this.fdToKey.put(duplicateFd, key);
         }
         return key;
     }

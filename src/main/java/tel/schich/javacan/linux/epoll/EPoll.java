@@ -57,4 +57,6 @@ class EPoll {
     public static native int poll(int epollfd, long eventsPointer, int maxEvents, long timeout) throws LinuxNativeOperationException;
 
     public static native int extractEvents(long eventsPointer, int n, int[] events, int[] fds);
+
+    public static native int duplicateFD(int fd);
 }

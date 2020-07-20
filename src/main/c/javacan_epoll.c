@@ -105,7 +105,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_poll(JNIEnv *en
 }
 
 JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JNIEnv *env, jclass class, jlong eventsPointer, jint n, jintArray events, jintArray fds) {
-
     if (n <= 0) {
         return 0;
     }
@@ -136,4 +135,13 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JN
     (*env)->ReleasePrimitiveArrayCritical(env, fds, criticalFds, false);
 
     return 0;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_duplicateFD(JNIEnv *env, jclass class, jint fd) {
+    int duplicate = dup(fd);
+    if (duplicate == -1) {
+        throw_native_exception(env, "Unable to duplicate FD");
+    }
+
+    return duplicate;
 }

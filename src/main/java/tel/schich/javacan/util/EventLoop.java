@@ -96,9 +96,15 @@ public abstract class EventLoop implements Closeable {
      * Cancels the given {@link java.nio.channels.SelectableChannel}'s {@link java.nio.channels.SelectionKey}.
      *
      * @param ch the channel to cancel the key for
+     * @return true of the channel was actually cancelled, false if the channel was not registered
      */
-    protected final void cancel(SelectableChannel ch) {
-        ch.keyFor(selector).cancel();
+    protected final boolean cancel(SelectableChannel ch) {
+        SelectionKey key = ch.keyFor(selector);
+        if (key != null) {
+            key.cancel();
+            return true;
+        }
+        return false;
     }
 
     /**
