@@ -67,9 +67,7 @@ JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_freeEvents(JNIE
 }
 
 JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_close(JNIEnv *env, jclass class, jint fd) {
-    if (close(fd)) {
-        throw_native_exception(env, "Unable to close epoll fd");
-    }
+    close_fd(env, fd);
 }
 
 JNIEXPORT void JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_addFileDescriptor(JNIEnv *env, jclass class, jint epollfd, jint fd, jint interests) {

@@ -42,7 +42,7 @@ class SocketCAN {
 
 	public static native int connectSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
-    public static native int close(int sock) throws LinuxNativeOperationException;
+    public static native void close(int sock) throws LinuxNativeOperationException;
 
     public static native int setBlockingMode(int sock, boolean block) throws LinuxNativeOperationException;
 

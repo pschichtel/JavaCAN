@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  */
 #include "common.h"
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
@@ -73,7 +74,7 @@ int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {
     return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
 }
 
-int get_timeout(int sock, int type, uint64_t* micros) {
+int get_timeout(int sock, int type, uint64_t *micros) {
     socklen_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
 
@@ -82,7 +83,7 @@ int get_timeout(int sock, int type, uint64_t* micros) {
         return result;
     }
 
-    *micros = ((uint64_t)timeout.tv_sec) * MICROS_PER_SECOND + timeout.tv_usec;
+    *micros = ((uint64_t) timeout.tv_sec) * MICROS_PER_SECOND + timeout.tv_usec;
     return result;
 }
 
@@ -148,4 +149,10 @@ void throw_native_exception(JNIEnv *env, char *msg) {
     int errorNumber = errno;
 
     throw_tel_schich_javacan_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
+}
+
+void close_fd(JNIEnv *env, int fd) {
+    if (close(fd)) {
+        throw_native_exception(env, "Unable to close epoll fd");
+    }
 }

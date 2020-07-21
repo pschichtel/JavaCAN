@@ -73,12 +73,8 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocket(JNIEnv *e
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {
-    jint result = close(sock);
-    if (result) {
-        throw_native_exception(env, "Unable to close socket");
-    }
-    return result;
+JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {
+    close_fd(env, sock);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv *env, jclass class, jint sock, jboolean block) {
