@@ -134,12 +134,3 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_extractEvents(JN
 
     return 0;
 }
-
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_linux_epoll_EPoll_duplicateFD(JNIEnv *env, jclass class, jint fd) {
-    int duplicate = dup(fd);
-    if (duplicate == -1) {
-        throw_native_exception(env, "Unable to duplicate FD");
-    }
-
-    return duplicate;
-}

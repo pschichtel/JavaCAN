@@ -133,19 +133,19 @@ public class EPollSelector extends AbstractSelector {
         if (!(nativeHandle instanceof UnixFileDescriptor)) {
             throw new IllegalSelectorException();
         }
-        int duplicateFd = EPoll.duplicateFD(((UnixFileDescriptor) nativeHandle).getFD());
+        int fd = ((UnixFileDescriptor) nativeHandle).getFD();
 
         try {
-            EPoll.addFileDescriptor(epollfd, duplicateFd, translateInterestsToEPoll(ops));
+            EPoll.addFileDescriptor(epollfd, fd, translateInterestsToEPoll(ops));
         } catch (LinuxNativeOperationException ex) {
             throw new RuntimeException(ex);
         }
 
-        EPollSelectionKey key = new EPollSelectionKey(this, ch, duplicateFd, ops);
+        EPollSelectionKey key = new EPollSelectionKey(this, ch, fd, ops);
         key.attach(att);
         synchronized (keyCollectionsLock) {
             this.keys.add(key);
-            this.fdToKey.put(duplicateFd, key);
+            this.fdToKey.put(fd, key);
         }
         return key;
     }
@@ -190,7 +190,11 @@ public class EPollSelector extends AbstractSelector {
             fdToKey.remove(key.getFd());
             keys.remove(key);
             deregister(key);
-            EPoll.removeFileDescriptor(epollfd, key.getFd());
+            // only remove the FD from epoll if the channel is still open, otherwise the FD is gone already and
+            // already deregistered automatically
+            if (key.channel().isOpen()) {
+                EPoll.removeFileDescriptor(epollfd, key.getFd());
+            }
         }
     }
 
