@@ -4,6 +4,11 @@ java_home="${1?no java home given}"
 libname="${2?no lib name given}"
 output_dir="${3?no output directory given}"
 
+if ! [ -e "$java_home/include/jni.h" ]
+then
+  java_home="$(dirname "$java_home")"
+fi
+
 cc_opts=('-shared' '-std=c99' '-O2' '-flto' '-fPIC')
 
 base="target"
