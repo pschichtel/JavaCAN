@@ -35,10 +35,24 @@ public abstract class BufferHelper {
      * The platform dependent byte count for a native long.
      */
     public static final int LONG_SIZE;
+    private static final PlatformLongReader PLATFORM_LONG_READER;
+    private static final PlatformLongWriter PLATFORM_LONG_WRITER;
 
     static {
         JavaCAN.initialize();
         LONG_SIZE = getLongSize();
+        switch (LONG_SIZE) {
+            case Integer.BYTES:
+                PLATFORM_LONG_READER = BufferHelper::readInt;
+                PLATFORM_LONG_WRITER = BufferHelper::writeInt;
+                break;
+            case Long.BYTES:
+                PLATFORM_LONG_READER = BufferHelper::readLong;
+                PLATFORM_LONG_WRITER = BufferHelper::writeLong;
+                break;
+            default:
+                throw new UnsupportedPlatformException();
+        }
     }
 
     private BufferHelper() {
@@ -94,14 +108,7 @@ public abstract class BufferHelper {
      * @return the long value
      */
     public static long getPlatformLong(ByteBuffer buffer, int offset) {
-        switch (LONG_SIZE) {
-            case 4:
-                return buffer.getInt(offset);
-            case 8:
-                return buffer.getLong(offset);
-            default:
-                throw new UnsupportedPlatformException();
-        }
+        return PLATFORM_LONG_READER.read(buffer, offset);
     }
 
     /**
@@ -113,17 +120,34 @@ public abstract class BufferHelper {
      * @return the amount of bytes written
      */
     public static int putPlatformLong(ByteBuffer buffer, int offset, long value) {
-        switch (LONG_SIZE) {
-            case 4:
-                buffer.putInt(offset, (int) value);
-                return 4;
-            case 8:
-                buffer.putLong(offset, value);
-                return 8;
-            default:
-                throw new UnsupportedPlatformException();
-        }
+        return PLATFORM_LONG_WRITER.write(buffer, offset, value);
     }
 
     private static native int getLongSize();
+
+    private static int writeInt(ByteBuffer buf, int offset, long value) {
+        buf.putInt(offset, (int) value);
+        return Integer.BYTES;
+    }
+
+    private static int writeLong(ByteBuffer buf, int offset, long value) {
+        buf.putLong(offset, value);
+        return Long.BYTES;
+    }
+
+    public static long readInt(ByteBuffer buf, int offset) {
+        return buf.getInt(offset);
+    }
+
+    public static long readLong(ByteBuffer buf, int offset) {
+        return buf.getLong(offset);
+    }
+
+    private interface PlatformLongReader {
+        long read(ByteBuffer buf, int offset);
+    }
+
+    private interface PlatformLongWriter {
+        int write(ByteBuffer buf, int offset, long value);
+    }
 }
