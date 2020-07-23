@@ -91,7 +91,7 @@
         <dependency>
             <groupId>tel.schich</groupId>
             <artifactId>jni-access-generator</artifactId>
-            <version>1.0.2</version>
+            <version>1.1.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -133,9 +133,10 @@
                     <optimize>true</optimize>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
-                    <compilerArguments>
-                        <h>${headers.target}</h>
-                    </compilerArguments>
+                    <compilerArgs>
+                        <compilerArg>-Agenerate.jni.headers=true</compilerArg>
+                        <compilerArg>-Aoutput.location=${headers.target}</compilerArg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
