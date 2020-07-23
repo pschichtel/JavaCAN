@@ -133,11 +133,18 @@
                     <optimize>true</optimize>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
-                    <compilerArgs>
-                        <compilerArg>-Agenerate.jni.headers=true</compilerArg>
-                        <compilerArg>-Aoutput.location=${headers.target}</compilerArg>
-                    </compilerArgs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <compilerArgs>
+                                <compilerArg>-Agenerate.jni.headers=true</compilerArg>
+                                <compilerArg>-Aoutput.location=${headers.target}</compilerArg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
