@@ -186,8 +186,13 @@ public class EPollSelector extends AbstractSelector {
     }
 
     private void deregisterKey(EPollSelectionKey key) throws IOException {
+        final int fd = key.getFd();
         synchronized (keyCollectionsLock) {
-            fdToKey.remove(key.getFd());
+            EPollSelectionKey keyToBeRemoved = fdToKey.get(fd);
+            // the key might have changed already due to FD reuse
+            if (keyToBeRemoved == key) {
+                fdToKey.remove(fd);
+            }
             keys.remove(key);
             deregister(key);
             // only remove the FD from epoll if the channel is still open, otherwise the FD is gone already and
