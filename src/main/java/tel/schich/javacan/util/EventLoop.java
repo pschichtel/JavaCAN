@@ -28,7 +28,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.AbstractSelector;
+import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.time.Duration;
 import java.util.Iterator;
@@ -40,7 +40,7 @@ public abstract class EventLoop implements Closeable {
 
     private final ThreadFactory threadFactory;
     private final SelectorProvider provider;
-    private final AbstractSelector selector;
+    private final Selector selector;
     private final Duration timeout;
 
     private PollingThread poller;

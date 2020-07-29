@@ -101,8 +101,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @throws IOException if the socket is not readable
      */
     public BcmMessage read() throws IOException {
-        int length = MTU;
-        ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
+        ByteBuffer frameBuf = ByteBuffer.allocateDirect(MTU);
         return read(frameBuf);
     }
 
