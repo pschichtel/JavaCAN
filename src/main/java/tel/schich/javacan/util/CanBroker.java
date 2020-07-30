@@ -43,9 +43,9 @@ import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 
 import static java.time.Duration.ofMinutes;
-import static tel.schich.javacan.CanChannels.PROVIDER;
 import static tel.schich.javacan.CanSocketOptions.FILTER;
 import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
+import static tel.schich.javacan.linux.epoll.EPollSelector.PROVIDER;
 
 /**
  * This class implements an event driven interface over several CAN interface to send and receive

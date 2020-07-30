@@ -23,9 +23,8 @@
 package tel.schich.javacan;
 
 import java.io.IOException;
-import java.nio.channels.spi.SelectorProvider;
 
-import tel.schich.javacan.select.ExtensibleSelectorProvider;
+import static tel.schich.javacan.linux.epoll.EPollSelector.PROVIDER;
 
 /**
  * This utility class provides helper methods to easily create new channels similar to those in
@@ -37,12 +36,6 @@ import tel.schich.javacan.select.ExtensibleSelectorProvider;
  * implementation.
  */
 public class CanChannels {
-
-    /**
-     * A {@link java.nio.channels.spi.SelectorProvider} implementation that supports custom
-     * {@link java.nio.channels.Channel} implementations just like this one.
-     */
-    public static final SelectorProvider PROVIDER = new ExtensibleSelectorProvider();
 
     private CanChannels() {
     }

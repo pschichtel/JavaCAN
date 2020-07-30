@@ -28,17 +28,18 @@ import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.linux.epoll.EPollSelector;
 import tel.schich.javacan.select.ExtensibleSelectorProvider;
 import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelector;
 import java.util.Set;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.CanChannels.PROVIDER;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.CanSocketOptions.RECV_OWN_MSGS;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -55,7 +56,7 @@ public class EPollSelectorTest {
     @Test
     public void testWriteRead() throws IOException {
         try (RawCanChannel ch = CanChannels.newRawChannel()) {
-            try (AbstractSelector selector = ch.provider().openSelector()) {
+            try (Selector selector = EPollSelector.open()) {
                 ch.setOption(RECV_OWN_MSGS, true);
                 ch.configureBlocking(false);
                 ch.bind(CAN_INTERFACE);
@@ -79,8 +80,7 @@ public class EPollSelectorTest {
 
     @Test
     public void testWakeup() throws IOException {
-        ExtensibleSelectorProvider provider = new ExtensibleSelectorProvider();
-        try (AbstractSelector selector = provider.openSelector()) {
+        try (AbstractSelector selector = EPollSelector.open()) {
             runDelayed(ofMillis(100), selector::wakeup);
             assertTimeoutPreemptively(ofMillis(200), (Executable) selector::select);
         }
@@ -89,7 +89,7 @@ public class EPollSelectorTest {
     @Test
     public void testPollWithClosedChannel() throws IOException {
 
-        try (final AbstractSelector selector = PROVIDER.openSelector()) {
+        try (final Selector selector = EPollSelector.open()) {
 
             RawCanChannel firstChannel = configureAndRegisterChannel(selector);
             firstChannel.close();
@@ -102,7 +102,7 @@ public class EPollSelectorTest {
     @Test
     public void testEPollFdReuse() throws IOException, InterruptedException {
 
-        try (final AbstractSelector selector = PROVIDER.openSelector()) {
+        try (final AbstractSelector selector = EPollSelector.open()) {
 
             try (RawCanChannel firstChannel = configureAndRegisterChannel(selector)) {
                 CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
@@ -122,7 +122,7 @@ public class EPollSelectorTest {
         }
     }
 
-    private static RawCanChannel configureAndRegisterChannel(AbstractSelector selector) throws IOException {
+    private static RawCanChannel configureAndRegisterChannel(Selector selector) throws IOException {
         final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
         System.out.println("Created channel: " + ch);
 

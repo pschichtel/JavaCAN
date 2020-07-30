@@ -24,6 +24,7 @@ package tel.schich.javacan.linux.epoll;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.ExtensibleSelectorProvider;
 import tel.schich.javacan.select.NativeChannel;
 import tel.schich.javacan.select.NativeHandle;
 import tel.schich.javacan.util.UngrowableSet;
@@ -53,6 +54,12 @@ import static java.util.Collections.unmodifiableSet;
  * This implementation does not expose any more public APIs.
  */
 public class EPollSelector extends AbstractSelector {
+
+    /**
+     * A {@link java.nio.channels.spi.SelectorProvider} implementation that supports custom
+     * {@link java.nio.channels.Channel} implementations just like this one.
+     */
+    public static final SelectorProvider PROVIDER = new ExtensibleSelectorProvider();
 
     private static final long SELECT_NO_BLOCKING = 0;
     private static final long SELECT_BLOCK_INDEFINITELY = -1;
@@ -291,5 +298,13 @@ public class EPollSelector extends AbstractSelector {
             throw new RuntimeException(ex);
         }
         return this;
+    }
+
+    public static EPollSelector open() throws IOException {
+        return new EPollSelector(PROVIDER);
+    }
+
+    public static EPollSelector open(int maxEvents) throws IOException {
+        return new EPollSelector(PROVIDER, maxEvents);
     }
 }
