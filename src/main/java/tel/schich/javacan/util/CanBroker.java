@@ -70,7 +70,7 @@ public class CanBroker extends EventLoop {
     private volatile boolean loopback = true;
 
     public CanBroker(ThreadFactory threadFactory) throws IOException {
-        this(threadFactory, PROVIDER, DEFAULT_TIMEOUT);
+        this(threadFactory, DEFAULT_TIMEOUT);
     }
 
     public CanBroker(ThreadFactory threadFactory, Duration timeout) throws IOException {
