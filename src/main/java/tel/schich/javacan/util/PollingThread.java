@@ -22,7 +22,9 @@
  */
 package tel.schich.javacan.util;
 
+import java.time.Duration;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 
@@ -49,7 +51,7 @@ final class PollingThread {
         thread.join();
     }
 
-    static PollingThread create(String name, long timeout, ThreadFactory factory, PollFunction foo, PollExceptionHandler exceptionHandler) {
+    static PollingThread create(String name, Duration timeout, ThreadFactory factory, PollFunction foo, PollExceptionHandler exceptionHandler) {
         Poller p = new Poller(name, timeout, foo, exceptionHandler);
         Thread t = factory.newThread(p);
         t.setUncaughtExceptionHandler(p);
@@ -58,13 +60,13 @@ final class PollingThread {
 
     private final static class Poller implements Runnable, Thread.UncaughtExceptionHandler {
         private final String name;
-        private final long timeout;
+        private final Duration timeout;
         private final PollFunction foo;
         private final PollExceptionHandler exceptionHandler;
 
         private volatile boolean keepPolling = true;
 
-        Poller(String name, long timeout, PollFunction foo, PollExceptionHandler eh) {
+        Poller(String name, Duration timeout, PollFunction foo, PollExceptionHandler eh) {
             this.name = name;
             this.timeout = timeout;
             this.foo = foo;

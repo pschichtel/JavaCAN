@@ -24,23 +24,21 @@ package tel.schich.javacan.linux.epoll;
 
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.linux.UnixFileDescriptor;
-import tel.schich.javacan.select.ExtensibleSelectorProvider;
+import tel.schich.javacan.select.IOEvent;
+import tel.schich.javacan.select.IOSelector;
 import tel.schich.javacan.select.NativeChannel;
 import tel.schich.javacan.select.NativeHandle;
-import tel.schich.javacan.util.UngrowableSet;
+import tel.schich.javacan.select.SelectorRegistration;
 
 import java.io.IOException;
+import java.nio.channels.Channel;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.IllegalSelectorException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.AbstractSelector;
-import java.nio.channels.spi.SelectorProvider;
+import java.time.Duration;
 import java.util.*;
 
 import static java.util.Collections.newSetFromMap;
-import static java.util.Collections.unmodifiableSet;
 
 /**
  * This is an implementation of the {@link java.nio.channels.Selector} API relying on Linux' epoll API to poll for
@@ -53,37 +51,27 @@ import static java.util.Collections.unmodifiableSet;
  * <p>
  * This implementation does not expose any more public APIs.
  */
-public class EPollSelector extends AbstractSelector {
-
-    /**
-     * A {@link java.nio.channels.spi.SelectorProvider} implementation that supports custom
-     * {@link java.nio.channels.Channel} implementations just like this one.
-     */
-    public static final SelectorProvider PROVIDER = new ExtensibleSelectorProvider();
+public class EPollSelector implements IOSelector<UnixFileDescriptor> {
 
     private static final long SELECT_NO_BLOCKING = 0;
     private static final long SELECT_BLOCK_INDEFINITELY = -1;
+
+    private volatile boolean open = true;
 
     private final int epollfd;
     private final long eventsPointer;
     private final int maxEvents;
     private final int eventfd;
 
-    private final Set<SelectionKey> keys;
-    private final Set<SelectionKey> selectionKeys;
-    private final Map<Integer, EPollSelectionKey> fdToKey;
+    private final Set<SelectorRegistration<UnixFileDescriptor, ?>> registrations;
+    private final Map<Integer, SelectorRegistration<UnixFileDescriptor, ?>> fdToKey;
     private final Object keyCollectionsLock = new Object();
 
-    private final Set<SelectionKey> publicKeys;
-    private final Set<SelectionKey> publicSelectionKeys;
-
-    public EPollSelector(SelectorProvider provider) throws LinuxNativeOperationException {
-        this(provider, 100);
+    public EPollSelector() throws LinuxNativeOperationException {
+        this(100);
     }
 
-    public EPollSelector(SelectorProvider provider, int maxEvents) throws LinuxNativeOperationException {
-        super(provider);
-
+    public EPollSelector(int maxEvents) throws LinuxNativeOperationException {
         this.epollfd = EPoll.create();
         this.maxEvents = maxEvents;
         this.eventsPointer = EPoll.newEvents(maxEvents);
@@ -91,16 +79,13 @@ public class EPollSelector extends AbstractSelector {
         this.eventfd = EPoll.createEventfd(false);
         EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN);
 
-        this.keys = newSetFromMap(new IdentityHashMap<>());
-        this.selectionKeys = newSetFromMap(new IdentityHashMap<>());
+        this.registrations = newSetFromMap(new IdentityHashMap<>());
         this.fdToKey = new HashMap<>();
-
-        this.publicKeys = unmodifiableSet(this.keys);
-        this.publicSelectionKeys = new UngrowableSet<>(this.selectionKeys);
     }
 
-    @Override
-    protected void implCloseSelector() throws IOException {
+    public void close() throws IOException {
+        open = false;
+
         EPoll.freeEvents(eventsPointer);
         IOException e = null;
         try {
@@ -121,18 +106,49 @@ public class EPollSelector extends AbstractSelector {
         }
     }
 
+    public boolean isOpen() {
+        return open;
+    }
+
     private void ensureOpen() {
         if (!isOpen())
             throw new ClosedSelectorException();
     }
 
-    void updateOps(EPollSelectionKey key, int ops) throws IOException {
-        EPoll.updateFileDescriptor(epollfd, key.getFd(), ops);
+
+
+    public <ChannelType extends Channel> SelectorRegistration<UnixFileDescriptor, ChannelType> updateRegistration(SelectorRegistration<UnixFileDescriptor, ChannelType> key, Set<SelectorRegistration.Operation> newOps) throws IOException {
+        if (key.getSelector() != this) {
+            throw new IllegalArgumentException("Key is not registered here!");
+        }
+        synchronized (this.keyCollectionsLock) {
+            UnixFileDescriptor fd = key.getHandle();
+            Set<SelectorRegistration.Operation> current = key.getOperations();
+            if (!current.equals(newOps)) {
+                if (newOps.isEmpty()) {
+                    EPoll.removeFileDescriptor(epollfd, fd.getValue());
+                } else {
+                    int interests = translateInterestsToEPoll(newOps);
+                    if (current.isEmpty()) {
+                        EPoll.addFileDescriptor(epollfd, fd.getValue(), interests);
+                    } else {
+                        EPoll.updateFileDescriptor(epollfd, fd.getValue(), interests);
+                    }
+                }
+            }
+            EPollRegistration newRegistration = new EPollRegistration(this, key.getChannel(), fd, newOps);
+            this.registrations.remove(key);
+            this.registrations.add(newRegistration);
+            this.fdToKey.put(fd.getValue(), newRegistration);
+            return newRegistration;
+        }
     }
 
-    @Override
-    protected SelectionKey register(AbstractSelectableChannel ch, int ops, Object att) {
+    public <ChannelType extends Channel> SelectorRegistration<UnixFileDescriptor, ChannelType> register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws ClosedChannelException {
         ensureOpen();
+        if (!ch.isOpen()) {
+            throw new ClosedChannelException();
+        }
         if (!(ch instanceof NativeChannel)) {
             throw new IllegalSelectorException();
         }
@@ -140,7 +156,7 @@ public class EPollSelector extends AbstractSelector {
         if (!(nativeHandle instanceof UnixFileDescriptor)) {
             throw new IllegalSelectorException();
         }
-        int fd = ((UnixFileDescriptor) nativeHandle).getFD();
+        int fd = ((UnixFileDescriptor) nativeHandle).getValue();
 
         try {
             EPoll.addFileDescriptor(epollfd, fd, translateInterestsToEPoll(ops));
@@ -148,107 +164,76 @@ public class EPollSelector extends AbstractSelector {
             throw new RuntimeException(ex);
         }
 
-        EPollSelectionKey key = new EPollSelectionKey(this, ch, fd, ops);
-        key.attach(att);
+        EPollRegistration<ChannelType> key = new EPollRegistration<ChannelType>(this, ch, new UnixFileDescriptor(fd), ops);
         synchronized (keyCollectionsLock) {
-            this.keys.add(key);
+            this.registrations.add(key);
             this.fdToKey.put(fd, key);
         }
         return key;
     }
 
-    private static int translateInterestsToEPoll(int ops) {
+    private static int translateInterestsToEPoll(Set<SelectorRegistration.Operation> ops) {
         int newOps = 0;
-        if ((ops & SelectionKey.OP_READ) != 0)
-            newOps |= EPoll.EPOLLIN;
-        if ((ops & SelectionKey.OP_WRITE) != 0)
-            newOps |= EPoll.EPOLLOUT;
-        if ((ops & SelectionKey.OP_CONNECT) != 0)
-            newOps |= EPoll.EPOLLIN;
-        if ((ops & SelectionKey.OP_ACCEPT) != 0)
-            newOps |= EPoll.EPOLLIN;
+        for (SelectorRegistration.Operation op : ops) {
+            switch (op) {
+                case READ:
+                case ACCEPT:
+                case CONNECT:
+                    newOps |= EPoll.EPOLLIN;
+                    break;
+                case WRITE:
+                    newOps |= EPoll.EPOLLOUT;
+                    break;
+            }
+        }
         return newOps;
     }
 
-    private static int translateInterestsFromEPoll(int ops) {
-        int newOps = 0;
+    private static Set<SelectorRegistration.Operation> translateInterestsFromEPoll(int ops) {
+        Set<SelectorRegistration.Operation> newOps = EnumSet.noneOf(SelectorRegistration.Operation.class);
         if ((ops & EPoll.EPOLLIN) != 0)
-            newOps |= SelectionKey.OP_READ;
+            newOps.add(SelectorRegistration.Operation.READ);
         if ((ops & EPoll.EPOLLOUT) != 0)
-            newOps |= SelectionKey.OP_WRITE;
+            newOps.add(SelectorRegistration.Operation.WRITE);
 
         return newOps;
     }
 
-    @Override
-    public Set<SelectionKey> keys() {
-        ensureOpen();
-        return publicKeys;
+    public Set<SelectorRegistration<UnixFileDescriptor, ?>> getRegistrations() {
+        return new HashSet<>(registrations);
     }
 
-    @Override
-    public Set<SelectionKey> selectedKeys() {
-        ensureOpen();
-        return publicSelectionKeys;
-    }
-
-    private void deregisterKey(EPollSelectionKey key) throws IOException {
-        final int fd = key.getFd();
+    public <ChannelType extends Channel> boolean cancel(SelectorRegistration<UnixFileDescriptor, ChannelType> registration) throws IOException {
+        if (registration.getSelector() != this) {
+            return false;
+        }
+        final int fd = registration.getHandle().getValue();
         synchronized (keyCollectionsLock) {
-            EPollSelectionKey keyToBeRemoved = fdToKey.get(fd);
-            // the key might have changed already due to FD reuse
-            if (keyToBeRemoved == key) {
+            SelectorRegistration<UnixFileDescriptor, ?> toBeRemoved = fdToKey.get(fd);
+            // the registration might have changed already due to FD reuse
+            if (toBeRemoved == registration) {
                 fdToKey.remove(fd);
             }
-            keys.remove(key);
-            deregister(key);
-            // only remove the FD from epoll if the channel is still open, otherwise the FD is gone already and
-            // already deregistered automatically
-            if (key.channel().isOpen()) {
-                EPoll.removeFileDescriptor(epollfd, key.getFd());
+            registrations.remove(registration);
+            if (!registration.getOperations().isEmpty()) {
+                EPoll.removeFileDescriptor(epollfd, fd);
             }
         }
+        return true;
     }
 
-    private void processDeregisterQueue() throws IOException {
-        Set<SelectionKey> cancelled = cancelledKeys();
-        // synchronization on the set is demanded by the interface
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (cancelled) {
-            if (!cancelled.isEmpty()) {
-                Iterator<SelectionKey> i = cancelled.iterator();
-                synchronized (keyCollectionsLock) {
-                    while (i.hasNext()) {
-                        SelectionKey key = i.next();
-                        i.remove();
-
-                        if (key instanceof EPollSelectionKey) {
-                            deregisterKey((EPollSelectionKey) key);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private int poll(long timeout) throws IOException {
+    private List<IOEvent<UnixFileDescriptor>> poll(long timeout) throws IOException {
         ensureOpen();
 
-        processDeregisterQueue();
-
-        int n;
-        begin();
-        try {
-            n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
-        } finally {
-            end();
-        }
+        int n = EPoll.poll(epollfd, eventsPointer, maxEvents, timeout);
 
         int[] events = new int[n];
         int[] fds = new int[n];
         if (EPoll.extractEvents(eventsPointer, n, events, fds) != 0) {
             throw new LinuxNativeOperationException("Unable to extract events");
         }
+
+        List<IOEvent<UnixFileDescriptor>> ioEvents = new ArrayList<>(n);
 
         synchronized (keyCollectionsLock) {
             int fd;
@@ -257,54 +242,48 @@ public class EPollSelector extends AbstractSelector {
                 if (fd == eventfd) {
                     EPoll.clearEvent(eventfd);
                 } else {
-                    EPollSelectionKey key = fdToKey.get(fd);
+                    SelectorRegistration<UnixFileDescriptor, ?> key = fdToKey.get(fd);
                     if (key != null) {
-                        int ops = translateInterestsFromEPoll(events[i]);
-                        boolean added = selectionKeys.add(key);
-                        if (added) {
-                            key.setReadyOps(ops);
-                        } else {
-                            key.mergeReadyOps(ops);
-                        }
+                        Set<SelectorRegistration.Operation> ops = translateInterestsFromEPoll(events[i]);
+                        ioEvents.add(new IOEvent<>(key, ops));
                     }
                 }
             }
         }
 
-        return n;
+        return ioEvents;
     }
 
     @Override
-    public int selectNow() throws IOException {
+    public List<IOEvent<UnixFileDescriptor>> selectNow() throws IOException {
         return poll(SELECT_NO_BLOCKING);
     }
 
     @Override
-    public int select(long timeout) throws IOException {
-        return poll(timeout <= 0 ? -1 : timeout);
+    public List<IOEvent<UnixFileDescriptor>> select(Duration timeout) throws IOException {
+        return poll(timeout == null ? SELECT_BLOCK_INDEFINITELY : timeout.toMillis());
     }
 
     @Override
-    public int select() throws IOException {
+    public List<IOEvent<UnixFileDescriptor>> select() throws IOException {
         return poll(SELECT_BLOCK_INDEFINITELY);
     }
 
     @Override
-    public Selector wakeup() {
+    public void wakeup() {
         ensureOpen();
         try {
             EPoll.signalEvent(eventfd, 1);
         } catch (LinuxNativeOperationException ex) {
             throw new RuntimeException(ex);
         }
-        return this;
     }
 
     public static EPollSelector open() throws IOException {
-        return new EPollSelector(PROVIDER);
+        return new EPollSelector();
     }
 
     public static EPollSelector open(int maxEvents) throws IOException {
-        return new EPollSelector(PROVIDER, maxEvents);
+        return new EPollSelector(maxEvents);
     }
 }

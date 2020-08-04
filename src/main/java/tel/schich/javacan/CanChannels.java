@@ -24,15 +24,9 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
-import static tel.schich.javacan.linux.epoll.EPollSelector.PROVIDER;
-
 /**
  * This utility class provides helper methods to easily create new channels similar to those in
  * {@link java.nio.file.Files} and {@link java.nio.channels.Channels}.
- *
- * The most important advantage of this helper is, that channels will be created with the proper
- * {@link java.nio.channels.spi.SelectorProvider}, as only the customized
- * {@link tel.schich.javacan.select.ExtensibleSelectorProvider} provides a compatible {@link java.nio.channels.Selector}
  * implementation.
  */
 public class CanChannels {
@@ -48,7 +42,7 @@ public class CanChannels {
      */
     public static RawCanChannel newRawChannel() throws IOException {
         int fd = SocketCAN.createRawSocket();
-        return new RawCanChannelImpl(PROVIDER, fd);
+        return new RawCanChannelImpl(fd);
     }
 
     /**
@@ -84,7 +78,7 @@ public class CanChannels {
      */
     public static BcmCanChannel newBcmChannel() throws IOException {
         int fd = SocketCAN.createBcmSocket();
-        return new BcmCanChannel(PROVIDER, fd);
+        return new BcmCanChannel(fd);
     }
 
     /**
@@ -119,7 +113,7 @@ public class CanChannels {
      */
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
-        return new IsotpCanChannelImpl(PROVIDER, fd);
+        return new IsotpCanChannelImpl(fd);
     }
 
     /**

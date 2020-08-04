@@ -28,15 +28,17 @@ import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.linux.UnixFileDescriptor;
 import tel.schich.javacan.linux.epoll.EPollSelector;
-import tel.schich.javacan.select.ExtensibleSelectorProvider;
+import tel.schich.javacan.select.IOEvent;
+import tel.schich.javacan.select.IOSelector;
+import tel.schich.javacan.select.SelectorRegistration;
 import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.AbstractSelector;
-import java.util.Set;
+import java.time.Duration;
+import java.util.EnumSet;
+import java.util.List;
 
 import static java.time.Duration.ofMillis;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,28 +51,26 @@ public class EPollSelectorTest {
 
     @Test
     public void testOpenClose() throws IOException {
-        ExtensibleSelectorProvider provider = new ExtensibleSelectorProvider();
-        provider.openSelector().close();
+        EPollSelector.open().close();
     }
 
     @Test
     public void testWriteRead() throws IOException {
         try (RawCanChannel ch = CanChannels.newRawChannel()) {
-            try (Selector selector = EPollSelector.open()) {
+            try (EPollSelector selector = EPollSelector.open()) {
                 ch.setOption(RECV_OWN_MSGS, true);
                 ch.configureBlocking(false);
                 ch.bind(CAN_INTERFACE);
-                ch.register(selector, SelectionKey.OP_READ);
+                selector.register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
 
                 CanFrame inputFrame = CanFrame.create(0x7EF, FD_NO_FLAGS, new byte[]{1, 2, 3, 4});
                 runDelayed(ofMillis(200), () -> {
                     ch.write(inputFrame);
                 });
                 assertTimeoutPreemptively(ofMillis(300), () -> {
-                    selector.select();
-                    Set<SelectionKey> selectionKeys = selector.selectedKeys();
-                    assertEquals(1, selectionKeys.size(), "With one registered channel there should only be one selection key!");
-                    assertSame(ch, selectionKeys.iterator().next().channel(), "Channel from selection key should be the same as the registered channel!");
+                    List<IOEvent<UnixFileDescriptor>> events = selector.select();
+                    assertEquals(1, events.size(), "With one registered channel there should only be one selection key!");
+                    assertSame(ch, events.iterator().next().getRegistration().getChannel(), "Channel from selection key should be the same as the registered channel!");
                     CanFrame outputFrame = ch.read();
                     assertEquals(inputFrame, outputFrame, "What goes in should come out!");
                 });
@@ -80,7 +80,7 @@ public class EPollSelectorTest {
 
     @Test
     public void testWakeup() throws IOException {
-        try (AbstractSelector selector = EPollSelector.open()) {
+        try (EPollSelector selector = EPollSelector.open()) {
             runDelayed(ofMillis(100), selector::wakeup);
             assertTimeoutPreemptively(ofMillis(200), (Executable) selector::select);
         }
@@ -89,9 +89,10 @@ public class EPollSelectorTest {
     @Test
     public void testPollWithClosedChannel() throws IOException {
 
-        try (final Selector selector = EPollSelector.open()) {
+        try (final EPollSelector selector = EPollSelector.open()) {
 
-            RawCanChannel firstChannel = configureAndRegisterChannel(selector);
+            SelectorRegistration<UnixFileDescriptor, RawCanChannel> firstRegistration = configureAndRegisterChannel(selector);
+            RawCanChannel firstChannel = firstRegistration.getChannel();
             firstChannel.close();
 
             assertDoesNotThrow((Executable) selector::selectNow);
@@ -102,35 +103,38 @@ public class EPollSelectorTest {
     @Test
     public void testEPollFdReuse() throws IOException, InterruptedException {
 
-        try (final AbstractSelector selector = EPollSelector.open()) {
+        try (final EPollSelector selector = EPollSelector.open()) {
 
-            try (RawCanChannel firstChannel = configureAndRegisterChannel(selector)) {
+            SelectorRegistration<UnixFileDescriptor, RawCanChannel> firstRegistration = configureAndRegisterChannel(selector);
+            try (RawCanChannel firstChannel = firstRegistration.getChannel()) {
                 CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
-                assertEquals(1, selector.selectNow());
+                assertEquals(1, selector.selectNow().size());
 
                 // this will add the key to the cancelled set in the selector
-                firstChannel.keyFor(selector).cancel();
+
+                selector.cancel(firstRegistration);
 
                 // closing the channel will free up the socket and epoll file descriptor
             }
 
             // epoll will reuse the previous file descriptor, while the fd is still in the cancelled set
-            try (RawCanChannel ignored = configureAndRegisterChannel(selector)) {
+            SelectorRegistration<UnixFileDescriptor, RawCanChannel> secondRegistration = configureAndRegisterChannel(selector);
+            try (RawCanChannel ignored = secondRegistration.getChannel()) {
                 CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
-                assertEquals(1, selector.select(500));
+                assertEquals(1, selector.select(Duration.ofMillis(500)).size());
             }
         }
     }
 
-    private static RawCanChannel configureAndRegisterChannel(Selector selector) throws IOException {
+    private static SelectorRegistration<UnixFileDescriptor, RawCanChannel> configureAndRegisterChannel(IOSelector<UnixFileDescriptor> selector) throws IOException {
         final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
         System.out.println("Created channel: " + ch);
 
         ch.configureBlocking(false);
         ch.setOption(CanSocketOptions.LOOPBACK, true);
-        SelectionKey key = ch.register(selector, SelectionKey.OP_READ);
-        System.out.println("Selection key: " + key);
+        SelectorRegistration<UnixFileDescriptor, RawCanChannel> registration = selector.register(ch, SelectorRegistration.Operation.READ);
+        System.out.println("Selection key: " + registration);
 
-        return ch;
+        return registration;
     }
 }

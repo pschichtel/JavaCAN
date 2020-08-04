@@ -22,38 +22,38 @@
  */
 package tel.schich.javacan.linux.epoll;
 
-import java.io.IOException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.AbstractSelectionKey;
+import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.SelectorRegistration;
+
+import java.nio.channels.Channel;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * This class implements the {@link java.nio.channels.SelectionKey} API necessary for
  * {@link java.nio.channels.Selector}s.
  */
-public class EPollSelectionKey extends AbstractSelectionKey {
+public class EPollRegistration<ChannelType extends Channel> implements SelectorRegistration<UnixFileDescriptor, ChannelType> {
 
     private final EPollSelector selector;
-    private final SelectableChannel channel;
-    private final int fd;
-    private volatile int interestOps;
-    private volatile int readyOps;
+    private final ChannelType channel;
+    private final UnixFileDescriptor handle;
+    private final Set<Operation> operations;
 
     /**
      * Creates a new selection key given an {@link EPollSelector},
      * a {@link java.nio.channels.SelectableChannel}, the underlying socket file descriptor and the interested ops.
-     *
-     * @param selector    the selector
+     *  @param selector    the selector
      * @param channel     the channel
-     * @param fd          the underlying socket file descriptor
-     * @param interestOps the interested ops
+     * @param handle          the underlying socket file descriptor
+     * @param operations the interested ops
      */
-    public EPollSelectionKey(EPollSelector selector, SelectableChannel channel, int fd, int interestOps) {
+    public EPollRegistration(EPollSelector selector, ChannelType channel, UnixFileDescriptor handle, Set<Operation> operations) {
         this.selector = selector;
         this.channel = channel;
-        this.fd = fd;
-        this.interestOps = interestOps;
-        this.readyOps = 0;
+        this.handle = handle;
+        this.operations = Collections.unmodifiableSet(EnumSet.copyOf(operations));
     }
 
     /**
@@ -61,58 +61,21 @@ public class EPollSelectionKey extends AbstractSelectionKey {
      *
      * @return the underlying file descriptor
      */
-    public int getFd() {
-        return fd;
+    public UnixFileDescriptor getHandle() {
+        return handle;
     }
 
-    @Override
-    public SelectableChannel channel() {
+    public ChannelType getChannel() {
         return channel;
     }
 
     @Override
-    public EPollSelector selector() {
+    public EPollSelector getSelector() {
         return selector;
     }
 
-    @Override
-    public synchronized int interestOps() {
-        return interestOps;
-    }
-
-    @Override
-    public synchronized SelectionKey interestOps(int ops) {
-        try {
-            selector.updateOps(this, ops);
-            interestOps = ops;
-        } catch (IOException e) {
-            throw new RuntimeException("Interest change could not be propagated to the kernel!", e);
-        }
-        return this;
-    }
-
-    @Override
-    public int readyOps() {
-        return readyOps;
-    }
-
-    /**
-     * Sets the ready ops for this selection. This should be called when this key has been first selected.
-     *
-     * @param ops the new ready ops
-     */
-    synchronized void setReadyOps(int ops) {
-        this.readyOps = ops;
-    }
-
-    /**
-     * merges the given ready ops into this selection. This should be called when this key has been selected again
-     * with new ops.
-     *
-     * @param ops the new ready ops to merge in
-     */
-    synchronized void mergeReadyOps(int ops) {
-        this.readyOps = this.readyOps | ops;
+    public synchronized Set<Operation> getOperations() {
+        return operations;
     }
 
     @Override
@@ -121,20 +84,26 @@ public class EPollSelectionKey extends AbstractSelectionKey {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        return fd == ((EPollSelectionKey) o).fd;
+        return handle == ((EPollRegistration) o).handle;
     }
 
     @Override
     public int hashCode() {
-        return fd;
+        return handle.hashCode();
     }
 
     @Override
     public String toString() {
-        return "EPollSelectionKey(" +
-                "channel=" + channel +
-                ", fd=" + fd +
-                ", interestOps=" + interestOps +
+        return "EPollRegistration(" +
+                "selector=" + selector +
+                ", channel=" + channel +
+                ", fd=" + handle +
+                ", operations=" + operations +
                 ')';
+    }
+
+    @Override
+    public void close() throws Exception {
+        getSelector().cancel(this);
     }
 }

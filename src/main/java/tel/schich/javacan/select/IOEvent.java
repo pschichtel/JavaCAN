@@ -20,52 +20,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.linux;
-
-import tel.schich.javacan.select.NativeHandle;
+package tel.schich.javacan.select;
 
 import java.util.Objects;
+import java.util.Set;
 
-/**
- * This class implements a {@link tel.schich.javacan.select.NativeHandle} that is backed by a
- * native file descriptor.
- */
-public class UnixFileDescriptor implements NativeHandle {
-    private final int fd;
+public class IOEvent<HandleType> {
+    private final SelectorRegistration<HandleType, ?> registration;
+    private final Set<SelectorRegistration.Operation> operations;
 
-    /**
-     * Creates a instance from the given file descriptor ID.
-     *
-     * @param fd the file descriptor ID
-     */
-    public UnixFileDescriptor(int fd) {
-        this.fd = fd;
+    public IOEvent(SelectorRegistration<HandleType, ?> registration, Set<SelectorRegistration.Operation> operations) {
+        this.registration = registration;
+        this.operations = operations;
     }
 
-    /**
-     * Returns the backing file descriptor ID.
-     *
-     * @return the file descriptor ID
-     */
-    public int getValue() {
-        return fd;
+    public SelectorRegistration<HandleType, ?> getRegistration() {
+        return registration;
+    }
+
+    public Set<SelectorRegistration.Operation> getOperations() {
+        return operations;
     }
 
     @Override
     public String toString() {
-        return "UnixFileDescriptor(" + fd + ')';
+        return "IOEvent(" +
+                "registration=" + registration +
+                ", operations=" + operations +
+                ')';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UnixFileDescriptor that = (UnixFileDescriptor) o;
-        return fd == that.fd;
+        IOEvent<?> ioEvent = (IOEvent<?>) o;
+        return registration.equals(ioEvent.registration) &&
+                operations.equals(ioEvent.operations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fd);
+        return Objects.hash(registration, operations);
     }
 }

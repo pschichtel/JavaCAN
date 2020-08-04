@@ -40,11 +40,10 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
     /**
      * Creates a new channel given the {@link java.nio.channels.spi.SelectorProvider} and the socket file descriptor.
      *
-     * @param provider the selector provider
      * @param sock the socket file descriptor
      */
-    public IsotpCanChannel(SelectorProvider provider, int sock) {
-        super(provider, sock);
+    public IsotpCanChannel(int sock) {
+        super(sock);
     }
 
     /**

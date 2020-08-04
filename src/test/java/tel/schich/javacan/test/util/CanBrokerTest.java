@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.linux.epoll.EPollSelector;
 import tel.schich.javacan.test.CanTestHelper;
 import tel.schich.javacan.util.CanBroker;
 
@@ -51,8 +52,8 @@ class CanBrokerTest {
         CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[]{1, 2, 3});
         CanFilter filter = new CanFilter(id);
 
-        CanBroker brokerA = new CanBroker(FACTORY);
-        CanBroker brokerB = new CanBroker(FACTORY);
+        CanBroker brokerA = new CanBroker(FACTORY, EPollSelector.open());
+        CanBroker brokerB = new CanBroker(FACTORY, EPollSelector.open());
 
         brokerA.addFilter(filter);
         brokerB.addFilter(filter);
@@ -85,7 +86,7 @@ class CanBrokerTest {
         CanFrame expected = CanFrame.create(id, CanFrame.FD_NO_FLAGS, new byte[]{1, 2, 3});
         CompletableFuture<CanFrame> f = new CompletableFuture<>();
 
-        CanBroker can = new CanBroker(FACTORY);
+        CanBroker can = new CanBroker(FACTORY, EPollSelector.open());
         can.addFilter(new CanFilter(id));
         can.addDevice(CAN_INTERFACE, (ch, frame) -> {
             f.complete(frame);

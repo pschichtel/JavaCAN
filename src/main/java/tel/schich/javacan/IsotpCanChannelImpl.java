@@ -37,8 +37,8 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
     private IsotpSocketAddress rx;
     private IsotpSocketAddress tx;
 
-    public IsotpCanChannelImpl(SelectorProvider provider, int sock) {
-        super(provider, sock);
+    public IsotpCanChannelImpl(int sock) {
+        super(sock);
     }
 
     @Override

@@ -22,36 +22,39 @@
  */
 package tel.schich.javacan.util;
 
+import tel.schich.javacan.select.IOEvent;
+import tel.schich.javacan.select.IOSelector;
+import tel.schich.javacan.select.SelectorRegistration;
+
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.spi.SelectorProvider;
 import java.time.Duration;
-import java.util.Iterator;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
-public abstract class EventLoop implements Closeable {
+public abstract class EventLoop<HandleType, ChannelType extends Channel> implements Closeable {
     private final String name;
 
     private final ThreadFactory threadFactory;
-    private final SelectorProvider provider;
-    private final Selector selector;
+    private final IOSelector<HandleType> selector;
     private final Duration timeout;
+    private final Map<ChannelType, SelectorRegistration<HandleType, ChannelType>> registrations;
 
     private PollingThread poller;
     private final Object pollerLock = new Object();
 
-    public EventLoop(String name, ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
+    public EventLoop(String name, ThreadFactory threadFactory, IOSelector<HandleType> selector, Duration timeout) {
         this.name = name;
         this.threadFactory = threadFactory;
-        this.provider = provider;
-        this.selector = provider.openSelector();
+        this.selector = selector;
         this.timeout = timeout;
+        this.registrations = new IdentityHashMap<>();
     }
 
     /**
@@ -61,15 +64,6 @@ public abstract class EventLoop implements Closeable {
      */
     public ThreadFactory getThreadFactory() {
         return threadFactory;
-    }
-
-    /**
-     * Exposes the {@link java.nio.channels.spi.SelectorProvider} used by this event loop.
-     *
-     * @return the selector provider
-     */
-    public SelectorProvider getSelectorProvider() {
-        return provider;
     }
 
     /**
@@ -88,8 +82,8 @@ public abstract class EventLoop implements Closeable {
      * @param ops the interested ops
      * @throws ClosedChannelException if the channel is already closed
      */
-    protected final void register(SelectableChannel ch, int ops) throws ClosedChannelException {
-        ch.register(selector, ops);
+    protected final void register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws ClosedChannelException {
+        registrations.put(ch, selector.register(ch, ops));
     }
 
     /**
@@ -97,12 +91,12 @@ public abstract class EventLoop implements Closeable {
      *
      * @param ch the channel to cancel the key for
      * @return true of the channel was actually cancelled, false if the channel was not registered
+     * @throws IOException if the underlying selector is unable to cancel the registration
      */
-    protected final boolean cancel(SelectableChannel ch) {
-        SelectionKey key = ch.keyFor(selector);
-        if (key != null) {
-            key.cancel();
-            return true;
+    protected final boolean cancel(ChannelType ch) throws IOException {
+        SelectorRegistration<HandleType, ChannelType> registration = this.registrations.remove(ch);
+        if (registration != null) {
+            return selector.cancel(registration);
         }
         return false;
     }
@@ -114,18 +108,10 @@ public abstract class EventLoop implements Closeable {
      * @return the number of events
      * @throws IOException if the native call fails
      */
-    protected final int select(long timeout) throws IOException {
+    protected final List<IOEvent<HandleType>> select(Duration timeout) throws IOException {
         return this.selector.select(timeout);
     }
 
-    /**
-     * Returns the selected keys by the underlying {@link java.nio.channels.Selector}.
-     *
-     * @return the selected keys
-     */
-    protected final Set<SelectionKey> selectedKeys() {
-        return this.selector.selectedKeys();
-    }
 
     /**
      * Shuts the event loop down if there are no more channels registered.
@@ -158,7 +144,7 @@ public abstract class EventLoop implements Closeable {
                 return;
             }
 
-            this.poller = PollingThread.create(name + "-primary-poller", timeout.toMillis(), threadFactory, this::poll, this::handleException);
+            this.poller = PollingThread.create(name + "-primary-poller", timeout, threadFactory, this::poll, this::handleException);
             this.poller.start();
         }
     }
@@ -178,7 +164,11 @@ public abstract class EventLoop implements Closeable {
             }
             try {
                 this.poller.stop();
-                this.selector.wakeup();
+                try {
+                    this.selector.wakeup();
+                } catch (IOException ignored) {
+
+                }
                 this.poller.join();
             } finally {
                 this.poller = null;
@@ -193,13 +183,13 @@ public abstract class EventLoop implements Closeable {
      * @return true if the event loop should continue
      * @throws IOException if the native calls fail
      */
-    protected final boolean poll(long timeout) throws IOException {
+    protected final boolean poll(Duration timeout) throws IOException {
         if (lazyShutdown()) {
             return true;
         }
-        int n = select(timeout);
-        if (n > 0) {
-            processEvents(selectedKeys().iterator());
+        List<IOEvent<HandleType>> events = select(timeout);
+        if (!events.isEmpty()) {
+            processEvents(events);
         }
         return true;
     }
@@ -240,7 +230,7 @@ public abstract class EventLoop implements Closeable {
      * @param selectedKeys the keys
      * @throws IOException if the implementation has IO failures
      */
-    protected abstract void processEvents(Iterator<SelectionKey> selectedKeys) throws IOException;
+    protected abstract void processEvents(List<IOEvent<HandleType>> selectedKeys) throws IOException;
 
     /**
      * Closes the event loop by shutting it down and then

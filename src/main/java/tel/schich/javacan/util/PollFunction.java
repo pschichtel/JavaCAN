@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.util;
 
+import java.time.Duration;
+
 /**
  * This interface abstracts the actually polling out of the {@link tel.schich.javacan.util.PollingThread}.
  * An implementation should simply call {@link java.nio.channels.Selector#select(long)} or
@@ -37,5 +39,5 @@ public interface PollFunction {
      * @return true if the event loop should continue
      * @throws Exception the function may throw any {@link java.lang.Exception}, they will be handled upstream
      */
-    boolean poll(long timeout) throws Exception;
+    boolean poll(Duration timeout) throws Exception;
 }

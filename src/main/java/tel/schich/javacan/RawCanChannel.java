@@ -25,15 +25,14 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.spi.SelectorProvider;
 
 import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
 
 public abstract class RawCanChannel extends AbstractCanChannel {
-    public RawCanChannel(SelectorProvider provider, int sock) {
-        super(provider, sock);
+    public RawCanChannel(int sock) {
+        super(sock);
     }
 
     /**

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.IsotpCanChannel;
 import tel.schich.javacan.IsotpSocketAddress;
-import tel.schich.javacan.select.ExtensibleSelectorProvider;
+import tel.schich.javacan.linux.epoll.EPollSelector;
 import tel.schich.javacan.test.CanTestHelper;
 import tel.schich.javacan.util.IsotpListener;
 import tel.schich.javacan.util.MessageHandler;
@@ -57,7 +57,7 @@ class IsotpListenerTest {
         IsotpSocketAddress addra = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
         IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
 
-        try (IsotpListener broker = new IsotpListener(threadFactory, new ExtensibleSelectorProvider(), Duration.ofSeconds(5))) {
+        try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
 
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
@@ -105,7 +105,7 @@ class IsotpListenerTest {
         public void handle(IsotpCanChannel ch, ByteBuffer buffer) {
             int length = buffer.remaining();
             if (length % 200 == 0) {
-                System.out.println(String.format("(%04d) -> %08X#%s", length, ch.getTxAddress().getId(), hexDump(buffer)));
+                System.out.printf("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), hexDump(buffer));
                 System.out.flush();
             }
             buf.clear();

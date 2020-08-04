@@ -27,8 +27,6 @@ import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.linux.UnixFileDescriptor;
 import tel.schich.javacan.option.CanSocketOption;
@@ -42,13 +40,13 @@ import tel.schich.javacan.select.NativeHandle;
  * {@link tel.schich.javacan.linux.UnixFileDescriptor} and it provides APIs to set socket options and read/write
  * buffers.
  */
-public abstract class AbstractCanChannel extends AbstractSelectableChannel implements NativeChannel {
+public abstract class AbstractCanChannel implements NativeChannel {
 
     private final int sock;
     private final UnixFileDescriptor fileDescriptor;
+    private volatile boolean open = true;
 
-    public AbstractCanChannel(SelectorProvider provider, int sock) {
-        super(provider);
+    public AbstractCanChannel(int sock) {
         this.sock = sock;
         this.fileDescriptor = new UnixFileDescriptor(sock);
     }
@@ -85,16 +83,23 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
     }
 
     @Override
-    protected void implCloseSelectableChannel() throws IOException {
+    public boolean isOpen() {
+        return open;
+    }
+
+    public void close() throws IOException {
+        open = false;
         SocketCAN.close(sock);
     }
 
-    @Override
-    protected void implConfigureBlocking(boolean block) throws IOException {
+    public void configureBlocking(boolean block) throws IOException {
         SocketCAN.setBlockingMode(sock, block);
     }
 
-    @Override
+    public boolean isBlocking() {
+        return SocketCAN.getBlockingMode(sock) != 0;
+    }
+
     public int validOps() {
         return SelectionKey.OP_READ | SelectionKey.OP_WRITE;
     }
@@ -153,16 +158,10 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        int bytesRead = 0;
-        begin();
-        try {
-            int pos = buffer.position();
-            bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
-            buffer.position(pos + bytesRead);
-            return bytesRead;
-        } finally {
-            end(bytesRead > 0);
-        }
+        int pos = buffer.position();
+        int bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
+        buffer.position(pos + bytesRead);
+        return bytesRead;
     }
 
     /**
@@ -178,16 +177,10 @@ public abstract class AbstractCanChannel extends AbstractSelectableChannel imple
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        int bytesWritten = 0;
-        begin();
-        try {
-            int pos = buffer.position();
-            bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
-            buffer.position(pos + bytesWritten);
-            return bytesWritten;
-        } finally {
-            end(bytesWritten > 0);
-        }
+        int pos = buffer.position();
+        int bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
+        buffer.position(pos + bytesWritten);
+        return bytesWritten;
     }
 
     @Override

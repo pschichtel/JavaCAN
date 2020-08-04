@@ -24,29 +24,32 @@ package tel.schich.javacan.util;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.SelectorProvider;
+import java.nio.channels.Channel;
 import java.time.Duration;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import tel.schich.javacan.IsotpCanChannel;
+import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.IOEvent;
+import tel.schich.javacan.select.IOSelector;
+import tel.schich.javacan.select.SelectorRegistration;
 
 /**
  * This class implements an event driven interface over several {@link tel.schich.javacan.IsotpCanChannel}s to
  * receive messages with callbacks. Received messages are passed on to a {@link tel.schich.javacan.util.MessageHandler}
  * for for each specific channel.
  */
-public class IsotpListener extends EventLoop {
+public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel> {
     private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<IsotpCanChannel, MessageHandler> handlerMap = new IdentityHashMap<>();
     private final Object handlerLock = new Object();
 
-    public IsotpListener(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
-        super("ISOTP", threadFactory, provider, timeout);
+    public IsotpListener(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector, Duration timeout) {
+        super("ISOTP", threadFactory, selector, timeout);
     }
 
     /**
@@ -65,13 +68,10 @@ public class IsotpListener extends EventLoop {
             if (this.handlerMap.containsKey(ch)) {
                 throw new IllegalArgumentException("Channel already added!");
             }
-            if (ch.isRegistered()) {
-                throw new IllegalArgumentException("Channel already registered!");
-            }
             if (ch.isBlocking()) {
                 ch.configureBlocking(false);
             }
-            register(ch, SelectionKey.OP_READ);
+            register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
             this.handlerMap.put(ch, handler);
             this.start();
         }
@@ -81,8 +81,9 @@ public class IsotpListener extends EventLoop {
      * Removes the given {@link tel.schich.javacan.IsotpCanChannel} from this listener.
      *
      * @param ch the channel to remove
+     * @throws IOException if the underlying selector is unable cancel the registration
      */
-    public void removeChannel(IsotpCanChannel ch) {
+    public void removeChannel(IsotpCanChannel ch) throws IOException {
         synchronized (handlerLock) {
             if (!this.handlerMap.containsKey(ch)) {
                 throw new IllegalArgumentException("Channel not known!");
@@ -108,12 +109,10 @@ public class IsotpListener extends EventLoop {
     }
 
     @Override
-    protected void processEvents(Iterator<SelectionKey> keys) throws IOException {
+    protected void processEvents(List<IOEvent<UnixFileDescriptor>> events) throws IOException {
         synchronized (handlerLock) {
-            while (keys.hasNext()) {
-                SelectionKey key = keys.next();
-                keys.remove();
-                SelectableChannel ch = key.channel();
+            for (IOEvent<UnixFileDescriptor> event : events) {
+                Channel ch = event.getRegistration().getChannel();
                 if (ch instanceof IsotpCanChannel) {
                     IsotpCanChannel isotp = (IsotpCanChannel) ch;
                     MessageHandler handler = handlerMap.get(ch);

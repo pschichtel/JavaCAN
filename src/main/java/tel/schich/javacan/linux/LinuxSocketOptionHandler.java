@@ -40,7 +40,7 @@ public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Han
         if (!(handle instanceof UnixFileDescriptor)) {
             throw new IllegalArgumentException("Unsupported handle given!");
         }
-        set(((UnixFileDescriptor) handle).getFD(), val);
+        set(((UnixFileDescriptor) handle).getValue(), val);
     }
 
     @Override
@@ -48,7 +48,7 @@ public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Han
         if (!(handle instanceof UnixFileDescriptor)) {
             throw new IllegalArgumentException("Unsupported handle given!");
         }
-        return get(((UnixFileDescriptor) handle).getFD());
+        return get(((UnixFileDescriptor) handle).getValue());
     }
 
     protected abstract void set(int sock, T val) throws IOException;

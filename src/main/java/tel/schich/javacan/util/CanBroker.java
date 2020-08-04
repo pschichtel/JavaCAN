@@ -25,14 +25,13 @@ package tel.schich.javacan.util;
 import java.io.IOException;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.SelectorProvider;
+import java.nio.channels.Channel;
 import java.time.Duration;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
@@ -41,11 +40,14 @@ import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.select.IOEvent;
+import tel.schich.javacan.select.IOSelector;
+import tel.schich.javacan.select.SelectorRegistration;
 
 import static java.time.Duration.ofMinutes;
 import static tel.schich.javacan.CanSocketOptions.FILTER;
 import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
-import static tel.schich.javacan.linux.epoll.EPollSelector.PROVIDER;
 
 /**
  * This class implements an event driven interface over several CAN interface to send and receive
@@ -53,7 +55,7 @@ import static tel.schich.javacan.linux.epoll.EPollSelector.PROVIDER;
  * frames are passed on to a {@link tel.schich.javacan.util.FrameHandler} for each specific interface.
  * Frames can be send either to individual interfaces or all at once.
  */
-public class CanBroker extends EventLoop {
+public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
 
     public static final Duration DEFAULT_TIMEOUT = ofMinutes(1);
     private static final CanFilter[] NO_FILTERS = { CanFilter.NONE };
@@ -69,16 +71,12 @@ public class CanBroker extends EventLoop {
 
     private volatile boolean loopback = true;
 
-    public CanBroker(ThreadFactory threadFactory) throws IOException {
-        this(threadFactory, DEFAULT_TIMEOUT);
+    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector) {
+        this(threadFactory, selector, DEFAULT_TIMEOUT);
     }
 
-    public CanBroker(ThreadFactory threadFactory, Duration timeout) throws IOException {
-        this(threadFactory, PROVIDER, timeout);
-    }
-
-    public CanBroker(ThreadFactory threadFactory, SelectorProvider provider, Duration timeout) throws IOException {
-        super("CAN", threadFactory, provider, timeout);
+    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector, Duration timeout) {
+        super("CAN", threadFactory, selector, timeout);
     }
 
     /**
@@ -227,7 +225,7 @@ public class CanBroker extends EventLoop {
             ch.configureBlocking(false);
             ch.setOption(FILTER, filterArray);
             ch.setOption(LOOPBACK, loopback);
-            register(ch, SelectionKey.OP_READ);
+            register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
             this.handlerMap.put(ch, handler);
             this.channelMap.put(device, ch);
             this.start();
@@ -262,12 +260,10 @@ public class CanBroker extends EventLoop {
     }
 
     @Override
-    protected void processEvents(Iterator<SelectionKey> keys) throws IOException {
+    protected void processEvents(List<IOEvent<UnixFileDescriptor>> events) throws IOException {
         synchronized (handlerLock) {
-            while (keys.hasNext()) {
-                SelectionKey key = keys.next();
-                keys.remove();
-                SelectableChannel ch = key.channel();
+            for (IOEvent<UnixFileDescriptor> event : events) {
+                Channel ch = event.getRegistration().getChannel();
                 if (ch instanceof RawCanChannel) {
                     RawCanChannel raw = (RawCanChannel) ch;
                     FrameHandler handler = handlerMap.get(ch);

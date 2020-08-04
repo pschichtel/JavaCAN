@@ -20,19 +20,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.select;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import java.nio.channels.Channel;
+import java.util.Set;
 
-public class TestHelper {
+public interface SelectorRegistration<HandleType, ChannelType extends Channel> extends AutoCloseable {
+    HandleType getHandle();
+    IOSelector<HandleType> getSelector();
+    ChannelType getChannel();
+    Set<Operation> getOperations();
 
-    public static RawCanChannel createChannelWithFd(int fd) {
-        return new RawCanChannelImpl(fd);
-    }
-
-    public static int createInvalidFd() throws LinuxNativeOperationException {
-        int fd = SocketCAN.createRawSocket();
-        SocketCAN.close(fd);
-        return fd;
+    enum Operation {
+        READ, WRITE, ACCEPT, CONNECT
     }
 }

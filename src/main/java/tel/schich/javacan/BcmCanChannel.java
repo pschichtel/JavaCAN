@@ -54,11 +54,10 @@ public class BcmCanChannel extends AbstractCanChannel {
     /**
      * Create a BCM channel.
      *
-     * @param provider the NIO selector provider
      * @param sock     the native file descriptor
      */
-    BcmCanChannel(SelectorProvider provider, int sock) {
-        super(provider, sock);
+    BcmCanChannel(int sock) {
+        super(sock);
     }
 
     @Override

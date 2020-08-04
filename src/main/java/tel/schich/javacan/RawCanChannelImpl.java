@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
-import java.nio.channels.spi.SelectorProvider;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.linux.LinuxNetworkDevice;
 
 /**
@@ -38,8 +36,8 @@ public class RawCanChannelImpl extends RawCanChannel {
 
     private volatile NetworkDevice device;
 
-    RawCanChannelImpl(SelectorProvider provider, int sock) {
-        super(provider, sock);
+    RawCanChannelImpl(int sock) {
+        super(sock);
     }
 
     @Override
