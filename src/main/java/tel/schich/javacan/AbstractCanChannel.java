@@ -31,7 +31,6 @@ import java.nio.channels.SelectionKey;
 import tel.schich.javacan.linux.UnixFileDescriptor;
 import tel.schich.javacan.option.CanSocketOption;
 import tel.schich.javacan.select.NativeChannel;
-import tel.schich.javacan.select.NativeHandle;
 
 /**
  * This abstract base class for CAN channels implements all shared APIs common to CAN communication: It implements
@@ -40,7 +39,7 @@ import tel.schich.javacan.select.NativeHandle;
  * {@link tel.schich.javacan.linux.UnixFileDescriptor} and it provides APIs to set socket options and read/write
  * buffers.
  */
-public abstract class AbstractCanChannel implements NativeChannel {
+public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescriptor> {
 
     private final int sock;
     private final UnixFileDescriptor fileDescriptor;
@@ -78,7 +77,7 @@ public abstract class AbstractCanChannel implements NativeChannel {
     }
 
     @Override
-    public NativeHandle getHandle() {
+    public UnixFileDescriptor getHandle() {
         return fileDescriptor;
     }
 

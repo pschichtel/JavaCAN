@@ -31,13 +31,11 @@ import java.nio.channels.Channel;
  * The handle can then be typed checked by the consumer to see if it can handle that kind of native
  * {@link java.nio.channels.Channel}.
  */
-public interface NativeChannel extends Channel {
+public interface NativeChannel<HandleType> extends Channel {
     /**
      * Exposes the internal "connection handle" without being specific about it.
-     * Implementations may even expose more concrete types than {@link tel.schich.javacan.select.NativeHandle} to
-     * allow for compile time checking of handle types.
      *
      * @return the native handle, never null.
      */
-    NativeHandle getHandle();
+    HandleType getHandle();
 }

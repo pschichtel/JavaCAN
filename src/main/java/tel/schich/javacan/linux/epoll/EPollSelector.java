@@ -27,7 +27,6 @@ import tel.schich.javacan.linux.UnixFileDescriptor;
 import tel.schich.javacan.select.IOEvent;
 import tel.schich.javacan.select.IOSelector;
 import tel.schich.javacan.select.NativeChannel;
-import tel.schich.javacan.select.NativeHandle;
 import tel.schich.javacan.select.SelectorRegistration;
 
 import java.io.IOException;
@@ -115,8 +114,6 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
             throw new ClosedSelectorException();
     }
 
-
-
     public <ChannelType extends Channel> SelectorRegistration<UnixFileDescriptor, ChannelType> updateRegistration(SelectorRegistration<UnixFileDescriptor, ChannelType> key, Set<SelectorRegistration.Operation> newOps) throws IOException {
         if (key.getSelector() != this) {
             throw new IllegalArgumentException("Key is not registered here!");
@@ -136,7 +133,7 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
                     }
                 }
             }
-            EPollRegistration newRegistration = new EPollRegistration(this, key.getChannel(), fd, newOps);
+            EPollRegistration<ChannelType> newRegistration = new EPollRegistration<>(this, key.getChannel(), fd, newOps);
             this.registrations.remove(key);
             this.registrations.add(newRegistration);
             this.fdToKey.put(fd.getValue(), newRegistration);
@@ -152,11 +149,12 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         if (!(ch instanceof NativeChannel)) {
             throw new IllegalSelectorException();
         }
-        final NativeHandle nativeHandle = ((NativeChannel) ch).getHandle();
+        final Object nativeHandle = ((NativeChannel<?>) ch).getHandle();
         if (!(nativeHandle instanceof UnixFileDescriptor)) {
             throw new IllegalSelectorException();
         }
-        int fd = ((UnixFileDescriptor) nativeHandle).getValue();
+        final UnixFileDescriptor handle = (UnixFileDescriptor) nativeHandle;
+        int fd = handle.getValue();
 
         try {
             EPoll.addFileDescriptor(epollfd, fd, translateInterestsToEPoll(ops));
@@ -164,7 +162,7 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
             throw new RuntimeException(ex);
         }
 
-        EPollRegistration<ChannelType> key = new EPollRegistration<ChannelType>(this, ch, new UnixFileDescriptor(fd), ops);
+        EPollRegistration<ChannelType> key = new EPollRegistration<>(this, ch, handle, ops);
         synchronized (keyCollectionsLock) {
             this.registrations.add(key);
             this.fdToKey.put(fd, key);

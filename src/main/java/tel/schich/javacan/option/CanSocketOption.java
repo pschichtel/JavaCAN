@@ -22,10 +22,10 @@
  */
 package tel.schich.javacan.option;
 
+import tel.schich.javacan.linux.UnixFileDescriptor;
+
 import java.io.IOException;
 import java.net.SocketOption;
-
-import tel.schich.javacan.select.NativeHandle;
 
 /**
  * This class provides the base for all socket options by this library.
@@ -64,7 +64,7 @@ public class CanSocketOption<T> implements SocketOption<T> {
      * @param <T> the type of the option value
      */
     public interface Handler<T> {
-        void set(NativeHandle handle, T val) throws IOException;
-        T get(NativeHandle handle) throws IOException;
+        void set(UnixFileDescriptor handle, T val) throws IOException;
+        T get(UnixFileDescriptor handle) throws IOException;
     }
 }

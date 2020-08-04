@@ -22,15 +22,12 @@
  */
 package tel.schich.javacan.linux;
 
-import tel.schich.javacan.select.NativeHandle;
-
 import java.util.Objects;
 
 /**
- * This class implements a {@link tel.schich.javacan.select.NativeHandle} that is backed by a
- * native file descriptor.
+ * This class represents a UNIX file descriptor
  */
-public class UnixFileDescriptor implements NativeHandle {
+public class UnixFileDescriptor {
     private final int fd;
 
     /**

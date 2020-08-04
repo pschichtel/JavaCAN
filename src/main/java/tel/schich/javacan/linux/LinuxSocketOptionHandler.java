@@ -23,32 +23,25 @@
 package tel.schich.javacan.linux;
 
 import tel.schich.javacan.option.CanSocketOption;
-import tel.schich.javacan.select.NativeHandle;
 
 import java.io.IOException;
 
 /**
  * An abstract {@link tel.schich.javacan.option.CanSocketOption.Handler} implementation that verifies and unpacks
- * the given {@link tel.schich.javacan.select.NativeHandle} and forwards the file descriptor to the actual
+ * the given {@link UnixFileDescriptor} and forwards the file descriptor to the actual
  * implementation.
  *
  * @param <T> type of the option value
  */
 public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Handler<T> {
     @Override
-    public void set(NativeHandle handle, T val) throws IOException {
-        if (!(handle instanceof UnixFileDescriptor)) {
-            throw new IllegalArgumentException("Unsupported handle given!");
-        }
-        set(((UnixFileDescriptor) handle).getValue(), val);
+    public void set(UnixFileDescriptor handle, T val) throws IOException {
+        set(handle.getValue(), val);
     }
 
     @Override
-    public T get(NativeHandle handle) throws IOException {
-        if (!(handle instanceof UnixFileDescriptor)) {
-            throw new IllegalArgumentException("Unsupported handle given!");
-        }
-        return get(((UnixFileDescriptor) handle).getValue());
+    public T get(UnixFileDescriptor handle) throws IOException {
+        return get(handle.getValue());
     }
 
     protected abstract void set(int sock, T val) throws IOException;
