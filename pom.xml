@@ -236,6 +236,7 @@
                                     <name>Linux</name>
                                     <family>unix</family>
                                 </requireOS>
+                                <dependencyConvergence/>
                             </rules>
                         </configuration>
                     </execution>
