@@ -42,7 +42,7 @@ public class IsotpCanSocketOptions {
     public static final SocketOption<IsotpOptions> OPTS = new CanSocketOption<>("OPTS", IsotpOptions.class, new LinuxSocketOptionHandler<IsotpOptions>() {
         @Override
         public void set(int sock, IsotpOptions val) throws IOException {
-            SocketCAN.setIsotpOpts(sock, val.getFlags(), val.getFrameTransmissionTime(), val.getExtendedTransmissionAddress(), val.getTransmissionPadding(), val.getReceivePadding(), val.getExtendedReceiveAddress());
+            SocketCAN.setIsotpOpts(sock, val.getRawFlags(), val.getFrameTransmissionTime(), val.getExtendedTransmissionAddress(), val.getTransmissionPadding(), val.getReceivePadding(), val.getExtendedReceiveAddress());
         }
 
         @Override

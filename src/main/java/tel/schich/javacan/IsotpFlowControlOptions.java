@@ -30,6 +30,13 @@ import java.util.Objects;
  * This class represents ISOTP's flow control options.
  */
 public class IsotpFlowControlOptions {
+
+    public static final IsotpFlowControlOptions DEFAULT = new IsotpFlowControlOptions(
+            (byte) 0,
+            (byte) 0x00,
+            (byte) 0
+    );
+
     private final byte blockSize;
     private final byte minimumSeparationTime;
     private final byte maximumWaitFrameTransmission;
@@ -45,12 +52,48 @@ public class IsotpFlowControlOptions {
         return blockSize;
     }
 
+    public IsotpFlowControlOptions withBlockSize(byte blockSize) {
+        return new IsotpFlowControlOptions(
+                blockSize,
+                minimumSeparationTime,
+                maximumWaitFrameTransmission
+        );
+    }
+
+    public IsotpFlowControlOptions withBlockSize(int blockSize) {
+        return withBlockSize((byte) blockSize);
+    }
+
     public byte getMinimumSeparationTime() {
         return minimumSeparationTime;
     }
 
+    public IsotpFlowControlOptions withMinimumSeparationTime(byte minimumSeparationTime) {
+        return new IsotpFlowControlOptions(
+                blockSize,
+                minimumSeparationTime,
+                maximumWaitFrameTransmission
+        );
+    }
+
+    public IsotpFlowControlOptions withMinimumSeparationTime(int minimumSeparationTime) {
+        return withMinimumSeparationTime((byte) minimumSeparationTime);
+    }
+
     public byte getMaximumWaitFrameTransmission() {
         return maximumWaitFrameTransmission;
+    }
+
+    public IsotpFlowControlOptions withMaximumWaitFrameTransmission(byte maximumWaitFrameTransmission) {
+        return new IsotpFlowControlOptions(
+                blockSize,
+                minimumSeparationTime,
+                maximumWaitFrameTransmission
+        );
+    }
+
+    public IsotpFlowControlOptions withMaximumWaitFrameTransmission(int maximumWaitFrameTransmission) {
+        return withMaximumWaitFrameTransmission((byte) maximumWaitFrameTransmission);
     }
 
     @Override

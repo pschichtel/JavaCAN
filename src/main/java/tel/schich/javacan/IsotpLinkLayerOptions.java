@@ -30,6 +30,13 @@ import java.util.Objects;
  * This class represents ISOTP's link layer options.
  */
 public class IsotpLinkLayerOptions {
+
+    public static final IsotpLinkLayerOptions DEFAULT = new IsotpLinkLayerOptions(
+            (byte) RawCanChannel.MTU,
+            (byte) CanFrame.MAX_DATA_LENGTH,
+            (byte) 0
+    );
+
     private final byte maximumTransmissionUnit;
     private final byte transmissionDataLength;
     private final byte transmissionFlags;
@@ -45,12 +52,48 @@ public class IsotpLinkLayerOptions {
         return maximumTransmissionUnit;
     }
 
+    public IsotpLinkLayerOptions withMaximumTransmissionUnit(byte maximumTransmissionUnit) {
+        return new IsotpLinkLayerOptions(
+                maximumTransmissionUnit,
+                transmissionDataLength,
+                transmissionFlags
+        );
+    }
+
+    public IsotpLinkLayerOptions withMaximumTransmissionUnit(int maximumTransmissionUnit) {
+        return withMaximumTransmissionUnit((byte) maximumTransmissionUnit);
+    }
+
     public byte getTransmissionDataLength() {
         return transmissionDataLength;
     }
 
+    public IsotpLinkLayerOptions withTransmissionDataLength(byte transmissionDataLength) {
+        return new IsotpLinkLayerOptions(
+                maximumTransmissionUnit,
+                transmissionDataLength,
+                transmissionFlags
+        );
+    }
+
+    public IsotpLinkLayerOptions withTransmissionDataLength(int transmissionDataLength) {
+        return withTransmissionDataLength((byte) transmissionDataLength);
+    }
+
     public byte getTransmissionFlags() {
         return transmissionFlags;
+    }
+
+    public IsotpLinkLayerOptions withTransmissionFlags(byte transmissionFlags) {
+        return new IsotpLinkLayerOptions(
+                maximumTransmissionUnit,
+                transmissionDataLength,
+                transmissionFlags
+        );
+    }
+
+    public IsotpLinkLayerOptions withTransmissionFlags(int transmissionFlags) {
+        return withTransmissionFlags((byte) transmissionFlags);
     }
 
     @Override
