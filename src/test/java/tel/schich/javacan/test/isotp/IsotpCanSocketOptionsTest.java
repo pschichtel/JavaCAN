@@ -41,19 +41,21 @@ public class IsotpCanSocketOptionsTest {
         try (final IsotpCanChannel a = CanChannels.newIsotpChannel()) {
             IsotpOptions opts = a.getOption(OPTS);
             System.out.println(opts);
-            IsotpOptions customizedOpts = new IsotpOptions(0, 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0);
+            IsotpOptions customizedOpts = IsotpOptions.DEFAULT.withPadding(0xAA);
             a.setOption(OPTS, customizedOpts);
             assertEquals(customizedOpts, a.getOption(OPTS), "What goes in should come out");
 
             IsotpFlowControlOptions flowControlOpts = a.getOption(RECV_FC);
             System.out.println(flowControlOpts);
-            IsotpFlowControlOptions customizedFlowControlOpts = new IsotpFlowControlOptions((byte) 1, (byte) 1, (byte) 1);
+            IsotpFlowControlOptions customizedFlowControlOpts = IsotpFlowControlOptions.DEFAULT
+                    .withBlockSize(1);
             a.setOption(RECV_FC, customizedFlowControlOpts);
             assertEquals(customizedFlowControlOpts, a.getOption(RECV_FC), "What goes in should come out");
 
             IsotpLinkLayerOptions linkLayerOpts = a.getOption(LL_OPTS);
             System.out.println(linkLayerOpts);
-            IsotpLinkLayerOptions customizedLinkLayerOpts = new IsotpLinkLayerOptions((byte) RawCanChannel.MTU, (byte) CanFrame.MAX_DATA_LENGTH, (byte) 0);
+            IsotpLinkLayerOptions customizedLinkLayerOpts = IsotpLinkLayerOptions.DEFAULT
+                    .withTransmissionFlags(CanFrame.FD_FLAG_BIT_RATE_SWITCH);
             a.setOption(LL_OPTS, customizedLinkLayerOpts);
             assertEquals(customizedLinkLayerOpts, a.getOption(LL_OPTS), "What goes in should come out");
 
