@@ -58,14 +58,15 @@ For compilation:
 
 * Maven 3 or newer
 * A locally running docker daemon and permissions to run containers
-* Java 10 or newer installed
+* Java 8 or newer installed
 * Bash
 
 For tests:
 
 * The [can-isotp](https://github.com/hartkopp/can-isotp) kernel module loaded
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
-* A real or virtual CAN interface named "vcan0"
+* A CAN interface named "vcan0"
+* Java 8 or newer installed
 
 For usage:
 
