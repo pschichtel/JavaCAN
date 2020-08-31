@@ -79,7 +79,7 @@ public class IsotpCanSocketOptionsTest {
                 b.bind(CAN_INTERFACE, dst, src);
 
                 byte[] in = {1, 2, 3, 4};
-                ByteBuffer buf = ByteBuffer.allocateDirect(10);
+                ByteBuffer buf = JavaCAN.allocateUnordered(10);
                 buf.put(in);
                 buf.rewind();
                 final int bytesWritten = a.write(buf);

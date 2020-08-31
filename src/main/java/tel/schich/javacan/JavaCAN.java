@@ -24,6 +24,8 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -81,5 +83,25 @@ public class JavaCAN {
         loadBundledLib(LIB_NAME);
 
         initialized = true;
+    }
+
+    /**
+     * A simple helper to allocate a {@link ByteBuffer} as needed by the underlying native code.
+     *
+     * @param capacity the capacity of the buffer.
+     * @return the buffer in native byte order with the given capacity.
+     */
+    public static ByteBuffer allocateOrdered(int capacity) {
+        return allocateUnordered(capacity).order(ByteOrder.nativeOrder());
+    }
+
+    /**
+     * A simple helper to allocate a {@link ByteBuffer} as needed by the underlying native code.
+     *
+     * @param capacity the capacity of the buffer.
+     * @return the buffer in default (unspecified) byte order with the given capacity.
+     */
+    public static ByteBuffer allocateUnordered(int capacity) {
+        return ByteBuffer.allocateDirect(capacity);
     }
 }

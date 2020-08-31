@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.linux.LinuxNativeOperationException;
 
@@ -221,7 +222,7 @@ class RawCanSocketTest {
         CanFrame frame = CanFrame.createExtended(0x7FFFFF, FD_NO_FLAGS, data);
         ByteBuffer buffer = frame.getBuffer();
 
-        ByteBuffer largeForReuse = ByteBuffer.allocateDirect(2 * RawCanChannel.FD_MTU);
+        ByteBuffer largeForReuse = JavaCAN.allocateOrdered(2 * RawCanChannel.FD_MTU);
         largeForReuse.position(RawCanChannel.FD_MTU);
         largeForReuse.put(buffer);
         largeForReuse.position(RawCanChannel.FD_MTU);

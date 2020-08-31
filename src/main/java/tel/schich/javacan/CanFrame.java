@@ -386,15 +386,14 @@ public class CanFrame {
         } else {
             bufSize = RawCanChannel.FD_MTU;
         }
-        ByteBuffer buf = ByteBuffer.allocateDirect(bufSize);
-        buf.order(ByteOrder.nativeOrder())
-            .putInt(id)
-            .put((byte) length)
-            .put(flags)
-            .putShort((short) 0) // skip 2 bytes
-            .put(data, offset, length)
-            .clear();
-        return CanFrame.create(buf);
+        ByteBuffer buffer = JavaCAN.allocateOrdered(bufSize);
+        buffer.putInt(id)
+                .put((byte) length)
+                .put(flags)
+                .putShort((short) 0) // skip 2 bytes
+                .put(data, offset, length)
+                .clear();
+        return CanFrame.create(buffer);
     }
 
     /**
@@ -426,6 +425,9 @@ public class CanFrame {
      * @return the newly created frame
      */
     public static CanFrame createUnsafe(ByteBuffer buffer) {
+        if (buffer.order() != ByteOrder.nativeOrder()) {
+            throw new IllegalArgumentException("byte order (" + buffer.order() + ") of the given buffer must be the native order (" + ByteOrder.nativeOrder() + ")!");
+        }
         int length = buffer.remaining();
         // does the buffer slice size match the non-FD or FD MTU?
         if (length != RawCanChannel.MTU && length != RawCanChannel.FD_MTU) {

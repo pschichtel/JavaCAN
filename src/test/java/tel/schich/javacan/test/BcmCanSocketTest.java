@@ -81,9 +81,7 @@ class BcmCanSocketTest {
         data[BcmMessage.OFFSET_NFRAMES] = frameCount;
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.nativeOrder());
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            new BcmMessage(buffer);
-        });
+        assertThrows(IllegalArgumentException.class, () -> new BcmMessage(buffer));
     }
 
     @Test

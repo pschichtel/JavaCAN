@@ -27,7 +27,6 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
-import java.nio.channels.spi.SelectorProvider;
 
 import tel.schich.javacan.linux.LinuxNetworkDevice;
 
@@ -100,7 +99,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @throws IOException if the socket is not readable
      */
     public BcmMessage read() throws IOException {
-        ByteBuffer frameBuf = ByteBuffer.allocateDirect(MTU);
+        ByteBuffer frameBuf = JavaCAN.allocateOrdered(MTU);
         return read(frameBuf);
     }
 

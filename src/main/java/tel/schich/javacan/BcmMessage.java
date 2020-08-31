@@ -23,7 +23,6 @@
 package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -152,10 +151,9 @@ public class BcmMessage {
         int frameLength = frameLength(flags);
         base = 0;
         size = HEADER_LENGTH + frames.size() * frameLength;
-        buffer = ByteBuffer.allocateDirect(size);
+        buffer = JavaCAN.allocateOrdered(size);
 
-        buffer.order(ByteOrder.nativeOrder())
-                .putInt(OFFSET_OPCODE, opcode.nativeOpcode)
+        buffer.putInt(OFFSET_OPCODE, opcode.nativeOpcode)
                 .putInt(OFFSET_FLAGS, BcmFlag.toNative(flags))
                 .putInt(OFFSET_COUNT, count)
                 .putInt(OFFSET_CAN_ID, canId)
@@ -310,7 +308,7 @@ public class BcmMessage {
     }
 
     private ByteBuffer createFrameBuffer(int frameIndex, int frameLength) {
-        ByteBuffer frameBuffer = buffer.duplicate();
+        ByteBuffer frameBuffer = buffer.duplicate().order(buffer.order());
         frameBuffer.position(base + OFFSET_FRAMES + frameIndex * frameLength)
                 .limit(frameBuffer.position() + frameLength);
         return frameBuffer;

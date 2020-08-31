@@ -24,6 +24,7 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.function.Executable;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class CanTestHelper {
         if (frame.isRemoteTransmissionRequest()) {
             data.append('R');
         }
-        ByteBuffer buf = ByteBuffer.allocateDirect(CanFrame.MAX_FD_DATA_LENGTH);
+        ByteBuffer buf = JavaCAN.allocateOrdered(CanFrame.MAX_FD_DATA_LENGTH);
         frame.getData(buf);
         buf.flip();
         while (buf.hasRemaining()) {
