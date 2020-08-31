@@ -35,7 +35,7 @@ public class JavaCAN {
 
     private static volatile boolean initialized = false;
 
-    private static final String LIB_NAME = "JavaCAN";
+    private static final String LIB_NAME = "javacan-core";
     private static final String LIB_PREFIX = "/native";
 
     private static void loadBundledLib(String name) {
