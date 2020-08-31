@@ -1,21 +1,22 @@
 # JavaCAN [![Maven Central](https://img.shields.io/maven-central/v/tel.schich/javacan.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22tel.schich%22%20AND%20a:%22javacan%22)
 
-A complete implementation of Java's [SelectableChannel](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/SelectableChannel.html) API
-for CAN_RAW, CAN_BCM and CAN_ISOTP sockets.
+Bindings for SocketCAN's CAN_RAW, CAN_BCM and CAN_ISOTP sockets with full support for blocking and non-blocking IO. Non-blocking IO is possible using the epoll module, that provides an API very similar to Java's Selector API.
 
-Even though the JDK provides an epoll based Selector implementation, that implementation is unfortunately not compatible with custom Channel implementations. For that reason a custom `SelectorProvider` is required, that supplies an epoll based `Selector` compatible with CAN Channels.
+Implementing Java's SelectableChannel API is not possible with EPoll and SocketCAN due to various hardcoded assumptions in the JDK.
 
 ## What works?
 
 * Creating and binding CAN_RAW, CAN_BCM and CAN_ISOTP sockets
 * Sending and receiving standard CAN and CAN-FD frames with and without EFF
 * Getting and setting all supported socket options
-* Event-driven networking using a [Selector](https://docs.oracle.com/javase/8/docs/api/java/nio/channels/Selector.html)
+* Event-driven networking using an [IOSelector](https://github.com/pschichtel/JavaCAN/blob/master/epoll/src/main/java/tel/schich/javacan/select/IOSelector.java)
 * Rough test coverage
 
 ## What is missing?
 
 * Support for other CAN protocols (e.g. CAN_MCNET)
+* A [netty](https://netty.io) integration (see #20)
+* BSD Support
 
 ## Related Projects
 
@@ -37,7 +38,7 @@ Currently the full build process includes the following architectures:
 * armv7
 * aarch64
 
-The implementation can handle word sizes up to 64 bit and is byte order aware. 
+The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it!
 
 ## How to use
 
