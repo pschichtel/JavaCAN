@@ -37,7 +37,7 @@ import tel.schich.javacan.BcmOpcode;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;

@@ -22,16 +22,16 @@
  */
 #include "common.h"
 #include <jni-c-to-java.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <linux/can/isotp.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <jni.h>
 #include <limits.h>
+#include <linux/can.h>
+#include <linux/can/isotp.h>
+#include <linux/can/raw.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_raw_socket();
@@ -74,7 +74,9 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocket(JNIEnv *e
 }
 
 JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {
-    close_fd(env, sock);
+    if (close(sock)) {
+        throw_native_exception(env, "Unable to close epoll fd");
+    }
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv *env, jclass class, jint sock, jboolean block) {

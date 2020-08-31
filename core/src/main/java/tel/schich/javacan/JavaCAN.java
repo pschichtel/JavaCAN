@@ -22,55 +22,16 @@
  */
 package tel.schich.javacan;
 
-import java.io.IOException;
-import java.io.InputStream;
+import tel.schich.javacan.platform.Platform;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class JavaCAN {
 
     private static volatile boolean initialized = false;
 
     private static final String LIB_NAME = "javacan-core";
-    private static final String LIB_PREFIX = "/native";
-
-    private static void loadBundledLib(String name) {
-        String archSuffix;
-        String arch = System.getProperty("os.arch").toLowerCase();
-        if (arch.contains("arm")) {
-            archSuffix = "armv7";
-        } else if (arch.contains("86") || arch.contains("amd")) {
-            if (arch.contains("64")) {
-                archSuffix = "x86_64";
-            } else {
-                archSuffix = "x86_32";
-            }
-        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
-            archSuffix = "aarch64";
-        } else {
-            archSuffix = arch;
-        }
-
-        final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-        try (InputStream libStream = JavaCAN.class.getResourceAsStream(sourceLibPath)) {
-            if (libStream == null) {
-                throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
-            }
-            final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
-            final Path libPath = tempDirectory.resolve("lib" + name + ".so");
-
-            Files.copy(libStream, libPath, REPLACE_EXISTING);
-
-            System.load(libPath.toString());
-            libPath.toFile().deleteOnExit();
-        } catch (IOException e) {
-            throw new LinkageError("Unable to load native library!", e);
-        }
-    }
 
     /**
      * Initializes the library by loading the native library.
@@ -80,7 +41,7 @@ public class JavaCAN {
             return;
         }
 
-        loadBundledLib(LIB_NAME);
+        Platform.loadBundledLib(LIB_NAME);
 
         initialized = true;
     }

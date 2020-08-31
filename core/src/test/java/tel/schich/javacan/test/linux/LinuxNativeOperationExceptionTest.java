@@ -27,14 +27,14 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.TestHelper;
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.linux.LinuxNativeOperationException.EBADF;
-import static tel.schich.javacan.linux.LinuxNativeOperationException.ENODEV;
+import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.EBADF;
+import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.ENODEV;
 
 class LinuxNativeOperationExceptionTest {
     @Test

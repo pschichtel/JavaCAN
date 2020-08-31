@@ -23,7 +23,7 @@
 package tel.schich.javacan.util;
 
 import tel.schich.javacan.JavaCAN;
-import tel.schich.javacan.UnsupportedPlatformException;
+import tel.schich.javacan.platform.UnsupportedPlatformException;
 
 import java.nio.ByteBuffer;
 

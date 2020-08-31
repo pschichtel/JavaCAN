@@ -108,6 +108,18 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <optimize>true</optimize>
+                        <showWarnings>true</showWarnings>
+                        <showDeprecation>true</showDeprecation>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>1.6.0</version>
@@ -161,25 +173,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <optimize>true</optimize>
-                    <showWarnings>true</showWarnings>
-                    <showDeprecation>true</showDeprecation>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <configuration>
-                            <compilerArgs>
-                                <compilerArg>-Agenerate.jni.headers=true</compilerArg>
-                                <compilerArg>-Aoutput.location=${headers.target}</compilerArg>
-                            </compilerArgs>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
@@ -323,27 +316,30 @@
                 </property>
             </activation>
             <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>compile-native</id>
-                                <configuration>
-                                    <environmentVariables>
-                                        <BUILD_ARCH>${javacan.build.arch}</BUILD_ARCH>
-                                    </environmentVariables>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>exec-maven-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>compile-native</id>
+                                    <configuration>
+                                        <environmentVariables>
+                                            <BUILD_ARCH>${javacan.build.arch}</BUILD_ARCH>
+                                        </environmentVariables>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
     </profiles>
 
     <modules>
         <module>core</module>
+        <module>epoll</module>
     </modules>
 </project>

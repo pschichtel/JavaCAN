@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetBoundException;
 
-import tel.schich.javacan.linux.LinuxNetworkDevice;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)

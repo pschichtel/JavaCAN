@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 public class TestHelper {
 

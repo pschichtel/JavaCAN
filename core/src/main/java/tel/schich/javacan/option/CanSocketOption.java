@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan.option;
 
-import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.platform.linux.UnixFileDescriptor;
 
 import java.io.IOException;
 import java.net.SocketOption;

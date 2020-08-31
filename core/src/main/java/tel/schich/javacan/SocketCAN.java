@@ -24,7 +24,7 @@ package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 class SocketCAN {
 

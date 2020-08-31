@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 
-import tel.schich.javacan.linux.LinuxNetworkDevice;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 /**
  * The BcmCanChannel provides a wrapper around the CAN Broadcast Manager.

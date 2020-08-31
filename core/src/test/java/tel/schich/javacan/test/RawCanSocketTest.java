@@ -28,7 +28,7 @@ import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.RawCanChannel;
-import tel.schich.javacan.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;

@@ -25,7 +25,7 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.net.SocketOption;
 
-import tel.schich.javacan.linux.LinuxSocketOptionHandler;
+import tel.schich.javacan.platform.linux.LinuxSocketOptionHandler;
 import tel.schich.javacan.option.CanSocketOption;
 
 /**

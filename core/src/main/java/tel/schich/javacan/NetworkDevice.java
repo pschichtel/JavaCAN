@@ -24,7 +24,9 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
-import tel.schich.javacan.linux.LinuxNetworkDevice;
+import tel.schich.javacan.platform.UnsupportedPlatformException;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
+import tel.schich.javacan.platform.Platform;
 
 /**
  * This class represents a network device.

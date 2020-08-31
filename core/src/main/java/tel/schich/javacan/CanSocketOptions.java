@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.Duration;
 
-import tel.schich.javacan.linux.LinuxSocketOptionHandler;
+import tel.schich.javacan.platform.linux.LinuxSocketOptionHandler;
 import tel.schich.javacan.option.CanSocketOption;
 
 import static java.time.temporal.ChronoUnit.MICROS;

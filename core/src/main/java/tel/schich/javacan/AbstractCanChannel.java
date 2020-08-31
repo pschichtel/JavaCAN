@@ -28,15 +28,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 
-import tel.schich.javacan.linux.UnixFileDescriptor;
+import tel.schich.javacan.platform.NativeChannel;
+import tel.schich.javacan.platform.linux.UnixFileDescriptor;
 import tel.schich.javacan.option.CanSocketOption;
-import tel.schich.javacan.select.NativeChannel;
 
 /**
  * This abstract base class for CAN channels implements all shared APIs common to CAN communication: It implements
  * {@link java.nio.channels.SelectableChannel} via {@link java.nio.channels.spi.AbstractSelectableChannel}, implements
- * {@link tel.schich.javacan.select.NativeChannel} by exposing the underlying socket file descriptor as a
- * {@link tel.schich.javacan.linux.UnixFileDescriptor} and it provides APIs to set socket options and read/write
+ * {@link NativeChannel} by exposing the underlying socket file descriptor as a
+ * {@link tel.schich.javacan.platform.linux.UnixFileDescriptor} and it provides APIs to set socket options and read/write
  * buffers.
  */
 public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescriptor> {

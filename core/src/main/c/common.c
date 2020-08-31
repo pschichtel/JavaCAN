@@ -21,17 +21,17 @@
  * THE SOFTWARE.
  */
 #include "common.h"
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
-#include <sys/socket.h>
-#include <sys/poll.h>
+#include <jni-c-to-java.h>
+#include <jni.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <errno.h>
-#include <string.h>
 #include <stdint.h>
-#include <jni.h>
-#include <jni-c-to-java.h>
+#include <string.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -148,11 +148,5 @@ void throw_native_exception(JNIEnv *env, char *msg) {
     // may become changed due to the VM operations.
     int errorNumber = errno;
 
-    throw_tel_schich_javacan_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
-}
-
-void close_fd(JNIEnv *env, int fd) {
-    if (close(fd)) {
-        throw_native_exception(env, "Unable to close epoll fd");
-    }
+    throw_tel_schich_javacan_platform_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
 }

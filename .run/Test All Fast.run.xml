@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Test All Fast" type="JUnit" factoryName="JUnit">
+    <useClassPathOnly />
+    <option name="PACKAGE_NAME" value="tel.schich.javacan" />
+    <option name="MAIN_CLASS_NAME" value="" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="package" />
+    <option name="PARAMETERS" value="" />
+    <option name="TEST_SEARCH_SCOPE">
+      <value defaultName="wholeProject" />
+    </option>
+    <dir value="$PROJECT_DIR$/src/test/java/tel/schich/javacan/test" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

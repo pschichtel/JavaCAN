@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
 import java.nio.channels.NotYetBoundException;
-import java.nio.channels.spi.SelectorProvider;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
-import tel.schich.javacan.linux.LinuxNetworkDevice;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
 
