@@ -704,5 +704,6 @@
     <modules>
         <module>core</module>
         <module>epoll</module>
+        <module>netty</module>
     </modules>
 </project>

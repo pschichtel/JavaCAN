@@ -38,7 +38,7 @@ import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
 import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
-import static tel.schich.javacan.CanSocketOptions.*;
+import static tel.schich.javacan.RawCanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class RawCanSocketTest {

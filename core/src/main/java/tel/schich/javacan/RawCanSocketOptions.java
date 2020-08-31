@@ -36,10 +36,10 @@ import static java.time.temporal.ChronoUnit.MICROS;
 /**
  * This class provides the standard socket options supported by CAN sockets.
  */
-public class CanSocketOptions {
+public class RawCanSocketOptions {
     public static final int MAX_FILTERS = 512;
 
-    private CanSocketOptions() {}
+    private RawCanSocketOptions() {}
 
     /**
      * Option to configure whether to join filters.

@@ -48,8 +48,8 @@ import tel.schich.javacan.select.IOSelector;
 import tel.schich.javacan.select.SelectorRegistration;
 
 import static java.time.Duration.ofMinutes;
-import static tel.schich.javacan.CanSocketOptions.FILTER;
-import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
+import static tel.schich.javacan.RawCanSocketOptions.FILTER;
+import static tel.schich.javacan.RawCanSocketOptions.LOOPBACK;
 
 /**
  * This class implements an event driven interface over several CAN interface to send and receive

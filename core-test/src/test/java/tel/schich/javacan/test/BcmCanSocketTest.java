@@ -41,7 +41,7 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.CanSocketOptions.SO_RCVTIMEO;
+import static tel.schich.javacan.RawCanSocketOptions.SO_RCVTIMEO;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 class BcmCanSocketTest {
