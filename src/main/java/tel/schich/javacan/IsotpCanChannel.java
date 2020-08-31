@@ -104,6 +104,6 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * @return the newly allocated buffer
      */
     public static ByteBuffer allocateSufficientMemory() {
-        return ByteBuffer.allocateDirect(MAX_MESSAGE_LENGTH + 1);
+        return JavaCAN.allocateUnordered(MAX_MESSAGE_LENGTH + 1);
     }
 }

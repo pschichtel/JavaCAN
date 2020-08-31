@@ -24,7 +24,6 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.spi.SelectorProvider;
 
@@ -68,25 +67,35 @@ public class RawCanChannelImpl extends RawCanChannel {
     @Override
     public CanFrame read() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
-        ByteBuffer frameBuf = ByteBuffer.allocateDirect(length);
+        ByteBuffer frameBuf = JavaCAN.allocateOrdered(length);
         return read(frameBuf);
     }
 
     @Override
     public CanFrame read(ByteBuffer buffer) throws IOException {
-        buffer.order(ByteOrder.nativeOrder());
-        readSocket(buffer);
-        buffer.flip();
+        readUnsafe(buffer);
         return CanFrame.create(buffer);
     }
 
     @Override
+    public long readUnsafe(ByteBuffer buffer) throws IOException {
+        long bytesRead = readSocket(buffer);
+        buffer.flip();
+        return bytesRead;
+    }
+
+    @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
-        long written = writeSocket(frame.getBuffer());
+        long written = writeUnsafe(frame.getBuffer());
         if (written != frame.getSize()) {
             throw new IOException("Frame written incompletely!");
         }
 
         return this;
+    }
+
+    @Override
+    public long writeUnsafe(ByteBuffer buffer) throws IOException {
+        return writeSocket(buffer);
     }
 }

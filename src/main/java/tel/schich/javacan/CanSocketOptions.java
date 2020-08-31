@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.Duration;
 
-import tel.schich.javacan.linux.LinuxNativeOperationException;
 import tel.schich.javacan.linux.LinuxSocketOptionHandler;
 import tel.schich.javacan.option.CanSocketOption;
 
@@ -127,8 +126,7 @@ public class CanSocketOptions {
     public static final SocketOption<CanFilter[]> FILTER = new CanSocketOption<>("FILTER", CanFilter[].class, new LinuxSocketOptionHandler<CanFilter[]>() {
         @Override
         public void set(int sock, CanFilter[] val) throws IOException {
-            ByteBuffer filterData = ByteBuffer.allocateDirect(val.length * CanFilter.BYTES);
-            filterData.order(ByteOrder.nativeOrder());
+            ByteBuffer filterData = JavaCAN.allocateOrdered(val.length * CanFilter.BYTES);
             for (CanFilter f : val) {
                 filterData.putInt(f.getId());
                 filterData.putInt(f.getMask());

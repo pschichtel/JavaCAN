@@ -48,13 +48,64 @@ public abstract class RawCanChannel extends AbstractCanChannel {
 
     public abstract RawCanChannel bind(NetworkDevice device) throws IOException;
 
+    /**
+     * Reads a CAM frame from the channel by internally allocating a new direct {@link ByteBuffer}.
+     *
+     * @return the CAN frame
+     * @throws IOException if the IO operations failed or invalid data was read.
+     */
     public abstract CanFrame read() throws IOException;
+
+    /**
+     * Reads a CAM frame from the channel using the supplied buffer.
+     *
+     * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
+     *               flipped after the read has been completed.
+     * @return the CAN frame
+     * @throws IOException if the IO operations failed, the supplied buffer was insufficient or invalid data was read.
+     */
     public abstract CanFrame read(ByteBuffer buffer) throws IOException;
+
+    /**
+     * Reads raw bytes from the channel.
+     *
+     * This method does not apply any checks on the data that has been read or on the supplied buffer. This method
+     * is primarily intended for downstream libraries that implement their own parsing on the data from the socket.
+     *
+     * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
+     *               flipped after the read has been completed.
+     * @return the number of bytes
+     * @throws IOException if the IO operations failed.
+     */
+    public abstract long readUnsafe(ByteBuffer buffer) throws IOException;
+
+    /**
+     * Writes the given CAN frame.
+     *
+     * @param frame the frame to be written.
+     * @return fluent interface.
+     * @throws IOException if the IO operations failed.
+     */
     public abstract RawCanChannel write(CanFrame frame) throws IOException;
 
+    /**
+     * Writes the given buffer in its entirety to the socket.
+     *
+     * This method does not apply any checks on the given buffer. This method is primarily intended for downstream libraries
+     * that create these buffers using other facilities.
+     *
+     * @param buffer the buffer to be written.
+     * @return the bytes written.
+     * @throws IOException if the IO operations failed.
+     */
+    public abstract long writeUnsafe(ByteBuffer buffer) throws IOException;
+
+    /**
+     * Allocates a buffer that is large enough to hold any supported CAN frame.
+     *
+     * @return a new buffer ready to be used.
+     */
     public static ByteBuffer allocateSufficientMemory() {
-        ByteBuffer buf = ByteBuffer.allocateDirect(FD_MTU + 1);
-        buf.order(ByteOrder.nativeOrder());
-        return buf;
+        return JavaCAN.allocateOrdered(FD_MTU + 1);
     }
 }
