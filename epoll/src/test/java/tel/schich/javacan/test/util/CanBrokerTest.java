@@ -24,6 +24,8 @@ package tel.schich.javacan.test.util;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.platform.linux.epoll.EPollSelector;
@@ -39,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CanBrokerTest {
+    private static final Logger LOG = LoggerFactory.getLogger(CanBrokerTest.class);
+
     private static final ThreadFactory FACTORY = r -> {
         Thread t = new Thread(r);
         t.setName("can-broker-test" + Math.random());
@@ -68,7 +72,7 @@ class CanBrokerTest {
         });
 
         brokerB.addDevice(CanTestHelper.CAN_INTERFACE, (d, frame) -> {
-            System.out.println(frame);
+            LOG.debug(String.valueOf(frame));
         });
         brokerB.send(expected);
 

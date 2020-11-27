@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
@@ -43,6 +45,8 @@ import tel.schich.javacan.select.SelectorRegistration;
  * for for each specific channel.
  */
 public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel> {
+    private static final Logger LOG = LoggerFactory.getLogger(CanBroker.class);
+
     private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<IsotpCanChannel, MessageHandler> handlerMap = new IdentityHashMap<>();
@@ -122,10 +126,10 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
                         readBuffer.flip();
                         handler.handle(isotp, readBuffer.asReadOnlyBuffer());
                     } else {
-                        System.err.println("Handler not found for channel: " + ch);
+                        LOG.warn("Handler not found for channel: " + ch);
                     }
                 } else {
-                    System.err.println("Unsupported channel: " + ch);
+                    LOG.warn("Unsupported channel: " + ch);
                 }
             }
         }

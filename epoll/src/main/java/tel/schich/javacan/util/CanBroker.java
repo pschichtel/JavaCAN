@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
@@ -56,6 +58,7 @@ import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
  * Frames can be send either to individual interfaces or all at once.
  */
 public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
+    private static final Logger LOG = LoggerFactory.getLogger(CanBroker.class);
 
     public static final Duration DEFAULT_TIMEOUT = ofMinutes(1);
     private static final CanFilter[] NO_FILTERS = { CanFilter.NONE };
@@ -271,10 +274,10 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
                         readBuffer.clear();
                         handler.handle(raw, raw.read(readBuffer));
                     } else {
-                        System.err.println("Handler not found for channel: " + ch);
+                        LOG.warn("Handler not found for channel: " + ch);
                     }
                 } else {
-                    System.err.println("Unsupported channel: " + ch);
+                    LOG.warn("Unsupported channel: " + ch);
                 }
             }
         }
