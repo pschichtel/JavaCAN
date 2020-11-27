@@ -29,7 +29,7 @@
 #include <linux/can/raw.h>
 #include <stdint.h>
 #include <string.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
