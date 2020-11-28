@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CanBrokerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(CanBrokerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanBrokerTest.class);
 
     private static final ThreadFactory FACTORY = r -> {
         Thread t = new Thread(r);
@@ -72,7 +72,7 @@ class CanBrokerTest {
         });
 
         brokerB.addDevice(CanTestHelper.CAN_INTERFACE, (d, frame) -> {
-            LOG.debug(String.valueOf(frame));
+            LOGGER.debug(String.valueOf(frame));
         });
         brokerB.send(expected);
 

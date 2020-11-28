@@ -37,7 +37,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * Helper class to detect and handle various platforms. Currently only Linux is handled.
  */
 public class Platform {
-    private static final Logger LOG = LoggerFactory.getLogger(Platform.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Platform.class);
 
     private static final String LIB_PREFIX = "/native";
 
@@ -77,7 +77,7 @@ public class Platform {
         }
 
         final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-        LOG.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
+        LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
 
         try (InputStream libStream = JavaCAN.class.getResourceAsStream(sourceLibPath)) {
             if (libStream == null) {

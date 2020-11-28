@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.IsotpAddress.*;
 
 class IsotpListenerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IsotpListenerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IsotpListenerTest.class);
 
     @Test
     void testBroker() throws Exception {
@@ -108,7 +108,7 @@ class IsotpListenerTest {
         public void handle(IsotpCanChannel ch, ByteBuffer buffer) {
             int length = buffer.remaining();
             if (length % 200 == 0) {
-                LOG.debug(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
+                LOGGER.debug(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
             }
             buf.clear();
             buf.put(buffer);
@@ -118,7 +118,7 @@ class IsotpListenerTest {
                 ch.write(buf);
             } catch (Exception e) {
                 assertEquals(IllegalArgumentException.class, e.getClass());
-                LOG.debug("Failed to send message", e);
+                LOGGER.debug("Failed to send message", e);
                 lock.lock();
                 try {
                     condition.signalAll();

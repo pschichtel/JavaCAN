@@ -41,7 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 public abstract class EventLoop<HandleType, ChannelType extends Channel> implements Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(CanBroker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanBroker.class);
 
     private final String name;
 
@@ -207,13 +207,13 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      * @return true if the event loop should continue, false for the event loop to exit
      */
     protected boolean handleException(Thread thread, Throwable t, boolean terminal) {
-        LOG.error("Polling thread failed: " + thread.getName(), t);
-        LOG.warn("Terminating other threads.");
+        LOGGER.error("Polling thread failed: " + thread.getName(), t);
+        LOGGER.warn("Terminating other threads.");
 
         try {
             shutdown();
         } catch (InterruptedException e) {
-            LOG.error("Got interrupted while stopping the threads");
+            LOGGER.error("Got interrupted while stopping the threads");
         }
 
         return true;

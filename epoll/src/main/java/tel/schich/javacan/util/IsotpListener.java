@@ -45,7 +45,7 @@ import tel.schich.javacan.select.SelectorRegistration;
  * for for each specific channel.
  */
 public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel> {
-    private static final Logger LOG = LoggerFactory.getLogger(CanBroker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanBroker.class);
 
     private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
 
@@ -126,10 +126,10 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
                         readBuffer.flip();
                         handler.handle(isotp, readBuffer.asReadOnlyBuffer());
                     } else {
-                        LOG.warn("Handler not found for channel: " + ch);
+                        LOGGER.warn("Handler not found for channel: " + ch);
                     }
                 } else {
-                    LOG.warn("Unsupported channel: " + ch);
+                    LOGGER.warn("Unsupported channel: " + ch);
                 }
             }
         }

@@ -37,26 +37,26 @@ import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
 public class IsotpCanSocketOptionsTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IsotpCanSocketOptionsTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IsotpCanSocketOptionsTest.class);
 
     @Test
     void testOptions() throws IOException {
         try (final IsotpCanChannel a = CanChannels.newIsotpChannel()) {
             IsotpOptions opts = a.getOption(OPTS);
-            LOG.debug(String.valueOf(opts));
+            LOGGER.debug(String.valueOf(opts));
             IsotpOptions customizedOpts = IsotpOptions.DEFAULT.withPadding(0xAA);
             a.setOption(OPTS, customizedOpts);
             assertEquals(customizedOpts, a.getOption(OPTS), "What goes in should come out");
 
             IsotpFlowControlOptions flowControlOpts = a.getOption(RECV_FC);
-            LOG.debug(String.valueOf(flowControlOpts));
+            LOGGER.debug(String.valueOf(flowControlOpts));
             IsotpFlowControlOptions customizedFlowControlOpts = IsotpFlowControlOptions.DEFAULT
                     .withBlockSize(1);
             a.setOption(RECV_FC, customizedFlowControlOpts);
             assertEquals(customizedFlowControlOpts, a.getOption(RECV_FC), "What goes in should come out");
 
             IsotpLinkLayerOptions linkLayerOpts = a.getOption(LL_OPTS);
-            LOG.debug(String.valueOf(linkLayerOpts));
+            LOGGER.debug(String.valueOf(linkLayerOpts));
             IsotpLinkLayerOptions customizedLinkLayerOpts = IsotpLinkLayerOptions.DEFAULT
                     .withTransmissionFlags(CanFrame.FD_FLAG_BIT_RATE_SWITCH);
             a.setOption(LL_OPTS, customizedLinkLayerOpts);
