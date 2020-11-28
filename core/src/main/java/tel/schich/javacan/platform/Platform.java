@@ -24,6 +24,8 @@ package tel.schich.javacan.platform;
 
 import tel.schich.javacan.JavaCAN;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,6 +37,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * Helper class to detect and handle various platforms. Currently only Linux is handled.
  */
 public class Platform {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Platform.class);
+
     private static final String LIB_PREFIX = "/native";
 
     /**
@@ -73,6 +77,8 @@ public class Platform {
         }
 
         final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
+        LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
+
         try (InputStream libStream = JavaCAN.class.getResourceAsStream(sourceLibPath)) {
             if (libStream == null) {
                 throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");

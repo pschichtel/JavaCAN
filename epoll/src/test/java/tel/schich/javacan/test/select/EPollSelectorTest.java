@@ -24,6 +24,8 @@ package tel.schich.javacan.test.select;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.CanSocketOptions;
@@ -48,6 +50,7 @@ import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 import static tel.schich.javacan.test.CanTestHelper.runDelayed;
 
 public class EPollSelectorTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EPollSelectorTest.class);
 
     @Test
     public void testOpenClose() throws IOException {
@@ -128,12 +131,12 @@ public class EPollSelectorTest {
 
     private static SelectorRegistration<UnixFileDescriptor, RawCanChannel> configureAndRegisterChannel(IOSelector<UnixFileDescriptor> selector) throws IOException {
         final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
-        System.out.println("Created channel: " + ch);
+        LOGGER.debug("Created channel: " + ch);
 
         ch.configureBlocking(false);
         ch.setOption(CanSocketOptions.LOOPBACK, true);
         SelectorRegistration<UnixFileDescriptor, RawCanChannel> registration = selector.register(ch, SelectorRegistration.Operation.READ);
-        System.out.println("Selection key: " + registration);
+        LOGGER.debug("Selection key: " + registration);
 
         return registration;
     }

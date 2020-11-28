@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tel.schich.javacan.select.IOEvent;
 import tel.schich.javacan.select.IOSelector;
 import tel.schich.javacan.select.SelectorRegistration;
@@ -39,6 +41,8 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 public abstract class EventLoop<HandleType, ChannelType extends Channel> implements Closeable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanBroker.class);
+
     private final String name;
 
     private final ThreadFactory threadFactory;
@@ -203,14 +207,15 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      * @return true if the event loop should continue, false for the event loop to exit
      */
     protected boolean handleException(Thread thread, Throwable t, boolean terminal) {
-        System.err.println("Polling thread failed: " + thread.getName());
-        t.printStackTrace(System.err);
-        System.err.println("Terminating other threads.");
+        LOGGER.error("Polling thread failed: " + thread.getName(), t);
+        LOGGER.warn("Terminating other threads.");
+
         try {
             shutdown();
         } catch (InterruptedException e) {
-            System.err.println("Got interrupted while stopping the threads");
+            LOGGER.error("Got interrupted while stopping the threads");
         }
+
         return true;
     }
 
