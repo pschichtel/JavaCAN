@@ -327,7 +327,7 @@
             </build>
         </profile>
         <profile>
-            <id>fast-build</id>
+            <id>single-arch</id>
             <activation>
                 <property>
                     <name>javacan.build.arch</name>
