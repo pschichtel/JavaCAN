@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -40,6 +39,9 @@ public class Platform {
     private static final Logger LOGGER = LoggerFactory.getLogger(Platform.class);
 
     private static final String LIB_PREFIX = "/native";
+    private static final String PATH_PROP_PREFIX = "javacan.native.";
+    private static final String PATH_PROP_FS_PATH = ".path";
+    private static final String PATH_PROP_CLASS_PATH = ".classpath";
 
     /**
      * Checks if the currently running OS is Linux
@@ -59,50 +61,65 @@ public class Platform {
     }
 
 
-    public static void loadBundledLib(String name, Class<?> base) {
-        String explicitLibraryPathValue = System.getProperty("javacan.native." + name.toLowerCase() + ".path");
-        if (explicitLibraryPathValue != null) {
-            final Path explicitLibraryPath = Paths.get(explicitLibraryPathValue);
-            if (Files.isReadable(explicitLibraryPath)) {
-                LOGGER.trace("Loading native library from {}", explicitLibraryPathValue);
-                System.load(explicitLibraryPath.toString());
-            } else {
-                throw new LinkageError("Explicit native library path '" + explicitLibraryPathValue + "' for library '" + name + "' does not exist or cannot be read!");
-            }
-        } else {
-            String archSuffix;
-            String arch = System.getProperty("os.arch").toLowerCase();
-            if (arch.contains("arm")) {
-                archSuffix = "armv7";
-            } else if (arch.contains("86") || arch.contains("amd")) {
-                if (arch.contains("64")) {
-                    archSuffix = "x86_64";
-                } else {
-                    archSuffix = "x86_32";
-                }
-            } else if (arch.contains("aarch64") || arch.contains("arm64")) {
-                archSuffix = "aarch64";
-            } else {
-                archSuffix = arch;
-            }
+    public static void loadNativeLibrary(String name, Class<?> base) {
+        String explicitLibraryPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_FS_PATH);
+        if (explicitLibraryPath != null) {
+            LOGGER.trace("Loading native library from {} without arch detection", explicitLibraryPath);
+            System.load(explicitLibraryPath);
+            return;
+        }
 
-            final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-            LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
-
-            try (InputStream libStream = base.getResourceAsStream(sourceLibPath)) {
-                if (libStream == null) {
-                    throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
-                }
-                final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
+        String explicitLibraryClassPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH);
+        if (explicitLibraryClassPath != null) {
+            LOGGER.trace("Loading native library from classpath at {} without arch detection", explicitLibraryClassPath);
+            try {
+                final Path tempDirectory = Files.createTempDirectory(name + "-");
                 final Path libPath = tempDirectory.resolve("lib" + name + ".so");
-
-                Files.copy(libStream, libPath, REPLACE_EXISTING);
-
-                System.load(libPath.toString());
-                libPath.toFile().deleteOnExit();
+                loadFromClassPath(base, explicitLibraryClassPath, libPath);
+                return;
             } catch (IOException e) {
                 throw new LinkageError("Unable to load native library '" + name + "'!", e);
             }
+        }
+
+        String archSuffix;
+        String arch = System.getProperty("os.arch").toLowerCase();
+        if (arch.contains("arm")) {
+            archSuffix = "armv7";
+        } else if (arch.contains("86") || arch.contains("amd")) {
+            if (arch.contains("64")) {
+                archSuffix = "x86_64";
+            } else {
+                archSuffix = "x86_32";
+            }
+        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+            archSuffix = "aarch64";
+        } else {
+            archSuffix = arch;
+        }
+
+        final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
+        LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
+
+        try {
+            final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
+            final Path libPath = tempDirectory.resolve("lib" + name + ".so");
+            loadFromClassPath(base, sourceLibPath, libPath);
+        } catch (IOException e) {
+            throw new LinkageError("Unable to load native library '" + name + "'!", e);
+        }
+    }
+
+    private static void loadFromClassPath(Class<?> base, String classPath, Path fsPath) throws IOException {
+        try (InputStream libStream = base.getResourceAsStream(classPath)) {
+            if (libStream == null) {
+                throw new LinkageError("Failed to load the native library: " + classPath + " not found.");
+            }
+
+            Files.copy(libStream, fsPath, REPLACE_EXISTING);
+
+            System.load(fsPath.toString());
+            fsPath.toFile().deleteOnExit();
         }
     }
 
