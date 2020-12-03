@@ -22,14 +22,14 @@
  */
 package tel.schich.javacan.platform;
 
-import tel.schich.javacan.JavaCAN;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -59,39 +59,50 @@ public class Platform {
     }
 
 
-    public static void loadBundledLib(String name) {
-        String archSuffix;
-        String arch = System.getProperty("os.arch").toLowerCase();
-        if (arch.contains("arm")) {
-            archSuffix = "armv7";
-        } else if (arch.contains("86") || arch.contains("amd")) {
-            if (arch.contains("64")) {
-                archSuffix = "x86_64";
+    public static void loadBundledLib(String name, Class<?> base) {
+        String explicitLibraryPathValue = System.getProperty("javacan.native." + name.toLowerCase() + ".path");
+        if (explicitLibraryPathValue != null) {
+            final Path explicitLibraryPath = Paths.get(explicitLibraryPathValue);
+            if (Files.isReadable(explicitLibraryPath)) {
+                LOGGER.trace("Loading native library from {}", explicitLibraryPathValue);
+                System.load(explicitLibraryPath.toString());
             } else {
-                archSuffix = "x86_32";
+                throw new LinkageError("Explicit native library path '" + explicitLibraryPathValue + "' for library '" + name + "' does not exist or cannot be read!");
             }
-        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
-            archSuffix = "aarch64";
         } else {
-            archSuffix = arch;
-        }
-
-        final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-        LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
-
-        try (InputStream libStream = JavaCAN.class.getResourceAsStream(sourceLibPath)) {
-            if (libStream == null) {
-                throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
+            String archSuffix;
+            String arch = System.getProperty("os.arch").toLowerCase();
+            if (arch.contains("arm")) {
+                archSuffix = "armv7";
+            } else if (arch.contains("86") || arch.contains("amd")) {
+                if (arch.contains("64")) {
+                    archSuffix = "x86_64";
+                } else {
+                    archSuffix = "x86_32";
+                }
+            } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+                archSuffix = "aarch64";
+            } else {
+                archSuffix = arch;
             }
-            final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
-            final Path libPath = tempDirectory.resolve("lib" + name + ".so");
 
-            Files.copy(libStream, libPath, REPLACE_EXISTING);
+            final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
+            LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
 
-            System.load(libPath.toString());
-            libPath.toFile().deleteOnExit();
-        } catch (IOException e) {
-            throw new LinkageError("Unable to load native library!", e);
+            try (InputStream libStream = base.getResourceAsStream(sourceLibPath)) {
+                if (libStream == null) {
+                    throw new LinkageError("Failed to load the native library: " + sourceLibPath + " not found.");
+                }
+                final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
+                final Path libPath = tempDirectory.resolve("lib" + name + ".so");
+
+                Files.copy(libStream, libPath, REPLACE_EXISTING);
+
+                System.load(libPath.toString());
+                libPath.toFile().deleteOnExit();
+            } catch (IOException e) {
+                throw new LinkageError("Unable to load native library '" + name + "'!", e);
+            }
         }
     }
 

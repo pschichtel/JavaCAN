@@ -39,7 +39,7 @@ class EPoll {
             return;
         }
 
-        Platform.loadBundledLib(LIB_NAME);
+        Platform.loadBundledLib(LIB_NAME, EPoll.class);
 
         initialized = true;
     }

@@ -41,7 +41,7 @@ public class JavaCAN {
             return;
         }
 
-        Platform.loadBundledLib(LIB_NAME);
+        Platform.loadBundledLib(LIB_NAME, JavaCAN.class);
 
         initialized = true;
     }
