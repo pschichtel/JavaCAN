@@ -265,7 +265,8 @@ public class IsotpOptions {
         HALF_DUPLEX(0x040, "half duplex error state handling"),
         FORCE_TXSTMIN(0x080, "ignore stmin from received FC"),
         FORCE_RXSTMIN(0x100, "ignore CFs depending on rx stmin"),
-        RX_EXT_ADDR(0x200, "different rx extended addressing");
+        RX_EXT_ADDR(0x200, "different rx extended addressing"),
+        WAIT_TX_DONE(0x400, "wait for tx completion");
 
         private final int bit;
         private final String description;
