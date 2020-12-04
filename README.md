@@ -38,7 +38,8 @@ Currently the full build process includes the following architectures:
 * armv7
 * aarch64
 
-The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it!
+The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it! Alternative read how to build a single-architecture version
+down below.
 
 ## How to use
 
@@ -50,6 +51,18 @@ The implementation can handle word sizes up to 64 bit and is byte order aware. I
 4. Bind the channel to an interface using the `bind(CanDevice)` method
 
 Usage example can be found in the unit tests.
+
+#### Custom library locations
+
+The library uses several native libraries. If the bundled native libraries do not work for you or bundling them inside the jar is not compatible with your platform (e.g. Android), it is possible to
+configure the library location in two ways:
+
+1. Filesystem path: By setting the property `javacan.native.javacan-<module>.path` to a path in the filesystem before initializing the library, the native library will be loaded from that location
+   and no architecture detection is performed.
+2. Path on classpath: By setting the property `javacan.native.javacan-<module>.classpath` (`classpath` instead of `path`) to a path in your classpath, the native library will be loaded from there,
+   also without any architecture detection. This option is also necessary for single-architecture builds.
+   
+The value for `<module>` is `core` and if the EPoll support is used, an additional option with `epoll` for `<module>` is neceeary.
 
 ## How to build
 
@@ -79,5 +92,33 @@ For usage:
 
 ### Building
 
+#### Default Architectures
+
+This will build a set of jars and native libraries capable of running on the supported architectures listed, without the need
+for any further configuration.
+
 1. `mvn clean package`
 2. profit
+
+#### Single-Architecture Builds
+
+The build can be configured ti build the project for a single specific architecture. The resulting jar and native library will
+in principle run on the selected architecture, however the automatic architecture detection is limited to the supported
+architectures listed above. 
+
+1. `mvn clean package -Djavacan.build.arch=<architecture>`
+    
+   If you compile this on a system with a different architecture, then you will have to skip the unit tests by additionally
+   passing `-DskipTests` to maven.
+
+2. When executing the software using the library, it is *likely* necessary, that the library location needs to be explicitly
+   passed in order to avoid the architecture detection:
+   
+   `-Djavacan.native.javacan-core.classpath=/native/libjavacan-core-<architecture>.so`
+
+   If you are using the epoll module, then the same has to be done for its native library:
+
+   `-Djavacan.native.javacan-core.classpath=/native/libjavacan-epoll-<architecture>.so`
+
+For a list of possible values for `<architecture>` consult the [dockcross project](https://github.com/dockcross/dockcross),
+any linux-* architecture should work.
