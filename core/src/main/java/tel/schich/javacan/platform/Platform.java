@@ -42,6 +42,7 @@ public class Platform {
     private static final String PATH_PROP_PREFIX = "javacan.native.";
     private static final String PATH_PROP_FS_PATH = ".path";
     private static final String PATH_PROP_CLASS_PATH = ".classpath";
+    private static final String ARCH_PROP = PATH_PROP_PREFIX + "arch";
 
     /**
      * Checks if the currently running OS is Linux
@@ -62,6 +63,14 @@ public class Platform {
 
 
     public static void loadNativeLibrary(String name, Class<?> base) {
+        try {
+            System.loadLibrary(name);
+        } catch (LinkageError e) {
+            loadExplicitLibrary(name, base);
+        }
+    }
+
+    private static void loadExplicitLibrary(String name, Class<?> base) {
         String explicitLibraryPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_FS_PATH);
         if (explicitLibraryPath != null) {
             LOGGER.trace("Loading native library from {} without arch detection", explicitLibraryPath);
@@ -82,24 +91,30 @@ public class Platform {
             }
         }
 
+
         String archSuffix;
-        String arch = System.getProperty("os.arch").toLowerCase();
-        if (arch.contains("arm")) {
-            archSuffix = "armv7";
-        } else if (arch.contains("86") || arch.contains("amd")) {
-            if (arch.contains("64")) {
-                archSuffix = "x86_64";
-            } else {
-                archSuffix = "x86_32";
-            }
-        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
-            archSuffix = "aarch64";
+        String explicitArch = System.getProperty(ARCH_PROP);
+        if (explicitArch != null) {
+            archSuffix = explicitArch;
         } else {
-            archSuffix = arch;
+            String arch = System.getProperty("os.arch").toLowerCase();
+            if (arch.contains("arm")) {
+                archSuffix = "armv7";
+            } else if (arch.contains("86") || arch.contains("amd")) {
+                if (arch.contains("64")) {
+                    archSuffix = "x86_64";
+                } else {
+                    archSuffix = "x86_32";
+                }
+            } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+                archSuffix = "aarch64";
+            } else {
+                archSuffix = arch;
+            }
         }
 
         final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-        LOGGER.trace("Loading native library for arch {} from {}", arch, sourceLibPath);
+        LOGGER.trace("Loading native library for arch {} from {}", archSuffix, sourceLibPath);
 
         try {
             final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
