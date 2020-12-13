@@ -41,7 +41,7 @@ translate_arch() {
 
 if [[ -z "${BUILD_ARCH}" ]]
 then
-    archs=(x86 x64 armv7 arm64)
+    archs=(x86 x64 armv7 armv7a arm64)
 else
     archs=("${BUILD_ARCH[@]}")
 fi
