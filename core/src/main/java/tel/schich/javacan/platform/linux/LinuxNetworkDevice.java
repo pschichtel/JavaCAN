@@ -64,6 +64,9 @@ public class LinuxNetworkDevice implements NetworkDevice {
      * @throws java.io.IOException if the native calls fail
      */
     public static NetworkDevice lookup(String name) throws IOException {
+        if (name == null) {
+            throw new IllegalArgumentException("The device name may not be null!");
+        }
         long index = resolveInterfaceName(name);
         return new LinuxNetworkDevice(name, index);
     }

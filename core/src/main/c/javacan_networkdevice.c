@@ -28,6 +28,10 @@
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
     const char* ifname = (*env)->GetStringUTFChars(env, interface_name, false);
+    if (ifname == NULL) {
+        throw_native_exception(env, "failed to get c string from java string");
+        return -1;
+    }
     unsigned int ifindex = if_nametoindex(ifname);
     if (ifindex == 0) {
         const char* prefix = "Failed to resolve the interface: ";
