@@ -31,7 +31,6 @@
 #include <string.h>
 #include <poll.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
