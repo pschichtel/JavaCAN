@@ -1,6 +1,6 @@
 .idea/
-cmake-*/
-CMakeLists.txt
+cmake/*
+!cmake/CMakeLists.txt
 *.iml
 target/
 *.log
