@@ -115,8 +115,7 @@ public class CanSocketOptions {
 
         @Override
         public Integer get(int sock) throws IOException {
-            final int mask = SocketCAN.getErrorFilter(sock);
-            return mask;
+            return SocketCAN.getErrorFilter(sock);
         }
     });
 
@@ -136,7 +135,7 @@ public class CanSocketOptions {
         }
 
         /**
-         * @deprecated The underlying native implementation might consume **A LOT** of memory due to a ill-designed kernel API
+         *
          */
         @Override
         public CanFilter[] get(int sock) throws IOException {
@@ -201,8 +200,7 @@ public class CanSocketOptions {
 
         @Override
         public Integer get(int sock) throws IOException {
-            final int size = SocketCAN.getReceiveBufferSize(sock);
-            return size;
+            return SocketCAN.getReceiveBufferSize(sock);
         }
     });
 }

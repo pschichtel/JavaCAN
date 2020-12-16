@@ -66,7 +66,6 @@ class SocketCAN {
 
     public static native int setFilters(int sock, ByteBuffer data) throws LinuxNativeOperationException;
 
-    @Deprecated
     public static native ByteBuffer getFilters(int sock) throws LinuxNativeOperationException;
 
     public static native int setLoopback(int sock, boolean enable) throws LinuxNativeOperationException;

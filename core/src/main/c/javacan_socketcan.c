@@ -32,6 +32,9 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
+
+#define GET_FILTERS_DEFAULT_AMOUNT 10
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_raw_socket();
@@ -173,34 +176,34 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setFilters(JNIEnv *env,
 }
 
 JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *env, jclass class, jint sock) {
-    // assign the signed integer max value to an unsigned integer, socketcan's getsockopt implementation uses int's
-    // instead of uint's and resets the size to the actual size only if the given size is larger.
-    socklen_t size = INT_MAX;
-    // TODO this is a horrible idea, but it seems to be the only way to get all filters without knowing how many there are
-    // see: https://github.com/torvalds/linux/blob/f726f3d37163f714034aa5fd1f92a1a73df4297f/net/can/raw.c#L663-L679
-    // surprisingly this does not increase the system memory usage given that this should be a significant chunk by numbers
-    void* filters = malloc(size);
-    if (filters == NULL) {
-        throw_native_exception(env, "Unable to allocate memory");
-        return NULL;
-    }
-
+    struct can_filter filters[GET_FILTERS_DEFAULT_AMOUNT];
+    socklen_t size = sizeof(filters);
     int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
-    if (result == -1) {
+    void* filters_out = NULL;
+    if (!result) {
+        filters_out = malloc(size);
+        if (filters_out == NULL) {
+            throw_native_exception(env, "Unable to allocate memory");
+            return NULL;
+        }
+        memcpy(filters_out, filters, size);
+    } else if (result == -ERANGE) {
+        filters_out = malloc(size);
+        if (filters_out == NULL) {
+            throw_native_exception(env, "Unable to allocate memory");
+            return NULL;
+        }
+        result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters_out, &size);
+        if (result) {
+            throw_native_exception(env, "Unable to get the filters with corrected size");
+            free(filters_out);
+            return NULL;
+        }
+    } else {
         throw_native_exception(env, "Unable to get the filters");
-        free(filters);
         return NULL;
     }
 
-    void* filters_out = malloc(size);
-    if (filters_out == NULL) {
-        throw_native_exception(env, "Unable to allocate memory");
-        free(filters);
-        return NULL;
-    }
-
-    memcpy(filters_out, filters, size);
-    free(filters);
     return (*env)->NewDirectByteBuffer(env, filters_out, size);
 }
 
