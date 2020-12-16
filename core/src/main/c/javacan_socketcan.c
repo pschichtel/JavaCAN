@@ -176,35 +176,37 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setFilters(JNIEnv *env,
 }
 
 JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *env, jclass class, jint sock) {
-    struct can_filter filters[GET_FILTERS_DEFAULT_AMOUNT];
-    socklen_t size = sizeof(filters);
-    int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
-    void* filters_out = NULL;
-    if (!result) {
-        filters_out = malloc(size);
-        if (filters_out == NULL) {
-            throw_native_exception(env, "Unable to allocate memory");
-            return NULL;
-        }
-        memcpy(filters_out, filters, size);
-    } else if (result == -ERANGE) {
-        filters_out = malloc(size);
-        if (filters_out == NULL) {
-            throw_native_exception(env, "Unable to allocate memory");
-            return NULL;
-        }
-        result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters_out, &size);
-        if (result) {
-            throw_native_exception(env, "Unable to get the filters with corrected size");
-            free(filters_out);
-            return NULL;
-        }
-    } else {
-        throw_native_exception(env, "Unable to get the filters");
+    socklen_t size = sizeof(struct can_filter) * GET_FILTERS_DEFAULT_AMOUNT;
+    void* filters = malloc(size);
+    if (filters == NULL) {
+        throw_native_exception(env, "Unable to allocate memory");
         return NULL;
     }
 
-    return (*env)->NewDirectByteBuffer(env, filters_out, size);
+    int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
+    if (result) {
+        if (result == -ERANGE) {
+            void* reallocated = realloc(filters, size);
+            if (reallocated == NULL) {
+                throw_native_exception(env, "Unable to allocate the correct amount of memory");
+                free(filters);
+                return NULL;
+            } else {
+                filters = reallocated;
+            }
+            if (getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size)) {
+                throw_native_exception(env, "Unable to get the filters with corrected size");
+                free(filters);
+                return NULL;
+            }
+        } else {
+            throw_native_exception(env, "Unable to get the filters");
+            free(filters);
+            return NULL;
+        }
+    }
+
+    return (*env)->NewDirectByteBuffer(env, filters, size);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean enable) {
