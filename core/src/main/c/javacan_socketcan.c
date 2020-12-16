@@ -177,7 +177,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
     // instead of uint's and resets the size to the actual size only if the given size is larger.
     socklen_t size = INT_MAX;
     // TODO this is a horrible idea, but it seems to be the only way to get all filters without knowing how many there are
-    // see: https://github.com/torvalds/linux/blob/master/net/can/raw.c#L669-L683
+    // see: https://github.com/torvalds/linux/blob/f726f3d37163f714034aa5fd1f92a1a73df4297f/net/can/raw.c#L663-L679
     // surprisingly this does not increase the system memory usage given that this should be a significant chunk by numbers
     void* filters = malloc(size);
     if (filters == NULL) {
@@ -188,12 +188,14 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
     int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
     if (result == -1) {
         throw_native_exception(env, "Unable to get the filters");
+        free(filters);
         return NULL;
     }
 
     void* filters_out = malloc(size);
     if (filters_out == NULL) {
         throw_native_exception(env, "Unable to allocate memory");
+        free(filters);
         return NULL;
     }
 
