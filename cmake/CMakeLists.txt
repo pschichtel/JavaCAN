@@ -12,7 +12,7 @@ include_directories(../core/target/java-jni-headers/linux)
 include_directories(../core/target/jni)
 include_directories(../epoll/target/jni)
 
-add_executable(javacan-core
+add_library(javacan-core
         ../core/src/main/c/common.c
         ../core/src/main/c/common.h
         ../core/src/main/c/javacan_bcmmessage.c
@@ -20,5 +20,5 @@ add_executable(javacan-core
         ../core/src/main/c/javacan_networkdevice.c
         ../core/src/main/c/javacan_socketcan.c)
 
-add_executable(javacan-epoll
+add_library(javacan-epoll
         ../epoll/src/main/c/javacan_epoll.c)
