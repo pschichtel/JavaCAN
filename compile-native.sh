@@ -14,7 +14,7 @@ cc_opts=('-shared' '-std=c99' '-fPIC' '-D' "MVN_VERSION=$version")
 
 if grep -Pq -- '-SNAPSHOT$' <<< "$version"
 then
-    cc_opts+=('-g' '-Og')
+    cc_opts+=('-g3' '-Og')
 else
     cc_opts+=( '-O2' '-flto')
 fi
