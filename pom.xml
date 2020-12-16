@@ -155,6 +155,7 @@
                                     <argument>${java.home}</argument>
                                     <argument>${project.name}</argument>
                                     <argument>${project.build.outputDirectory}/native</argument>
+                                    <argument>${project.version}</argument>
                                 </arguments>
                             </configuration>
                         </execution>

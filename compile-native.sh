@@ -3,13 +3,21 @@
 java_home="${1?no java home given}"
 libname="${2?no lib name given}"
 output_dir="${3?no output directory given}"
+version="${4?no version given}"
 
 if ! [ -e "$java_home/include/jni.h" ]
 then
   java_home="$(dirname "$java_home")"
 fi
 
-cc_opts=('-shared' '-std=c99' '-O2' '-flto' '-fPIC')
+cc_opts=('-shared' '-std=c99' '-fPIC' '-D' "MVN_VERSION=$version")
+
+if grep -Pq -- '-SNAPSHOT$' <<< "$version"
+then
+    cc_opts+=('-g' '-Og')
+else
+    cc_opts+=( '-O2' '-flto')
+fi
 
 base="target"
 jni="$base/jni"
