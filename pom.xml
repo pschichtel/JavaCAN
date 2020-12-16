@@ -153,7 +153,7 @@
                                 <executable>./compile-native.sh</executable>
                                 <arguments>
                                     <argument>${java.home}</argument>
-                                    <argument>${project.name}</argument>
+                                    <argument>${project.artifactId}</argument>
                                     <argument>${project.build.outputDirectory}/native</argument>
                                     <argument>${project.version}</argument>
                                 </arguments>
