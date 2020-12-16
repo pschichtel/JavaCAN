@@ -96,13 +96,22 @@ class RawCanSocketTest {
     }
 
     @Test
-    @SuppressWarnings("deprecated")
     void testFilters() throws Exception {
         try (final RawCanChannel socket = CanChannels.newRawChannel()) {
             socket.bind(CAN_INTERFACE);
 
             CanFilter[] input = {
-                    new CanFilter(0x123, 0x234)
+                    new CanFilter(0x1, 0x1),
+                    new CanFilter(0x2, 0x2),
+                    new CanFilter(0x3, 0x3),
+                    new CanFilter(0x4, 0x4),
+                    new CanFilter(0x5, 0x5),
+                    new CanFilter(0x6, 0x6),
+                    new CanFilter(0x7, 0x7),
+                    new CanFilter(0x8, 0x8),
+                    new CanFilter(0x9, 0x9),
+                    new CanFilter(0xA, 0xA),
+                    //new CanFilter(0xB, 0xB),
             };
 
             socket.setOption(FILTER, input);
