@@ -78,7 +78,7 @@ do
     out_files=()
     # shellcheck disable=SC2016
     CC="$("$proxy" bash -c 'echo "$CC"' | tr -d '\r')"
-    for c_file in "$src"/*.c "$jni"/*.c
+    for c_file in "$src"/*.c "$jni"/**/*.c
     do
         name="$(basename "$c_file" .c)"
         out_file="$dir/$(dirname "$c_file")/$name.o"

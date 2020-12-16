@@ -23,7 +23,7 @@
 #include "common.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <jni-c-to-java.h>
+#include <javacan-core/jni-c-to-java.h>
 #include <jni.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
