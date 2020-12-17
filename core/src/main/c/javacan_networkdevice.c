@@ -23,7 +23,6 @@
 #include "common.h"
 #include <jni.h>
 #include <net/if.h>
-#include <stdbool.h>
 #include <string.h>
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
