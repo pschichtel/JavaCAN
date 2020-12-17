@@ -185,7 +185,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
 
     int result = getsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, filters, &size);
     if (result) {
-        if (result == -ERANGE) {
+        if (errno == ERANGE) {
             void* reallocated = realloc(filters, size);
             if (reallocated == NULL) {
                 throw_native_exception(env, "Unable to allocate the correct amount of memory");
