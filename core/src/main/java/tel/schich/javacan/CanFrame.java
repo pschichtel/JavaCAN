@@ -213,7 +213,7 @@ public class CanFrame {
      * @return true if this frame uses the extended format
      */
     public boolean isExtended() {
-        return CanId.isExtended(getId());
+        return CanId.isExtended(getRawId());
     }
 
     /**
@@ -222,7 +222,7 @@ public class CanFrame {
      * @return true if this frame is an error frame.
      */
     public boolean isError() {
-        return CanId.isError(getId());
+        return CanId.isError(getRawId());
     }
 
     /**
@@ -231,7 +231,7 @@ public class CanFrame {
      * @return the error from the CAN ID or an undefined integer
      */
     public int getError() {
-        return CanId.getError(getId());
+        return CanId.getError(getRawId());
     }
 
     /**
@@ -240,7 +240,7 @@ public class CanFrame {
      * @return true if this frame is a remote-transmission-request
      */
     public boolean isRemoteTransmissionRequest() {
-        return CanId.isRemoteTransmissionRequest(getId());
+        return CanId.isRemoteTransmissionRequest(getRawId());
     }
 
     @Override
