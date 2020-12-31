@@ -1,5 +1,7 @@
 # JavaCAN [![Maven Central](https://img.shields.io/maven-central/v/tel.schich/javacan.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22tel.schich%22%20AND%20a:%22javacan%22)
 
+This README is for the latest, possibly unreleased, version. For the documentation on the 2.x releases, check the `releases/2.x` branch.
+
 Bindings for SocketCAN's CAN_RAW, CAN_BCM and CAN_ISOTP sockets with full support for blocking and non-blocking IO. Non-blocking IO is possible using the epoll module, that provides an API very
 similar to Java's Selector API.
 
@@ -93,7 +95,7 @@ For tests:
 For usage:
 
 * A recent Linux kernel with CAN support
-* For ISOTP channels, the [can-isotp](https://github.com/hartkopp/can-isotp) kernel module must be loaded
+* For ISOTP channels, the [can-isotp](https://github.com/hartkopp/can-isotp) out-of-tree kernel module or a kernel 5.10 or newer with `CONFIG_CAN_ISOTP` enabled
 * Java 8 or newer installed
 * A few kilobytes of disk space to extract the native library
 
