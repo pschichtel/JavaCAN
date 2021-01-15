@@ -25,8 +25,10 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 class IsotpCanChannelImpl extends IsotpCanChannel {
@@ -47,7 +49,14 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
-        SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
+        try {
+            SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
         this.device = device;
         this.rx = rx;
         this.tx = tx;

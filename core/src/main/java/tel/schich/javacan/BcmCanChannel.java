@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 /**
@@ -79,6 +81,7 @@ public class BcmCanChannel extends AbstractCanChannel {
     /**
      * Initiate the connection on the CAN socket.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/connect.2.html">connect man page</a>
      * @param device to connect to
      * @return this channel
      * @throws IOException if the device is no {@link LinuxNetworkDevice} or the operation faild
@@ -87,7 +90,14 @@ public class BcmCanChannel extends AbstractCanChannel {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
-        SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
+        try {
+            SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
         this.device = device;
         return this;
     }
@@ -95,6 +105,7 @@ public class BcmCanChannel extends AbstractCanChannel {
     /**
      * Read one message from the BCM socket.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @return the message
      * @throws IOException if the socket is not readable
      */
@@ -107,6 +118,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * Read one message from the BCM socket into the provided buffer. The byte order of {@code buffer}
      * will be set to {@link ByteOrder#nativeOrder()} by this operation.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer used for reading from the socket
      * @return the message
      * @throws IllegalArgumentException if the buffer is not a direct buffer
@@ -123,6 +135,7 @@ public class BcmCanChannel extends AbstractCanChannel {
     /**
      * Write the given message to the socket.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param message to write
      * @return this channel
      * @throws IOException if the message was not completely written

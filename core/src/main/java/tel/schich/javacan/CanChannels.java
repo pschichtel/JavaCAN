@@ -37,6 +37,7 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.RawCanChannel} without binding it to a device.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
      */
@@ -49,6 +50,7 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given
      * {@link NetworkDevice}.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
@@ -62,6 +64,7 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given device.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
@@ -73,6 +76,7 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} without binding it to a device.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
      */
@@ -84,6 +88,7 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} already bound to the given {@link NetworkDevice}.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
@@ -97,6 +102,7 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} already bound to the given device.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
@@ -108,6 +114,7 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} without binding it to a device and addresses.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
      */
@@ -120,6 +127,7 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
      * {@link NetworkDevice} and {@link tel.schich.javacan.IsotpSocketAddress}es.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @param rx the receiving address
      * @param tx the destination address
@@ -138,6 +146,7 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and
      * {@link tel.schich.javacan.IsotpSocketAddress}es.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @param rx the receiving address
      * @param tx the destination address
@@ -154,6 +163,7 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
      * {@link NetworkDevice} and addresses.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @param rx the receiving address
      * @param tx the destination address
@@ -167,6 +177,7 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and addresses.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @param rx the receiving address
      * @param tx the destination address

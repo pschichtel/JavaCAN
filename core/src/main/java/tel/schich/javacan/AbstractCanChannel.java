@@ -25,10 +25,12 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.net.SocketOption;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 
 import tel.schich.javacan.platform.NativeChannel;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.UnixFileDescriptor;
 import tel.schich.javacan.option.CanSocketOption;
 
@@ -86,39 +88,76 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         return open;
     }
 
+    /**
+     * Closes this channel.
+     *
+     * @see Channel#close()
+     * @see <a href="https://man7.org/linux/man-pages/man2/close.2.html">close man page</a>
+     * @throws IOException if the underlying operation failed.
+     */
     public void close() throws IOException {
         open = false;
         SocketCAN.close(sock);
     }
 
+    /**
+     * Configures this channel to be blocking or non-blocking.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl man page</a>
+     * @param block true for blocking, false for non-blocking
+     * @throws IOException if the underlying operation failed.
+     */
     public void configureBlocking(boolean block) throws IOException {
-        SocketCAN.setBlockingMode(sock, block);
+        try {
+            SocketCAN.setBlockingMode(sock, block);
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
     }
 
-    public boolean isBlocking() {
-        return SocketCAN.getBlockingMode(sock) != 0;
-    }
-
-    public int validOps() {
-        return SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+    /**
+     * Checks if this channel is in blocking mode.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl man page</a>
+     * @return true if this channel is in blocking mode, false otherwise.
+     */
+    public boolean isBlocking() throws IOException {
+        try {
+            return SocketCAN.getBlockingMode(sock) != 0;
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
     }
 
     /**
      * Sets a socket option on this {@link java.nio.channels.Channel}'s socket.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      * @param option The option to set
      * @param value the value to set
      * @param <T> The type of the option
-     * @return fluent interface, implementations may specialize
      * @throws IOException if the native call fails
      */
-    public <T> AbstractCanChannel setOption(SocketOption<T> option, T value) throws IOException {
+    public <T> void setOption(SocketOption<T> option, T value) throws IOException {
         if (!isOpen()) {
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
-            ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
-            return this;
+            try {
+                ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
+            } catch (LinuxNativeOperationException e) {
+                if (e.isBadFD()) {
+                    throw new ClosedChannelException();
+                }
+                throw e;
+            }
         } else {
             throw new IllegalArgumentException("option " + option.name() + " is not supported by CAN channels!");
         }
@@ -128,6 +167,8 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * Retrieves the current value of a socket option.
      * The returned value may or may not be useful depending on the state the socket is in.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      * @param option The option to get
      * @param <T> The type of the option
      * @return The current value of option
@@ -138,7 +179,14 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
             throw new ClosedChannelException();
         }
         if (option instanceof CanSocketOption) {
-            return ((CanSocketOption<T>) option).getHandler().get(getHandle());
+            try {
+                return ((CanSocketOption<T>) option).getHandler().get(getHandle());
+            } catch (LinuxNativeOperationException e) {
+                if (e.isBadFD()) {
+                    throw new ClosedChannelException();
+                }
+                throw e;
+            }
         } else {
             throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
         }
@@ -149,6 +197,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
      * Buffer position and limit will be respected and the position will be updated.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the buffer to read into
      * @return The number of bytes read from the socket
      * @throws IOException if the native call fails
@@ -157,10 +206,17 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        int pos = buffer.position();
-        int bytesRead = (int)SocketCAN.read(sock, buffer, pos, buffer.remaining());
-        buffer.position(pos + bytesRead);
-        return bytesRead;
+        try {
+            int pos = buffer.position();
+            int bytesRead = (int) SocketCAN.read(sock, buffer, pos, buffer.remaining());
+            buffer.position(pos + bytesRead);
+            return bytesRead;
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
     }
 
     /**
@@ -168,6 +224,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
      * Buffer position and limit will be respected and the position will be updated.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param buffer the buffer to write from
      * @return The number of bytes written to the socket
      * @throws IOException if the native call fails
@@ -176,10 +233,17 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         if (!buffer.isDirect()) {
             throw new IllegalArgumentException("The buffer must be a direct buffer!");
         }
-        int pos = buffer.position();
-        int bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
-        buffer.position(pos + bytesWritten);
-        return bytesWritten;
+        try {
+            int pos = buffer.position();
+            int bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
+            buffer.position(pos + bytesWritten);
+            return bytesWritten;
+        } catch (LinuxNativeOperationException e) {
+            if (e.isBadFD()) {
+                throw new ClosedChannelException();
+            }
+            throw e;
+        }
     }
 
     @Override

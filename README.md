@@ -59,6 +59,11 @@ down below.
 
 Usage example can be found in the unit tests.
 
+**Remember**: JavaCAN is a fairly thin wrapper around Linux syscalls. Even though some aspects of the low-level C API are hidden, most JAVA API in this library will at one point call into a
+(usually similarly named) C API and as such inherits all of its properties. For example `RawCanChannel.close()` translates to a call to `close()` on the underlying file descriptor, so their behaviour
+should be identical. So if the behaviour of a certain API is unclear, a look into the man pages of related Linux syscalls might help. Feel free to still request additional documentation in the issues
+on [Github](https://github.com/pschichtel/JavaCAN)!
+
 #### Native components
 
 The library relies on several native (JNI) components. By default, these components are other loaded from the standard library path (`java.library.path`) or are extracted from the library jar into a

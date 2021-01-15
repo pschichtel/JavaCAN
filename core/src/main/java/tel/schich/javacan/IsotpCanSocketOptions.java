@@ -38,6 +38,9 @@ public class IsotpCanSocketOptions {
 
     /**
      * Option to configure general options using a {@link tel.schich.javacan.IsotpOptions} object
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<IsotpOptions> OPTS = new CanSocketOption<>("OPTS", IsotpOptions.class, new LinuxSocketOptionHandler<IsotpOptions>() {
         @Override
@@ -53,6 +56,9 @@ public class IsotpCanSocketOptions {
 
     /**
      * Option to configure flow control options using a {@link tel.schich.javacan.IsotpFlowControlOptions} object
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<IsotpFlowControlOptions> RECV_FC = new CanSocketOption<>("RECV_FC", IsotpFlowControlOptions.class, new LinuxSocketOptionHandler<IsotpFlowControlOptions>() {
         @Override
@@ -68,6 +74,9 @@ public class IsotpCanSocketOptions {
 
     /**
      * Option to configure the minimum transmission separation time.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<Integer> TX_STMIN = new CanSocketOption<>("TX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
@@ -83,6 +92,9 @@ public class IsotpCanSocketOptions {
 
     /**
      * Option to configure the minimum receive separation time.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<Integer> RX_STMIN = new CanSocketOption<>("RX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
@@ -98,6 +110,9 @@ public class IsotpCanSocketOptions {
 
     /**
      * Option to configure link layer options using a {@link tel.schich.javacan.IsotpLinkLayerOptions} object
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<IsotpLinkLayerOptions> LL_OPTS = new CanSocketOption<>("LL_OPTS", IsotpLinkLayerOptions.class, new LinuxSocketOptionHandler<IsotpLinkLayerOptions>() {
         @Override

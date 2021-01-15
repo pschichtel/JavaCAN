@@ -45,11 +45,20 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      */
     public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
 
+    /**
+     * Binds this channel to a device. The channel will be non-functional until bound.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
+     * @param device the device to bind to.
+     * @return fluent interface
+     * @throws IOException if the bind operation failed.
+     */
     public abstract RawCanChannel bind(NetworkDevice device) throws IOException;
 
     /**
      * Reads a CAM frame from the channel by internally allocating a new direct {@link ByteBuffer}.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @return the CAN frame
      * @throws IOException if the IO operations failed or invalid data was read.
      */
@@ -58,6 +67,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     /**
      * Reads a CAM frame from the channel using the supplied buffer.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
      *               flipped after the read has been completed.
      * @return the CAN frame
@@ -71,6 +81,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * This method does not apply any checks on the data that has been read or on the supplied buffer. This method
      * is primarily intended for downstream libraries that implement their own parsing on the data from the socket.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
      *               flipped after the read has been completed.
      * @return the number of bytes
@@ -81,6 +92,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     /**
      * Writes the given CAN frame.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param frame the frame to be written.
      * @return fluent interface.
      * @throws IOException if the IO operations failed.
@@ -93,6 +105,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * This method does not apply any checks on the given buffer. This method is primarily intended for downstream libraries
      * that create these buffers using other facilities.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param buffer the buffer to be written.
      * @return the bytes written.
      * @throws IOException if the IO operations failed.

@@ -49,6 +49,8 @@ import static java.util.Collections.newSetFromMap;
  * interface to expose the underlying file descriptor.
  * <p>
  * This implementation does not expose any more public APIs.
+ *
+ * @see <a href="https://man7.org/linux/man-pages/man7/epoll.7.html">epoll man page</a>
  */
 public class EPollSelector implements IOSelector<UnixFileDescriptor> {
 

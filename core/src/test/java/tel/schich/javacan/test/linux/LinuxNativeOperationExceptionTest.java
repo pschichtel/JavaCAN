@@ -24,6 +24,7 @@ package tel.schich.javacan.test.linux;
 
 
 import org.junit.jupiter.api.Test;
+import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.TestHelper;
@@ -31,6 +32,7 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.test.CanTestHelper;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.EBADF;
@@ -38,11 +40,10 @@ import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.EN
 
 class LinuxNativeOperationExceptionTest {
     @Test
-    void testInvalidFileDesciptorError() {
+    void testInvalidFileDescriptorError() {
         try (RawCanChannel channel = TestHelper.createChannelWithFd(TestHelper.createInvalidFd())) {
             channel.bind(CanTestHelper.CAN_INTERFACE);
             fail("must fail due to invalid file descriptor");
-
         } catch (IOException ex) {
             assertTrue(ex instanceof LinuxNativeOperationException);
             LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
@@ -61,6 +62,18 @@ class LinuxNativeOperationExceptionTest {
             assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
             LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
             assertEquals(ENODEV, nativeEx.getErrorNumber()); // No such device
+        }
+    }
+
+    @Test
+    void test() {
+        try {
+            RawCanChannel channel = CanChannels.newRawChannel(CanTestHelper.CAN_INTERFACE);
+            channel.close();
+            channel.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue(ex instanceof ClosedChannelException);
         }
     }
 }

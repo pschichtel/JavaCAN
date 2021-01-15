@@ -39,6 +39,14 @@ public interface NetworkDevice {
      */
     String getName();
 
+    /**
+     * Looks up a network device by name.
+     *
+     * @see <a href="https://linux.die.net/man/3/if_nametoindex">if_nametoindex man page</a>
+     * @param name the concrete value is platform dependent, on Linux this might be "vcan0".
+     * @return the network device.
+     * @throws IOException if the underlying operation failed. The obvious example would be, that the device was not found.
+     */
     static NetworkDevice lookup(String name) throws IOException {
         switch (Platform.getOS()) {
             case LINUX:

@@ -90,6 +90,10 @@ public class LinuxNativeOperationException extends IOException {
         return this.errorNumber;
     }
 
+    public boolean isBadFD() {
+        return getErrorNumber() == EBADF;
+    }
+
     /**
      * This is the value returned by the {@code strerror(errno)} macro when the error was detected.
      *

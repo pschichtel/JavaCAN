@@ -50,6 +50,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * Binds this channel to the given {@link tel.schich.javacan.NetworkDevice} and
      * {@link tel.schich.javacan.IsotpSocketAddress}es.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @param device the device to bind to
      * @param rx the receiving address to bind to
      * @param tx the transmitting address to bind to
@@ -80,6 +81,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * respected and will be updated according to the data that has been read.
      * If this channel is in blocking mode, this call might block indefinitely.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the destination buffer
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
@@ -91,6 +93,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * respected and will be updated according to the data that has been written.
      * If this channel is in blocking mode, this call might block indefinitely.
      *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param buffer the source buffer
      * @return the amount of bytes that have been written
      * @throws IOException if the native calls fail
