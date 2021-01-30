@@ -27,7 +27,6 @@ import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
 
 import tel.schich.javacan.platform.NativeChannel;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
@@ -123,6 +122,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl man page</a>
      * @return true if this channel is in blocking mode, false otherwise.
+     * @throws IOException if the underlying native operation fails
      */
     public boolean isBlocking() throws IOException {
         try {
