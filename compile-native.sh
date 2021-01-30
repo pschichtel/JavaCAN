@@ -5,6 +5,8 @@ libname="${2?no lib name given}"
 output_dir="${3?no output directory given}"
 version="${4?no version given}"
 
+DOCKCROSS_TAG="${DOCKCROSS_TAG:-latest}"
+
 if ! [ -e "$java_home/include/jni.h" ]
 then
   java_home="$(dirname "$java_home")"
@@ -60,10 +62,11 @@ for arch in "${archs[@]}"
 do
     translated_arch=$(translate_arch "$arch")
     echo "Compiling for: $translated_arch"
-    image="dockcross/linux-$arch"
+    image="dockcross/linux-${arch}:${DOCKCROSS_TAG}"
     dir="$compiler_dir/$arch"
     mkdir -p "$dir" 2>/dev/null
     proxy="${dir}/proxy"
+    docker pull "$image"
     docker run --rm "$image" > "$proxy"
     chmod +x "$proxy"
 
