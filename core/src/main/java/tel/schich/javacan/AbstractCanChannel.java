@@ -27,6 +27,7 @@ import java.net.SocketOption;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import tel.schich.javacan.platform.NativeChannel;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
@@ -44,7 +45,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
 
     private final int sock;
     private final UnixFileDescriptor fileDescriptor;
-    private volatile boolean open = true;
+    private final AtomicBoolean open = new AtomicBoolean(true);
 
     public AbstractCanChannel(int sock) {
         this.sock = sock;
@@ -84,7 +85,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
 
     @Override
     public boolean isOpen() {
-        return open;
+        return open.get();
     }
 
     /**
@@ -95,8 +96,9 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the underlying operation failed.
      */
     public void close() throws IOException {
-        open = false;
-        SocketCAN.close(sock);
+        if (open.compareAndSet(true, false)) {
+            SocketCAN.close(sock);
+        }
     }
 
     /**
@@ -110,10 +112,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         try {
             SocketCAN.setBlockingMode(sock, block);
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
     }
 
@@ -128,10 +127,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         try {
             return SocketCAN.getBlockingMode(sock) != 0;
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
     }
 
@@ -146,17 +142,11 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the native call fails
      */
     public <T> void setOption(SocketOption<T> option, T value) throws IOException {
-        if (!isOpen()) {
-            throw new ClosedChannelException();
-        }
         if (option instanceof CanSocketOption) {
             try {
                 ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
             } catch (LinuxNativeOperationException e) {
-                if (e.isBadFD()) {
-                    throw new ClosedChannelException();
-                }
-                throw e;
+                throw checkForClosedChannel(e);
             }
         } else {
             throw new IllegalArgumentException("option " + option.name() + " is not supported by CAN channels!");
@@ -175,17 +165,11 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the native call fails
      */
     public <T> T getOption(SocketOption<T> option) throws IOException {
-        if (!isOpen()) {
-            throw new ClosedChannelException();
-        }
         if (option instanceof CanSocketOption) {
             try {
                 return ((CanSocketOption<T>) option).getHandler().get(getHandle());
             } catch (LinuxNativeOperationException e) {
-                if (e.isBadFD()) {
-                    throw new ClosedChannelException();
-                }
-                throw e;
+                throw checkForClosedChannel(e);
             }
         } else {
             throw new IllegalArgumentException(option.name() + " is no support by CAN channels!");
@@ -212,10 +196,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
             buffer.position(pos + bytesRead);
             return bytesRead;
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
     }
 
@@ -239,15 +220,21 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
             buffer.position(pos + bytesWritten);
             return bytesWritten;
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(device=" + getDevice() + ", handle=" + getHandle() + ")";
+    }
+
+    protected static IOException checkForClosedChannel(LinuxNativeOperationException orig) throws IOException {
+        if (orig.isBadFD()) {
+            final ClosedChannelException ex = new ClosedChannelException();
+            ex.addSuppressed(orig);
+            throw ex;
+        }
+        throw orig;
     }
 }

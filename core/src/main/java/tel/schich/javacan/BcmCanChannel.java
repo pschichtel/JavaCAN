@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
@@ -93,10 +92,7 @@ public class BcmCanChannel extends AbstractCanChannel {
         try {
             SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
         this.device = device;
         return this;

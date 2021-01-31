@@ -31,49 +31,39 @@ import tel.schich.javacan.TestHelper;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.test.CanTestHelper;
 
-import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.EBADF;
 import static tel.schich.javacan.platform.linux.LinuxNativeOperationException.ENODEV;
 
 class LinuxNativeOperationExceptionTest {
     @Test
     void testInvalidFileDescriptorError() {
-        try (RawCanChannel channel = TestHelper.createChannelWithFd(TestHelper.createInvalidFd())) {
-            channel.bind(CanTestHelper.CAN_INTERFACE);
-            fail("must fail due to invalid file descriptor");
-        } catch (IOException ex) {
-            assertTrue(ex instanceof LinuxNativeOperationException);
-            LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-            assertEquals(EBADF, nativeEx.getErrorNumber()); // Bad file descriptor
-        }
+        ClosedChannelException ex = assertThrows(ClosedChannelException.class, () -> {
+            try (RawCanChannel channel = TestHelper.createChannelWithFd(TestHelper.createInvalidFd())) {
+                channel.bind(CanTestHelper.CAN_INTERFACE);
+                fail("must fail due to invalid file descriptor");
+            }
+        });
+        assertTrue(Arrays.stream(ex.getSuppressed()).anyMatch(e -> e instanceof LinuxNativeOperationException && ((LinuxNativeOperationException) e).isBadFD()),
+                "must have suppressed a bad file descriptor");
     }
 
     @Test
     void testUnknownDevice() {
         String ifName = "doesNotExist";
-        try {
-            NetworkDevice.lookup(ifName);
-            fail("must fail due to unknown device");
-        } catch (IOException ex) {
-            assertTrue(ex instanceof LinuxNativeOperationException);
-            assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
-            LinuxNativeOperationException nativeEx = (LinuxNativeOperationException) ex;
-            assertEquals(ENODEV, nativeEx.getErrorNumber()); // No such device
-        }
+        LinuxNativeOperationException ex = assertThrows(LinuxNativeOperationException.class, () -> NetworkDevice.lookup(ifName));
+        assertTrue(ex.getMessage().contains(ifName), "message contains interface name");
+        assertEquals(ENODEV, ex.getErrorNumber()); // No such device
     }
 
     @Test
-    void test() {
-        try {
+    void testRepeatedClose() {
+        assertDoesNotThrow(() -> {
             RawCanChannel channel = CanChannels.newRawChannel(CanTestHelper.CAN_INTERFACE);
             channel.close();
             channel.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            assertTrue(ex instanceof ClosedChannelException);
-        }
+        });
     }
 }

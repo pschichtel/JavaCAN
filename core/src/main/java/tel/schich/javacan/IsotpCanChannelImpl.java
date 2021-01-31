@@ -25,7 +25,6 @@ package tel.schich.javacan;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
@@ -52,10 +51,7 @@ class IsotpCanChannelImpl extends IsotpCanChannel {
         try {
             SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
         } catch (LinuxNativeOperationException e) {
-            if (e.isBadFD()) {
-                throw new ClosedChannelException();
-            }
-            throw e;
+            throw checkForClosedChannel(e);
         }
         this.device = device;
         this.rx = rx;
