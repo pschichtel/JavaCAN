@@ -42,7 +42,6 @@ public class Platform {
     private static final String PATH_PROP_PREFIX = "javacan.native.";
     private static final String PATH_PROP_FS_PATH = ".path";
     private static final String PATH_PROP_CLASS_PATH = ".classpath";
-    private static final String ARCH_PROP = PATH_PROP_PREFIX + "arch";
 
     /**
      * Checks if the currently running OS is Linux
@@ -73,14 +72,14 @@ public class Platform {
     private static void loadExplicitLibrary(String name, Class<?> base) {
         String explicitLibraryPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_FS_PATH);
         if (explicitLibraryPath != null) {
-            LOGGER.trace("Loading native library from {} without arch detection", explicitLibraryPath);
+            LOGGER.trace("Loading native library from {}", explicitLibraryPath);
             System.load(explicitLibraryPath);
             return;
         }
 
         String explicitLibraryClassPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH);
         if (explicitLibraryClassPath != null) {
-            LOGGER.trace("Loading native library from classpath at {} without arch detection", explicitLibraryClassPath);
+            LOGGER.trace("Loading native library from explicit classpath at {}", explicitLibraryClassPath);
             try {
                 final Path tempDirectory = Files.createTempDirectory(name + "-");
                 final Path libPath = tempDirectory.resolve("lib" + name + ".so");
@@ -91,33 +90,11 @@ public class Platform {
             }
         }
 
-
-        String archSuffix;
-        String explicitArch = System.getProperty(ARCH_PROP);
-        if (explicitArch != null) {
-            archSuffix = explicitArch;
-        } else {
-            String arch = System.getProperty("os.arch").toLowerCase();
-            if (arch.contains("arm")) {
-                archSuffix = "armv7";
-            } else if (arch.contains("86") || arch.contains("amd")) {
-                if (arch.contains("64")) {
-                    archSuffix = "x86_64";
-                } else {
-                    archSuffix = "x86_32";
-                }
-            } else if (arch.contains("aarch64") || arch.contains("arm64")) {
-                archSuffix = "aarch64";
-            } else {
-                archSuffix = arch;
-            }
-        }
-
-        final String sourceLibPath = LIB_PREFIX + "/lib" + name + "-" + archSuffix + ".so";
-        LOGGER.trace("Loading native library for arch {} from {}", archSuffix, sourceLibPath);
+        final String sourceLibPath = LIB_PREFIX + "/lib" + name + ".so";
+        LOGGER.trace("Loading native library from {}", sourceLibPath);
 
         try {
-            final Path tempDirectory = Files.createTempDirectory(name + "-" + archSuffix + "-");
+            final Path tempDirectory = Files.createTempDirectory(name + "-");
             final Path libPath = tempDirectory.resolve("lib" + name + ".so");
             loadFromClassPath(base, sourceLibPath, libPath);
         } catch (IOException e) {

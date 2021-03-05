@@ -69,6 +69,9 @@
         <junit.runner.version>1.${junit.minor}.0</junit.runner.version>
 
         <releaseProfile>release-javacan</releaseProfile>
+
+        <javacan.compiler-arch>x64</javacan.compiler-arch>
+        <javacan.classifier>x86_64</javacan.classifier>
     </properties>
 
     <dependencyManagement>
@@ -156,6 +159,7 @@
                                     <argument>${project.artifactId}</argument>
                                     <argument>${project.build.outputDirectory}/native</argument>
                                     <argument>${project.version}</argument>
+                                    <argument>${javacan.compiler-arch}</argument>
                                 </arguments>
                             </configuration>
                         </execution>
@@ -266,6 +270,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <configuration>
+                            <classifier>${javacan.classifier}</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -325,34 +342,6 @@
                         </executions>
                     </plugin>
                 </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>single-arch</id>
-            <activation>
-                <property>
-                    <name>javacan.build.arch</name>
-                </property>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>exec-maven-plugin</artifactId>
-                            <executions>
-                                <execution>
-                                    <id>compile-native</id>
-                                    <configuration>
-                                        <environmentVariables>
-                                            <BUILD_ARCH>${javacan.build.arch}</BUILD_ARCH>
-                                        </environmentVariables>
-                                    </configuration>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
             </build>
         </profile>
     </profiles>
