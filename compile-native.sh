@@ -23,7 +23,6 @@ else
 fi
 
 relative_output_dir="target"
-full_output_dir="${PWD}/${relative_output_dir}"
 
 jni="${relative_output_dir}/jni"
 jni_headers="${relative_output_dir}/java-jni-headers"
