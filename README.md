@@ -41,6 +41,7 @@ Currently, the full build process includes the following architectures:
 
 * x86_32
 * x86_64
+* armv6
 * armv7
 * armv7a
 * aarch64
@@ -66,7 +67,7 @@ on [Github](https://github.com/pschichtel/JavaCAN)!
 
 #### Native components
 
-The library relies on several native (JNI) components. By default, these components are other loaded from the standard library path (`java.library.path`) or are extracted from the library jar into a
+The library relies on several native (JNI) components. By default, these components are either loaded from the standard library path (`java.library.path`) or are extracted from the classpath into a
 temporary folder.  
 
 If the bundled native libraries do not work for you or bundling them inside the jar is not compatible with your platform (e.g. Android), it is possible to
