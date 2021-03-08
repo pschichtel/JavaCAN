@@ -5,26 +5,36 @@
 
     <parent>
         <groupId>tel.schich</groupId>
-        <artifactId>javacan</artifactId>
+        <artifactId>javacan-native-parent</artifactId>
         <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../native-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>javacan-epoll</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>tel.schich</groupId>
-            <artifactId>jni-access-generator</artifactId>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>javacan-core</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>javacan-core</artifactId>
             <version>${project.parent.version}</version>
+            <classifier>x86_64</classifier>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <classifier>x86_64</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -41,21 +51,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <configuration>
-                            <compilerArgs>
-                                <compilerArg>-Agenerate.jni.headers=true</compilerArg>
-                                <compilerArg>-Aoutput.location=${headers.target}</compilerArg>
-                            </compilerArgs>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

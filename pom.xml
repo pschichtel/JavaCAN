@@ -59,7 +59,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
 
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
@@ -69,20 +68,10 @@
         <junit.runner.version>1.${junit.minor}.0</junit.runner.version>
 
         <releaseProfile>release-javacan</releaseProfile>
-
-        <javacan.compiler-arch>x64</javacan.compiler-arch>
-        <javacan.classifier>x86_64</javacan.classifier>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>tel.schich</groupId>
-                <artifactId>jni-access-generator</artifactId>
-                <version>1.1.1</version>
-                <scope>provided</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -126,129 +115,6 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <optimize>true</optimize>
-                        <showWarnings>true</showWarnings>
-                        <showDeprecation>true</showDeprecation>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.6.0</version>
-                    <configuration>
-                        <workingDirectory>${project.basedir}</workingDirectory>
-                        <executable>./compile-native.sh</executable>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>compile-native-x86_64</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>x64</argument>
-                                    <argument>x86_64</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>compile-native-x86_32</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>x86</argument>
-                                    <argument>x86_32</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>compile-native-armv6</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>armv6</argument>
-                                    <argument>armv6</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>compile-native-armv7</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>armv7</argument>
-                                    <argument>armv7</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>compile-native-armv7a</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>armv7a</argument>
-                                    <argument>armv7a</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>compile-native-aarch64</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>arm64</argument>
-                                    <argument>aarch64</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -274,10 +140,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
@@ -352,79 +214,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
-                <executions>
-                    <execution>
-                        <id>native-x86_64</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>x86_64</classifier>
-                            <classesDirectory>${project.build.directory}/native/x86_64</classesDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>native-x86_32</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>x86_32</classifier>
-                            <classesDirectory>${project.build.directory}/native/x86_32</classesDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>native-armv6</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>armv6</classifier>
-                            <classesDirectory>${project.build.directory}/native/armv6</classesDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>native-armv7</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>armv7</classifier>
-                            <classesDirectory>${project.build.directory}/native/armv7</classesDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>native-armv7a</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>armv7a</classifier>
-                            <classesDirectory>${project.build.directory}/native/armv7a</classesDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>native-aarch64</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>aarch64</classifier>
-                            <classesDirectory>${project.build.directory}/native/aarch64</classesDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -489,6 +278,7 @@
     </profiles>
 
     <modules>
+        <module>native-parent</module>
         <module>core</module>
         <module>epoll</module>
     </modules>
