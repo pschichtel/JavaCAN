@@ -22,5 +22,5 @@
  */
 package tel.schich.javacan.netty;
 
-public class SocketCANisotpChannel {
+public class SocketCANIsotpChannel {
 }
