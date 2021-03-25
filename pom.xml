@@ -207,7 +207,7 @@
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>${releaseProfile}</releaseProfiles>
                     <goals>deploy</goals>
-                    <arguments>-P${releaseProfile},all-architectures</arguments>
+                    <arguments>-P${releaseProfile},all-architectures,test</arguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -587,6 +587,14 @@
                     </plugins>
                 </pluginManagement>
             </build>
+        </profile>
+        <profile>
+            <id>test</id>
+
+            <modules>
+                <module>core-test</module>
+                <module>epoll-test</module>
+            </modules>
         </profile>
     </profiles>
 

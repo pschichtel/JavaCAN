@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan.test;
 
-import org.junit.jupiter.api.function.Executable;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
@@ -79,14 +78,18 @@ public class CanTestHelper {
         }
     }
 
-    public static void runDelayed(Duration d, Executable r) {
+    public static void runDelayed(Duration d, IORunnable r) {
         new Thread(() -> {
             try {
                 Thread.sleep(d.toMillis());
-                r.execute();
+                r.run();
             } catch (Throwable e) {
                 e.printStackTrace(System.err);
             }
         }).start();
+    }
+
+    public interface IORunnable {
+        void run() throws Exception;
     }
 }

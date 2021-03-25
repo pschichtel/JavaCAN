@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.test.util;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.IsotpAddress.*;
 
@@ -117,7 +117,7 @@ class IsotpListenerTest {
             try {
                 ch.write(buf);
             } catch (Exception e) {
-                assertEquals(IllegalArgumentException.class, e.getClass());
+                Assertions.assertEquals(IllegalArgumentException.class, e.getClass());
                 LOGGER.debug("Failed to send message", e);
                 lock.lock();
                 try {
