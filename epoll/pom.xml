@@ -21,32 +21,6 @@
             <artifactId>javacan-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>javacan-core</artifactId>
-            <version>${project.parent.version}</version>
-            <classifier>${javacan.architecture}</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>${project.artifactId}</artifactId>
-            <version>${project.version}</version>
-            <classifier>${javacan.architecture}</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>javacan-core</artifactId>
-            <version>${project.parent.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
