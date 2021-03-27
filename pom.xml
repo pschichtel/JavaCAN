@@ -66,11 +66,10 @@
         <junit.version>5.${junit.minor}.0</junit.version>
         <junit.runner.version>1.${junit.minor}.0</junit.runner.version>
 
-        <releaseProfile>release-javacan</releaseProfile>
-
-        <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
         <javacan.architecture>x86_64</javacan.architecture>
         <dockcross.architecture>x64</dockcross.architecture>
+
+        <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
     </properties>
 
     <dependencyManagement>
@@ -149,51 +148,6 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.6.0</version>
-                    <configuration>
-                        <workingDirectory>${project.basedir}</workingDirectory>
-                        <executable>./compile-native.sh</executable>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>compile-native-default</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
-                            <configuration>
-                                <arguments>
-                                    <argument>${java.home}</argument>
-                                    <argument>${project.artifactId}</argument>
-                                    <argument>${project.version}</argument>
-                                    <argument>${dockcross.architecture}</argument>
-                                    <argument>${javacan.architecture}</argument>
-                                </arguments>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.1.2</version>
-                    <executions>
-                        <execution>
-                            <id>native-default</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                            <configuration>
-                                <classifier>${javacan.architecture}</classifier>
-                                <classesDirectory>${project.build.directory}/native/${javacan.architecture}</classesDirectory>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -204,9 +158,9 @@
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>${releaseProfile}</releaseProfiles>
+                    <releaseProfiles>release-javacan</releaseProfiles>
                     <goals>deploy</goals>
-                    <arguments>-P${releaseProfile},all-architectures,test</arguments>
+                    <arguments>-Prelease-javacan,all-architectures,test</arguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -361,26 +315,50 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <properties>
-                <javacan.architecture>x86_64</javacan.architecture>
-            </properties>
 
             <build>
                 <pluginManagement>
                     <plugins>
                         <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>exec-maven-plugin</artifactId>
+                            <version>1.6.0</version>
+                            <configuration>
+                                <workingDirectory>${project.basedir}</workingDirectory>
+                                <executable>./compile-native.sh</executable>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>compile-native-${javacan.architecture}</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <arguments>
+                                            <argument>${java.home}</argument>
+                                            <argument>${project.artifactId}</argument>
+                                            <argument>${project.version}</argument>
+                                            <argument>${dockcross.architecture}</argument>
+                                            <argument>${javacan.architecture}</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-jar-plugin</artifactId>
                             <executions>
                                 <execution>
-                                    <id>native-x86_64</id>
+                                    <id>native-${javacan.architecture}</id>
                                     <phase>package</phase>
                                     <goals>
                                         <goal>jar</goal>
                                     </goals>
                                     <configuration>
-                                        <classifier>x86_64</classifier>
-                                        <classesDirectory>${project.build.directory}/native/x86_64</classesDirectory>
+                                        <classifier>${javacan.architecture}</classifier>
+                                        <classesDirectory>${project.build.directory}/native/${javacan.architecture}</classesDirectory>
                                     </configuration>
                                 </execution>
                             </executions>
