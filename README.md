@@ -121,5 +121,5 @@ The build can be configured for any single architecture that is supported by doc
 
 `mvn clean package -Djavacan.architecture=<classifier> -Ddockcross.architecture=<architecture>`
    
-`<classifier>` will be the maven classifier used for the architecture, `<architecture>` must be a Linux based architecture support by the [dockcross project](https://github.com/dockcross/dockcross).
+`<classifier>` will be the maven classifier used for the architecture, `<architecture>` must be a Linux based architecture supported by the [dockcross project](https://github.com/dockcross/dockcross).
 If you compile this on a system with a different architecture, then you will have to skip the unit tests by additionally passing `-DskipTests` to maven.
