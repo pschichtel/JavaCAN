@@ -5,7 +5,7 @@
     <parent>
         <groupId>tel.schich</groupId>
         <artifactId>javacan</artifactId>
-        <version>3.0.2-SNAPSHOT</version>
+        <version>3.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>javacan-core</artifactId>
@@ -18,12 +18,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
