@@ -43,4 +43,31 @@ public class CanUtils {
         }
         return s.toString();
     }
+
+    // see: https://github.com/torvalds/linux/blob/5f33a09e769a9da0482f20a6770a342842443776/net/can/isotp.c#L260
+    private static final byte[] paddedDataLengthLookup = {
+            8, 8, 8, 8, 8, 8, 8, 8, 8,	    /* 0 - 8 */
+            12, 12, 12, 12,			        /* 9 - 12 */
+            16, 16, 16, 16,			        /* 13 - 16 */
+            20, 20, 20, 20,			        /* 17 - 20 */
+            24, 24, 24, 24,			        /* 21 - 24 */
+            32, 32, 32, 32, 32, 32, 32, 32,	/* 25 - 32 */
+            48, 48, 48, 48, 48, 48, 48, 48,	/* 33 - 40 */
+            48, 48, 48, 48, 48, 48, 48, 48	/* 41 - 48 */
+    };
+
+    /**
+     * Pads a DLC data length value as per ISO 11898-1.
+     *
+     * @param length the unpadded length
+     * @return the padded length
+     *
+     * @see <a href="https://github.com/torvalds/linux/blob/5f33a09e769a9da0482f20a6770a342842443776/net/can/isotp.c#L258">Implementation in Linux Kernel</a>
+     */
+    public static byte padDataLength(byte length) {
+        if (length > 48) {
+            return 64;
+        }
+        return paddedDataLengthLookup[length];
+    }
 }

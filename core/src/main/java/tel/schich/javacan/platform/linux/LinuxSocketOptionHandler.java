@@ -35,8 +35,8 @@ import java.io.IOException;
  */
 public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Handler<T> {
     @Override
-    public void set(UnixFileDescriptor handle, T val) throws IOException {
-        set(handle.getValue(), val);
+    public void set(UnixFileDescriptor handle, T val, boolean validate) throws IOException {
+        set(handle.getValue(), val, validate);
     }
 
     @Override
@@ -44,7 +44,7 @@ public abstract class LinuxSocketOptionHandler<T> implements CanSocketOption.Han
         return get(handle.getValue());
     }
 
-    protected abstract void set(int sock, T val) throws IOException;
+    protected abstract void set(int sock, T val, boolean validate) throws IOException;
 
     protected abstract T get(int sock) throws IOException;
 }

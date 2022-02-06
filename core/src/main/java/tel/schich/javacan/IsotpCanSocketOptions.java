@@ -27,6 +27,7 @@ import java.net.SocketOption;
 
 import tel.schich.javacan.platform.linux.LinuxSocketOptionHandler;
 import tel.schich.javacan.option.CanSocketOption;
+import tel.schich.javacan.util.CanUtils;
 
 /**
  * This class provides ISOTP specific socket options supported by CAN sockets. This class is similar to
@@ -44,7 +45,7 @@ public class IsotpCanSocketOptions {
      */
     public static final SocketOption<IsotpOptions> OPTS = new CanSocketOption<>("OPTS", IsotpOptions.class, new LinuxSocketOptionHandler<IsotpOptions>() {
         @Override
-        public void set(int sock, IsotpOptions val) throws IOException {
+        public void set(int sock, IsotpOptions val, boolean validate) throws IOException {
             SocketCAN.setIsotpOpts(sock, val.getRawFlags(), val.getFrameTransmissionTime(), val.getExtendedTransmissionAddress(), val.getTransmissionPadding(), val.getReceivePadding(), val.getExtendedReceiveAddress());
         }
 
@@ -62,7 +63,7 @@ public class IsotpCanSocketOptions {
      */
     public static final SocketOption<IsotpFlowControlOptions> RECV_FC = new CanSocketOption<>("RECV_FC", IsotpFlowControlOptions.class, new LinuxSocketOptionHandler<IsotpFlowControlOptions>() {
         @Override
-        public void set(int sock, IsotpFlowControlOptions val) throws IOException {
+        public void set(int sock, IsotpFlowControlOptions val, boolean validate) throws IOException {
             SocketCAN.setIsotpRecvFc(sock, val.getBlockSize(), val.getMinimumSeparationTime(), val.getMaximumWaitFrameTransmission());
         }
 
@@ -80,7 +81,7 @@ public class IsotpCanSocketOptions {
      */
     public static final SocketOption<Integer> TX_STMIN = new CanSocketOption<>("TX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
-        public void set(int sock, Integer val) throws IOException {
+        public void set(int sock, Integer val, boolean validate) throws IOException {
             SocketCAN.setIsotpTxStmin(sock, val);
         }
 
@@ -98,7 +99,7 @@ public class IsotpCanSocketOptions {
      */
     public static final SocketOption<Integer> RX_STMIN = new CanSocketOption<>("RX_STMIN", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
-        public void set(int sock, Integer val) throws IOException {
+        public void set(int sock, Integer val, boolean validate) throws IOException {
             SocketCAN.setIsotpRxStmin(sock, val);
         }
 
@@ -116,7 +117,31 @@ public class IsotpCanSocketOptions {
      */
     public static final SocketOption<IsotpLinkLayerOptions> LL_OPTS = new CanSocketOption<>("LL_OPTS", IsotpLinkLayerOptions.class, new LinuxSocketOptionHandler<IsotpLinkLayerOptions>() {
         @Override
-        public void set(int sock, IsotpLinkLayerOptions val) throws IOException {
+        public void set(int sock, IsotpLinkLayerOptions val, boolean validate) throws IOException {
+            if (validate) {
+                final int mtu = val.getMaximumTransmissionUnit();
+                final byte txDataLength = val.getTransmissionDataLength();
+
+                // See: https://github.com/torvalds/linux/blob/5f33a09e769a9da0482f20a6770a342842443776/net/can/isotp.c#L1261
+                if (txDataLength != CanUtils.padDataLength(txDataLength)) {
+                    throw new IllegalArgumentException("The transmission data length must be properly padded!");
+                }
+
+                // See: https://github.com/torvalds/linux/blob/5f33a09e769a9da0482f20a6770a342842443776/net/can/isotp.c#L1264
+                if (mtu != RawCanChannel.MTU && mtu != RawCanChannel.FD_MTU) {
+                    throw new IllegalArgumentException("MTU must be either " + RawCanChannel.MTU + " or " + RawCanChannel.FD_MTU + "!");
+                }
+
+                // See: https://github.com/torvalds/linux/blob/5f33a09e769a9da0482f20a6770a342842443776/net/can/isotp.c#L1267
+                if (mtu == RawCanChannel.MTU) {
+                    if (txDataLength > CanFrame.MAX_DATA_LENGTH) {
+                        throw new IllegalArgumentException("Only FD frames support a data length of " + txDataLength + "!");
+                    }
+                    if (val.getTransmissionFlags() != 0) {
+                        throw new IllegalArgumentException("Only FD frames support transmission flags!");
+                    }
+                }
+            }
             SocketCAN.setIsotpLlOpts(sock, val.getMaximumTransmissionUnit(), val.getTransmissionDataLength(), val.getTransmissionFlags());
         }
 

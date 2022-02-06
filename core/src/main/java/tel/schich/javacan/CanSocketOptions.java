@@ -37,6 +37,7 @@ import static java.time.temporal.ChronoUnit.MICROS;
  * This class provides the standard socket options supported by CAN sockets.
  */
 public class CanSocketOptions {
+    public static final int MAX_FILTERS = 512;
 
     private CanSocketOptions() {}
 
@@ -45,7 +46,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Boolean> JOIN_FILTERS = new CanSocketOption<>("JOIN_FILTERS", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
-        public void set(int sock, Boolean val) throws IOException {
+        public void set(int sock, Boolean val, boolean validate) throws IOException {
             SocketCAN.setJoinFilters(sock, val);
         }
 
@@ -61,7 +62,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Boolean> LOOPBACK = new CanSocketOption<>("LOOPBACK", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
-        public void set(int sock, Boolean val) throws IOException {
+        public void set(int sock, Boolean val, boolean validate) throws IOException {
             SocketCAN.setLoopback(sock, val);
         }
 
@@ -77,7 +78,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Boolean> RECV_OWN_MSGS = new CanSocketOption<>("RECV_OWN_MSGS", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
-        public void set(int sock, Boolean val) throws IOException {
+        public void set(int sock, Boolean val, boolean validate) throws IOException {
             SocketCAN.setReceiveOwnMessages(sock, val);
         }
 
@@ -93,7 +94,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Boolean> FD_FRAMES = new CanSocketOption<>("FD_FRAMES", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
-        public void set(int sock, Boolean val) throws IOException {
+        public void set(int sock, Boolean val, boolean validate) throws IOException {
             SocketCAN.setAllowFDFrames(sock, val);
         }
 
@@ -112,7 +113,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Integer> ERR_FILTER = new CanSocketOption<>("ERR_FILTER", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
-        public void set(int sock, Integer val) throws IOException {
+        public void set(int sock, Integer val, boolean validate) throws IOException {
             SocketCAN.setErrorFilter(sock, val);
         }
 
@@ -129,8 +130,14 @@ public class CanSocketOptions {
      * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
      */
     public static final SocketOption<CanFilter[]> FILTER = new CanSocketOption<>("FILTER", CanFilter[].class, new LinuxSocketOptionHandler<CanFilter[]>() {
+
         @Override
-        public void set(int sock, CanFilter[] val) throws IOException {
+        public void set(int sock, CanFilter[] val, boolean validate) throws IOException {
+            if (validate) {
+                if (val.length > MAX_FILTERS) {
+                    throw new IllegalArgumentException("A maximum of 512 filters are supported!");
+                }
+            }
             ByteBuffer filterData = JavaCAN.allocateOrdered(val.length * CanFilter.BYTES);
             for (CanFilter f : val) {
                 filterData.putInt(f.getId());
@@ -165,7 +172,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Duration> SO_SNDTIMEO = new CanSocketOption<>("SO_SNDTIMEO", Duration.class, new LinuxSocketOptionHandler<Duration>() {
         @Override
-        public void set(int sock, Duration val) throws IOException {
+        public void set(int sock, Duration val, boolean validate) throws IOException {
             SocketCAN.setWriteTimeout(sock, val.getSeconds(), val.getNano());
         }
 
@@ -184,7 +191,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Duration> SO_RCVTIMEO = new CanSocketOption<>("SO_RCVTIMEO", Duration.class, new LinuxSocketOptionHandler<Duration>() {
         @Override
-        public void set(int sock, Duration val) throws IOException {
+        public void set(int sock, Duration val, boolean validate) throws IOException {
             SocketCAN.setReadTimeout(sock, val.getSeconds(), val.getNano());
         }
 
@@ -203,7 +210,7 @@ public class CanSocketOptions {
      */
     public static final SocketOption<Integer> SO_RCVBUF = new CanSocketOption<>("SO_RCVBUF", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
-        public void set(int sock, Integer val) throws IOException {
+        public void set(int sock, Integer val, boolean validate) throws IOException {
             if (val <= 0) {
                 throw new IllegalArgumentException("Buffer size must be positive!");
             }

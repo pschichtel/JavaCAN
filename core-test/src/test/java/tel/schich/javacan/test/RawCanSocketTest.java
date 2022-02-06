@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
@@ -119,6 +120,21 @@ class RawCanSocketTest {
             CanFilter[] output = socket.getOption(FILTER);
 
             assertArrayEquals(input, output, "What comes in should come out");
+        }
+    }
+
+    void testMaxFilterValidation() throws Exception {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
+            socket.bind(CAN_INTERFACE);
+
+            CanFilter[] filters = new CanFilter[MAX_FILTERS + 1];
+            for (int i = 0; i < filters.length; i++) {
+                filters[i] = new CanFilter(0x1, 0x1);
+            }
+
+            assertThrows(IllegalArgumentException.class, () -> socket.setOption(FILTER, filters));
+
+            assertThrows(LinuxNativeOperationException.class, () -> socket.setOptionUnsafe(FILTER, filters));
         }
     }
 

@@ -142,9 +142,27 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the native call fails
      */
     public <T> void setOption(SocketOption<T> option, T value) throws IOException {
+        setOption(option, value, true);
+    }
+
+    /**
+     * Sets a socket option on this {@link java.nio.channels.Channel}'s socket.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
+     * @param option The option to set
+     * @param value the value to set
+     * @param <T> The type of the option
+     * @throws IOException if the native call fails
+     */
+    public <T> void setOptionUnsafe(SocketOption<T> option, T value) throws IOException {
+        setOption(option, value, false);
+    }
+
+    private <T> void setOption(SocketOption<T> option, T value, boolean validate) throws IOException {
         if (option instanceof CanSocketOption) {
             try {
-                ((CanSocketOption<T>) option).getHandler().set(getHandle(), value);
+                ((CanSocketOption<T>) option).getHandler().set(getHandle(), value, validate);
             } catch (LinuxNativeOperationException e) {
                 throw checkForClosedChannel(e);
             }

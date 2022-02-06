@@ -64,7 +64,7 @@ public class CanSocketOption<T> implements SocketOption<T> {
      * @param <T> the type of the option value
      */
     public interface Handler<T> {
-        void set(UnixFileDescriptor handle, T val) throws IOException;
+        void set(UnixFileDescriptor handle, T val, boolean validate) throws IOException;
         T get(UnixFileDescriptor handle) throws IOException;
     }
 }

@@ -26,12 +26,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tel.schich.javacan.*;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.CanFrame.FD_FLAG_BIT_RATE_SWITCH;
 import static tel.schich.javacan.IsotpCanSocketOptions.*;
 import static tel.schich.javacan.IsotpSocketAddress.isotpAddress;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -59,7 +60,7 @@ public class IsotpCanSocketOptionsTest {
             LOGGER.debug(String.valueOf(linkLayerOpts));
             IsotpLinkLayerOptions customizedLinkLayerOpts = IsotpLinkLayerOptions.DEFAULT
                     .withMaximumTransmissionUnit(RawCanChannel.FD_MTU)
-                    .withTransmissionFlags(CanFrame.FD_FLAG_BIT_RATE_SWITCH);
+                    .withTransmissionFlags(FD_FLAG_BIT_RATE_SWITCH);
             a.setOption(LL_OPTS, customizedLinkLayerOpts);
             assertEquals(customizedLinkLayerOpts, a.getOption(LL_OPTS), "What goes in should come out");
 
@@ -70,6 +71,27 @@ public class IsotpCanSocketOptionsTest {
             assertEquals(0, a.getOption(RX_STMIN).intValue());
             a.setOption(RX_STMIN, 100);
             assertEquals(100, a.getOption(RX_STMIN).intValue(), "What goes in should come out");
+        }
+    }
+
+    @Test
+    void testLinkLayerOptionsValidations() throws Exception {
+        try (final IsotpCanChannel a = CanChannels.newIsotpChannel()) {
+            // unpadded data length
+            assertThrows(IllegalArgumentException.class, () -> a.setOption(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionDataLength(11)));
+            assertThrows(LinuxNativeOperationException.class, () -> a.setOptionUnsafe(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionFlags(11)));
+
+            // invalid MTU
+            assertThrows(IllegalArgumentException.class, () -> a.setOption(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withMaximumTransmissionUnit(30)));
+            assertThrows(LinuxNativeOperationException.class, () -> a.setOptionUnsafe(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withMaximumTransmissionUnit(30)));
+
+            // FD data length without FD MTU
+            assertThrows(IllegalArgumentException.class, () -> a.setOption(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionDataLength(48)));
+            assertThrows(LinuxNativeOperationException.class, () -> a.setOptionUnsafe(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionDataLength(48)));
+
+            // tx flags without FD MTU
+            assertThrows(IllegalArgumentException.class, () -> a.setOption(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionFlags(FD_FLAG_BIT_RATE_SWITCH)));
+            assertThrows(LinuxNativeOperationException.class, () -> a.setOptionUnsafe(LL_OPTS, IsotpLinkLayerOptions.DEFAULT.withTransmissionFlags(FD_FLAG_BIT_RATE_SWITCH)));
         }
     }
 
