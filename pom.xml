@@ -318,6 +318,10 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
 
+            <properties>
+                <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
+            </properties>
+
             <build>
                 <pluginManagement>
                     <plugins>
@@ -373,6 +377,11 @@
         </profile>
         <profile>
             <id>all-architectures</id>
+
+            <properties>
+                <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
+            </properties>
+
             <build>
                 <pluginManagement>
                     <plugins>

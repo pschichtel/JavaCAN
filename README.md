@@ -20,6 +20,7 @@ Implementing Java's SelectableChannel API is not possible with EPoll and SocketC
 * Support for other CAN protocols (e.g. CAN_MCNET)
 * A [netty](https://netty.io) integration (see #20)
 * BSD Support
+* io_uring Support
 
 Pull requests are welcome!
 
@@ -54,30 +55,41 @@ down below.
 ### CAN_RAW, CAN_BCM and CAN_ISOTP channels
 
 1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
-2. Create a channel by calling one of the `CanChannels.new...Channel()` methods
-3. Create a `NetworkDevice` using its static `lookup(String)` method
-4. Bind the channel to an interface using the `bind(CanDevice)` method
+2. Install the native components into your `LD_LIBRARY_PATH` or configure the appropriate Java properties (See next section)
+3. Create a channel by calling one of the `CanChannels.new...Channel()` methods
+4. Create a `NetworkDevice` using its static `lookup(String)` method
+5. Bind the channel to an interface using the `bind(CanDevice)` method
 
-Usage example can be found in the unit tests.
+Usage example can be found in the unit tests or in the related projects mentioned above.
 
-**Remember**: JavaCAN is a fairly thin wrapper around Linux syscalls. Even though some aspects of the low-level C API are hidden, most JAVA API in this library will at one point call into a
+**Remember**: JavaCAN is a fairly thin wrapper around Linux syscalls. Even though some aspects of the low-level C API are hidden, most Java APIs in this library will at some point call into a
 (usually similarly named) C API and as such inherits all of its properties. For example `RawCanChannel.close()` translates to a call to `close()` on the underlying file descriptor, so their behaviour
 should be identical. So if the behaviour of a certain API is unclear, a look into the man pages of related Linux syscalls might help. Feel free to still request additional documentation in the issues
-on [Github](https://github.com/pschichtel/JavaCAN)!
+on [GitHub](https://github.com/pschichtel/JavaCAN)!
 
 #### Native components
 
-The library relies on several native (JNI) components. By default, these components are either loaded from the standard library path (`java.library.path`) or are extracted from the classpath into a
-temporary folder.  
+The library relies on several native (JNI) components. By default, these components are either loaded from the standard library path (`LD_LIBRARY_PATH` / `java.library.path`) or are extracted from
+the classpath into a temporary folder.  
 
-Only one of the architecture can be bundled directly with JavaCAN, it is recommended to build variants of your program for each target platform.
-If that is not possible, there are a few alternative approaches:
+While JavaCAN 2.x bundled the native components, starting with the 3.x release series no native components are bundles with the core libraries. Dedicated jar files are generated for each native
+component (classified by their architecture). JavaCAN will **not** attempt to discover the location of a library version appropriate for the correct architecture. This is instead left to
+the downstream application developer.
 
-1. Filesystem path: By setting the property `javacan.native.javacan-<module>.path` to a path in the filesystem before initializing the library, the native library will be loaded from that location.
-2. Path on classpath: You can bundle libraries into different locations in your classpath. By setting the property `javacan.native.javacan-<module>.classpath` (`classpath` instead of `path`) to a path
-   in your classpath, the native library will be loaded from there.
-   
-The value for `<module>` is `core` and if the EPoll support is used, an additional option with `epoll` for `<module>` is necessary.
+There are a few approaches to get the correct native libraries loaded:
+
+1. Installing the libraries into the library path (the `LD_LIBRARY_PATH` environment variable or the `java.library.path` property)
+2. Configuring the `javacan.native.javacan-<module>.path` property to tell JavaCAN the exact file system path where the native component is located
+3. Configuring the `javacan.native.javacan-<module>.classpath` property to tell JavaCAN the exact location on the classpath where the native component is located
+4. Adding **one** of the architecture-specific jar files into the classpath (either add compile time or runtime)
+
+Application that are intended to run on a single architecture or that build architecture-specific version already, the simplest solution is to bundle the provided architecture-specific jar files
+matching the build architecture.
+
+For applications supporting multiple architectures at once I'd recommend dynamically adding the architecture-specific jar file at runtime or to repackage the available native libraries and
+dynamically configuring the `javacan.native.javacan-<module>.path` properties in the CLI or before any JavaCAN classes are loaded. 
+
+The value for the `<module>` placeholder used throughout this section is `core` and if the EPoll support is used, an additional option with `epoll` for `<module>` is necessary.
 
 ## How to build
 
@@ -92,34 +104,43 @@ For compilation:
 
 For tests:
 
-* The [can-isotp](https://github.com/hartkopp/can-isotp) kernel module loaded
+* A fairly recent Linux kernel with CAN support
+* The can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
 * A CAN interface named "vcan0"
 * Java 8 or newer installed
 
 For usage:
 
-* A recent Linux kernel with CAN support
-* For ISOTP channels, the [can-isotp](https://github.com/hartkopp/can-isotp) out-of-tree kernel module or a kernel 5.10 or newer with `CONFIG_CAN_ISOTP` enabled
+* A fairly recent Linux kernel with CAN support
+* For ISOTP channels, the can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * Java 8 or newer installed
-* A few kilobytes of disk space to extract the native library
+* A few kilobytes of disk space to extract the native components
 
 
 ### Building
 
-#### Default Architectures
+By default, the project only builds the x86_64 native components (`single-architecture` maven profile):
 
-This will build a set of jars and native libraries capable of running on the supported architectures listed, without the need
-for any further configuration.
+```bash
+mvn clean package
+```
 
-1. `mvn clean package`
-2. profit
+The `single-architecture` profile can build different architectures by specifying the properties `javacan.architecture` and `dockcross.architecture`. This can be used to build architectures
+that are not currently included in JavaCAN releases. Unit tests will be executed with the architecture being built. Overriding the test architecture is not possible, since other architectures are
+not being built.
 
-#### Build other Architectures
+In order to build all architectures that are currently part of releases, the `all-architectures` maven profile must be activated:
 
-The build can be configured for any single architecture that is supported by dockcross:
+```bash
+mvn clean package -Pall-architectures
+```
 
-`mvn clean package -Djavacan.architecture=<classifier> -Ddockcross.architecture=<architecture>`
-   
-`<classifier>` will be the maven classifier used for the architecture, `<architecture>` must be a Linux based architecture supported by the [dockcross project](https://github.com/dockcross/dockcross).
-If you compile this on a system with a different architecture, then you will have to skip the unit tests by additionally passing `-DskipTests` to maven.
+The `all-architectures` profile will execute the tests using the `x86_64` libraries by default. To override this the property `javacan.test.architecture` can be set to any other architecture that
+is part of the build.
+
+If the architecture you are building *on* is not part of the build, then tests will always fail. To prevent this you have to disable the `test` maven profile:
+
+```bash
+mvn clean package -P!test
+```

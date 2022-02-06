@@ -20,7 +20,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>javacan-core</artifactId>
             <version>${project.version}</version>
-            <classifier>${javacan.architecture}</classifier>
+            <classifier>${javacan.test.architecture}</classifier>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
