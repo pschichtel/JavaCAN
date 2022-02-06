@@ -9,6 +9,9 @@
     <option name="TEST_SEARCH_SCOPE">
       <value defaultName="wholeProject" />
     </option>
+    <envs>
+      <env name="LD_LIBRARY_PATH" value="$PROJECT_DIR$/core/target/native/x86_64/native:$PROJECT_DIR$/epoll/target/native/x86_64/native:$LD_LIBRARY_PATH" />
+    </envs>
     <dir value="$PROJECT_DIR$/src/test/java/tel/schich/javacan/test" />
     <method v="2">
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Clean" run_configuration_type="MavenRunConfiguration" />
