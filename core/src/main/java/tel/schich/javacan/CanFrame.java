@@ -41,12 +41,17 @@ public class CanFrame {
     /**
      * The bit rate switch (second bitrate for payload data).
      */
-    public static final byte FD_FLAG_BIT_RATE_SWITCH = 0b01;
+    public static final byte FD_FLAG_BIT_RATE_SWITCH = 0b1;
 
     /**
      * The error state indicator of the transmitting node.
      */
     public static final byte FD_FLAG_ERROR_STATE_INDICATOR = 0b10;
+
+    /**
+     * A marker for FD frames which can be used when mixing FD and non-FD content.
+     */
+    public static final byte FD_FLAG_FD_FRAME = 0b100;
 
     /**
      * The length of the header of a CAN frame.

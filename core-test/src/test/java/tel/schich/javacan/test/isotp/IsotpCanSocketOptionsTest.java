@@ -58,6 +58,7 @@ public class IsotpCanSocketOptionsTest {
             IsotpLinkLayerOptions linkLayerOpts = a.getOption(LL_OPTS);
             LOGGER.debug(String.valueOf(linkLayerOpts));
             IsotpLinkLayerOptions customizedLinkLayerOpts = IsotpLinkLayerOptions.DEFAULT
+                    .withMaximumTransmissionUnit(RawCanChannel.FD_MTU)
                     .withTransmissionFlags(CanFrame.FD_FLAG_BIT_RATE_SWITCH);
             a.setOption(LL_OPTS, customizedLinkLayerOpts);
             assertEquals(customizedLinkLayerOpts, a.getOption(LL_OPTS), "What goes in should come out");
