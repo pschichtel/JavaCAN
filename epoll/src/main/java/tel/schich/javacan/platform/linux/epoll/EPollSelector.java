@@ -40,19 +40,15 @@ import java.util.*;
 import static java.util.Collections.newSetFromMap;
 
 /**
- * This is an implementation of the {@link java.nio.channels.Selector} API relying on Linux' epoll API to poll for
- * IO events from an arbitrary amount of file descriptors. The implementation is based
- * on {@link java.nio.channels.spi.AbstractSelector} and is inspired by Java's own epoll-based Selector implementation.
- * <p>
- * This reimplementation is sadly necessary, because the original implementation does not allow custom
- * {@link java.nio.channels.Channel} implementations as Java's selector is requires the channels to implement non-public
- * interface to expose the underlying file descriptor.
- * <p>
+ * This is an implementation of the {@link IOSelector} API relying on Linux' epoll API to poll for
+ * IO events from an arbitrary amount of file descriptors. The implementation is inspired by Java's
+ * own epoll-based {@link java.nio.channels.Selector} implementation.
+ *
  * This implementation does not expose any more public APIs.
  *
  * @see <a href="https://man7.org/linux/man-pages/man7/epoll.7.html">epoll man page</a>
  */
-public class EPollSelector implements IOSelector<UnixFileDescriptor> {
+final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
 
     static {
         EPoll.initialize();
@@ -120,7 +116,8 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
             throw new ClosedSelectorException();
     }
 
-    public <ChannelType extends Channel> SelectorRegistration<UnixFileDescriptor, ChannelType> updateRegistration(SelectorRegistration<UnixFileDescriptor, ChannelType> key, Set<SelectorRegistration.Operation> newOps) throws IOException {
+    public <ChannelType extends Channel> EPollRegistration<ChannelType> updateRegistration(SelectorRegistration<UnixFileDescriptor, ChannelType> key, Set<SelectorRegistration.Operation> newOps) throws IOException {
+        ensureOpen();
         if (key.getSelector() != this) {
             throw new IllegalArgumentException("Key is not registered here!");
         }
@@ -147,7 +144,7 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         }
     }
 
-    public <ChannelType extends Channel> SelectorRegistration<UnixFileDescriptor, ChannelType> register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws ClosedChannelException {
+    public <ChannelType extends Channel> EPollRegistration<ChannelType> register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws IOException {
         ensureOpen();
         if (!ch.isOpen()) {
             throw new ClosedChannelException();
@@ -162,11 +159,7 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         final UnixFileDescriptor handle = (UnixFileDescriptor) nativeHandle;
         int fd = handle.getValue();
 
-        try {
-            EPoll.addFileDescriptor(epollfd, fd, translateInterestsToEPoll(ops));
-        } catch (LinuxNativeOperationException ex) {
-            throw new RuntimeException(ex);
-        }
+        EPoll.addFileDescriptor(epollfd, fd, translateInterestsToEPoll(ops));
 
         EPollRegistration<ChannelType> key = new EPollRegistration<>(this, ch, handle, ops);
         synchronized (keyCollectionsLock) {
@@ -208,6 +201,7 @@ public class EPollSelector implements IOSelector<UnixFileDescriptor> {
     }
 
     public <ChannelType extends Channel> boolean cancel(SelectorRegistration<UnixFileDescriptor, ChannelType> registration) throws IOException {
+        ensureOpen();
         if (registration.getSelector() != this) {
             return false;
         }

@@ -25,6 +25,9 @@ package tel.schich.javacan.platform.linux.epoll;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.jniaccess.JNIAccess;
 
+/**
+ * Signals a low-level error specific to the epoll subsystem.
+ */
 public class EPollException extends LinuxNativeOperationException {
     @JNIAccess
     public EPollException(String message, int errorNumber, String errorString) {

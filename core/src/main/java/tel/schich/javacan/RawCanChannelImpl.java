@@ -32,7 +32,7 @@ import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
  */
-public class RawCanChannelImpl extends RawCanChannel {
+final class RawCanChannelImpl extends RawCanChannel {
 
     private volatile NetworkDevice device;
 

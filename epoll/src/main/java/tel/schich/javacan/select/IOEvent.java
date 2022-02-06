@@ -25,7 +25,14 @@ package tel.schich.javacan.select;
 import java.util.Objects;
 import java.util.Set;
 
-public class IOEvent<HandleType> {
+/**
+ * This class represents an IO event that happened on a selected channel, which is a tuple consisting
+ * of the {@link SelectorRegistration} and a set of {@link tel.schich.javacan.select.SelectorRegistration.Operation}s
+ * that can be performed now.
+ *
+ * @param <HandleType> The type of the resource handle
+ */
+final public class IOEvent<HandleType> {
     private final SelectorRegistration<HandleType, ?> registration;
     private final Set<SelectorRegistration.Operation> operations;
 
@@ -34,10 +41,21 @@ public class IOEvent<HandleType> {
         this.operations = operations;
     }
 
+    /**
+     * The registration this event belongs to.
+     * The channel type is not statically known at this point.
+     *
+     * @return the registration
+     */
     public SelectorRegistration<HandleType, ?> getRegistration() {
         return registration;
     }
 
+    /**
+     * The operations that can be performed now.
+     *
+     * @return a set of operations
+     */
     public Set<SelectorRegistration.Operation> getOperations() {
         return operations;
     }

@@ -25,6 +25,9 @@ package tel.schich.javacan.platform.linux.epoll;
 import tel.schich.javacan.platform.Platform;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
+/**
+ * This class specifies all supported native operations on the epoll subsystem.
+ */
 class EPoll {
 
     private static final String LIB_NAME = "javacan-epoll";

@@ -30,7 +30,7 @@ import java.nio.channels.NotYetBoundException;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
-class IsotpCanChannelImpl extends IsotpCanChannel {
+final class IsotpCanChannelImpl extends IsotpCanChannel {
 
     private NetworkDevice device;
     private IsotpSocketAddress rx;

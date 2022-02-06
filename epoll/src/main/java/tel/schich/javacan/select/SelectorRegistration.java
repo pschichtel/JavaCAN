@@ -25,13 +25,61 @@ package tel.schich.javacan.select;
 import java.nio.channels.Channel;
 import java.util.Set;
 
+/**
+ * This interfaces describes a registration of a certain {@link Channel} to a certain {@link IOSelector}.
+ *
+ * @param <HandleType> The type of the resource handle
+ * @param <ChannelType> The type pf the channel
+ */
 public interface SelectorRegistration<HandleType, ChannelType extends Channel> extends AutoCloseable {
+    /**
+     * The handle of the resources being selected.
+     *
+     * @return the handle
+     */
     HandleType getHandle();
+
+    /**
+     * The selector that issued this registration.
+     *
+     * @return the selector
+     */
     IOSelector<HandleType> getSelector();
+
+    /**
+     * The channel that was registered,
+     *
+     * @return the channel
+     */
     ChannelType getChannel();
+
+    /**
+     * The operations this registration is interested in.
+     * This value might not reflect updates of the registration at a later point in time!
+     *
+     * @return the set of operations this registration is interested in
+     */
     Set<Operation> getOperations();
 
+    /**
+     * A channel operation that can be selected on.
+     */
     enum Operation {
-        READ, WRITE, ACCEPT, CONNECT
+        /**
+         * The channel can be read.
+         */
+        READ,
+        /**
+         * The channel can be written.
+         */
+        WRITE,
+        /**
+         * The channel can accept a connection.
+         */
+        ACCEPT,
+        /**
+         * The channel can connect.
+         */
+        CONNECT
     }
 }

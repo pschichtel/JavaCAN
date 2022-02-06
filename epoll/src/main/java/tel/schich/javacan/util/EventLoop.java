@@ -40,6 +40,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
+/**
+ * This is a simple single-threaded event loop implementation.
+ * It supports registering several channels of the same type.
+ *
+ * @param <HandleType>  the type of handles that are supported by the underlying {@link IOSelector}
+ * @param <ChannelType> the type of channels that can be registered
+ */
 public abstract class EventLoop<HandleType, ChannelType extends Channel> implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CanBroker.class);
 
@@ -86,7 +93,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      * @param ops the interested ops
      * @throws ClosedChannelException if the channel is already closed
      */
-    protected final void register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws ClosedChannelException {
+    protected final void register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws IOException {
         registrations.put(ch, selector.register(ch, ops));
     }
 

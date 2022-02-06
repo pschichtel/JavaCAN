@@ -31,10 +31,10 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * This class implements the {@link java.nio.channels.SelectionKey} API necessary for
- * {@link java.nio.channels.Selector}s.
+ * This class implements the {@link SelectorRegistration} API necessary for
+ * {@link tel.schich.javacan.select.IOSelector}s.
  */
-public class EPollRegistration<ChannelType extends Channel> implements SelectorRegistration<UnixFileDescriptor, ChannelType> {
+final public class EPollRegistration<ChannelType extends Channel> implements SelectorRegistration<UnixFileDescriptor, ChannelType> {
 
     private final EPollSelector selector;
     private final ChannelType channel;
