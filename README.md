@@ -28,6 +28,7 @@ Pull requests are welcome!
 
 * [obd4s](https://github.com/pschichtel/obd4s): A Scala library for OBD-II communication with vehicles.
 * [VirtualECU](https://github.com/pschichtel/VirtualECU): An ECU simulator to test OBD-II clients against.
+* [Apache PLC4X](https://plc4x.apache.org/users/transports/socketcan.html): Apache PLC4X brings support for various PLC systems. JavaCAN serves there a transport mechanism for [CANopen](https://plc4x.apache.org/users/protocols/canopen.html) and other CAN related protocol implementations.
 
 ## Supported Operating Systems
 
