@@ -376,6 +376,8 @@
                 <dockcross.image.armv7a>dockcross/linux-armv7a:${dockcross.default-tag}</dockcross.image.armv7a>
                 <dockcross.image.armv7l>dockcross/linux-armv7l-musl:${dockcross.default-tag}</dockcross.image.armv7l>
                 <dockcross.image.aarch64>dockcross/linux-arm64:${dockcross.default-tag}</dockcross.image.aarch64>
+                <dockcross.image.riscv32>dockcross/linux-riscv32:${dockcross.default-tag}</dockcross.image.riscv32>
+                <dockcross.image.riscv64>dockcross/linux-riscv64:${dockcross.default-tag}</dockcross.image.riscv64>
             </properties>
 
             <build>
@@ -506,6 +508,38 @@
                                         </arguments>
                                     </configuration>
                                 </execution>
+                                <execution>
+                                    <id>compile-native-riscv32</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <arguments>
+                                            <argument>${java.home}</argument>
+                                            <argument>${project.artifactId}</argument>
+                                            <argument>${project.version}</argument>
+                                            <argument>${dockcross.image.riscv32}</argument>
+                                            <argument>aarch64</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>compile-native-riscv64</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <arguments>
+                                            <argument>${java.home}</argument>
+                                            <argument>${project.artifactId}</argument>
+                                            <argument>${project.version}</argument>
+                                            <argument>${dockcross.image.riscv64}</argument>
+                                            <argument>aarch64</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
                             </executions>
                         </plugin>
                         <plugin>
@@ -592,6 +626,28 @@
                                     <configuration>
                                         <classifier>aarch64</classifier>
                                         <classesDirectory>${project.build.directory}/native/aarch64</classesDirectory>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>native-riscv32</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>jar</goal>
+                                    </goals>
+                                    <configuration>
+                                        <classifier>riscv32</classifier>
+                                        <classesDirectory>${project.build.directory}/native/riscv32</classesDirectory>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>native-riscv64</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>jar</goal>
+                                    </goals>
+                                    <configuration>
+                                        <classifier>riscv64</classifier>
+                                        <classesDirectory>${project.build.directory}/native/riscv64</classesDirectory>
                                     </configuration>
                                 </execution>
                             </executions>
