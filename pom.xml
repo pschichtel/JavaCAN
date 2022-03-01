@@ -67,8 +67,8 @@
         <junit.runner.version>1.${junit.minor}</junit.runner.version>
 
         <javacan.architecture>x86_64</javacan.architecture>
-        <dockcross.architecture>x64</dockcross.architecture>
         <dockcross.default-tag>latest</dockcross.default-tag>
+        <dockcross.image>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
         <jar-plugin.version>3.2.0</jar-plugin.version>
@@ -334,7 +334,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>${dockcross.architecture}</argument>
+                                            <argument>${dockcross.image}</argument>
                                             <argument>${javacan.architecture}</argument>
                                         </arguments>
                                     </configuration>
@@ -369,7 +369,7 @@
 
             <properties>
                 <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
-                <dockcross.image.x86_64>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image.x86_64>
+                <dockcross.image.x86_64>${dockcross.image}</dockcross.image.x86_64>
                 <dockcross.image.x86_32>dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
                 <dockcross.image.armv6>dockcross/linux-armv6:${dockcross.default-tag}</dockcross.image.armv6>
                 <dockcross.image.armv7>dockcross/linux-armv7:${dockcross.default-tag}</dockcross.image.armv7>
