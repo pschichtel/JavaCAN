@@ -5,10 +5,8 @@ set -euo pipefail
 java_home="${1?no java home given}"
 libname="${2?no lib name given}"
 version="${3?no version given}"
-arch="${4?no arch given}"
+dockcross_image="${4?no arch given}"
 classifier="${5?no classifier given}"
-
-DOCKCROSS_TAG="${DOCKCROSS_TAG:-latest}"
 
 if ! [ -e "$java_home/include/jni.h" ]; then
     java_home="$(dirname "$java_home")"
@@ -35,13 +33,12 @@ cp -r "${java_home}/lib" "$jni_libs"
 
 compiler_dir="${relative_output_dir}/cross-compile"
 
-echo "Compiling for: ${classifier} (dockcross: ${arch})"
-image="dockcross/linux-${arch}:${DOCKCROSS_TAG}"
+echo "Compiling for: ${classifier} (dockcross: ${dockcross_image})"
 compiler_output_dir="${compiler_dir}/${classifier}"
 mkdir -p "$compiler_output_dir" 2>/dev/null
 proxy="${compiler_output_dir}/proxy"
-#docker pull "$image"
-docker run --rm "$image" >"$proxy"
+#docker pull "$dockcross_image"
+docker run --rm "$dockcross_image" >"$proxy"
 chmod +x "$proxy"
 
 linker_output_dir="${relative_output_dir}/native/${classifier}/native"

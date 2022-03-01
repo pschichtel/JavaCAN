@@ -68,6 +68,7 @@
 
         <javacan.architecture>x86_64</javacan.architecture>
         <dockcross.architecture>x64</dockcross.architecture>
+        <dockcross.default-tag>latest</dockcross.default-tag>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
         <jar-plugin.version>3.2.0</jar-plugin.version>
@@ -368,6 +369,13 @@
 
             <properties>
                 <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
+                <dockcross.image.x86_64>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image.x86_64>
+                <dockcross.image.x86_32>dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
+                <dockcross.image.armv6>dockcross/linux-armv6:${dockcross.default-tag}</dockcross.image.armv6>
+                <dockcross.image.armv7>dockcross/linux-armv7:${dockcross.default-tag}</dockcross.image.armv7>
+                <dockcross.image.armv7a>dockcross/linux-armv7a:${dockcross.default-tag}</dockcross.image.armv7a>
+                <dockcross.image.armv7l>dockcross/linux-armv7l-musl:${dockcross.default-tag}</dockcross.image.armv7l>
+                <dockcross.image.aarch64>dockcross/linux-arm64:${dockcross.default-tag}</dockcross.image.aarch64>
             </properties>
 
             <build>
@@ -397,7 +405,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>x64</argument>
+                                            <argument>${dockcross.image.x86_64}</argument>
                                             <argument>x86_64</argument>
                                         </arguments>
                                     </configuration>
@@ -413,7 +421,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>x86</argument>
+                                            <argument>${dockcross.image.x86_32}</argument>
                                             <argument>x86_32</argument>
                                         </arguments>
                                     </configuration>
@@ -429,7 +437,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>armv6</argument>
+                                            <argument>${dockcross.image.armv6}</argument>
                                             <argument>armv6</argument>
                                         </arguments>
                                     </configuration>
@@ -445,7 +453,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>armv7</argument>
+                                            <argument>${dockcross.image.armv7}</argument>
                                             <argument>armv7</argument>
                                         </arguments>
                                     </configuration>
@@ -461,8 +469,24 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
+                                            <argument>${dockcross.image.armv7a}</argument>
                                             <argument>armv7a</argument>
-                                            <argument>armv7a</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>compile-native-armv7l</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <arguments>
+                                            <argument>${java.home}</argument>
+                                            <argument>${project.artifactId}</argument>
+                                            <argument>${project.version}</argument>
+                                            <argument>${dockcross.image.armv7l}</argument>
+                                            <argument>armv7l</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -477,7 +501,7 @@
                                             <argument>${java.home}</argument>
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
-                                            <argument>arm64</argument>
+                                            <argument>${dockcross.image.aarch64}</argument>
                                             <argument>aarch64</argument>
                                         </arguments>
                                     </configuration>
@@ -546,6 +570,17 @@
                                     <configuration>
                                         <classifier>armv7a</classifier>
                                         <classesDirectory>${project.build.directory}/native/armv7a</classesDirectory>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>native-armv7l</id>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>jar</goal>
+                                    </goals>
+                                    <configuration>
+                                        <classifier>armv7l</classifier>
+                                        <classesDirectory>${project.build.directory}/native/armv7l</classesDirectory>
                                     </configuration>
                                 </execution>
                                 <execution>
