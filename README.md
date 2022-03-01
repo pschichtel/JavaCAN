@@ -46,7 +46,10 @@ Currently, the full build process includes the following architectures:
 * armv6
 * armv7
 * armv7a
+* armv7l (musl libc)
 * aarch64
+* riscv32
+* riscv64
 
 The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it! Alternatively read how to build another architecture
 down below.
@@ -127,7 +130,7 @@ By default, the project only builds the x86_64 native components (`single-archit
 mvn clean package
 ```
 
-The `single-architecture` profile can build different architectures by specifying the properties `javacan.architecture` and `dockcross.architecture`. This can be used to build architectures
+The `single-architecture` profile can build different architectures by specifying the properties `javacan.architecture` and `dockcross.image`. This can be used to build architectures
 that are not currently included in JavaCAN releases. Unit tests will be executed with the architecture being built. Overriding the test architecture is not possible, since other architectures are
 not being built.
 
