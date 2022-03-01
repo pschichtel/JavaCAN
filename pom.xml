@@ -520,7 +520,7 @@
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.riscv32}</argument>
-                                            <argument>aarch64</argument>
+                                            <argument>riscv32</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -536,7 +536,7 @@
                                             <argument>${project.artifactId}</argument>
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.riscv64}</argument>
-                                            <argument>aarch64</argument>
+                                            <argument>riscv64</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
