@@ -103,7 +103,7 @@ For compilation:
 
 * Maven 3 or newer
 * A locally running docker daemon and permissions to run containers
-* Java 8 or newer installed
+* Java 8 (Maven will enforce this)
 * Bash
 
 For tests:
