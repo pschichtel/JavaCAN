@@ -72,8 +72,6 @@
         <dockcross.image>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
-        <jar-plugin.version>3.2.2</jar-plugin.version>
-        <exec-plugin.version>1.6.0</exec-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -152,6 +150,21 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.2.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>1.6.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.2</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -173,6 +186,7 @@
                 <version>3.3.2</version>
                 <configuration>
                     <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
+                    <notimestamp>true</notimestamp>
                 </configuration>
             </plugin>
             <plugin>
@@ -252,7 +266,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <version>1.6.12</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -263,7 +277,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.2.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -318,7 +331,6 @@
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>exec-maven-plugin</artifactId>
-                            <version>${exec-plugin.version}</version>
                             <configuration>
                                 <workingDirectory>${project.basedir}</workingDirectory>
                                 <executable>./compile-native.sh</executable>
@@ -345,7 +357,6 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-jar-plugin</artifactId>
-                            <version>${jar-plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>native-${javacan.architecture}</id>
@@ -387,7 +398,6 @@
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>exec-maven-plugin</artifactId>
-                            <version>${exec-plugin.version}</version>
                             <configuration>
                                 <workingDirectory>${project.basedir}</workingDirectory>
                                 <executable>./compile-native.sh</executable>
@@ -546,7 +556,6 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-jar-plugin</artifactId>
-                            <version>${jar-plugin.version}</version>
                             <executions>
                                 <execution>
                                     <id>native-default</id>
