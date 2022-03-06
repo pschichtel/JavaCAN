@@ -70,6 +70,7 @@
         <javacan.architecture>x86_64</javacan.architecture>
         <dockcross.default-tag>20220224-bfdbf76</dockcross.default-tag>
         <dockcross.image>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
+        <dockcross.link-mode>dynamic</dockcross.link-mode>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
     </properties>
@@ -349,6 +350,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image}</argument>
                                             <argument>${javacan.architecture}</argument>
+                                            <argument>${dockcross.link-mode}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -381,6 +383,7 @@
 
             <properties>
                 <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
+
                 <dockcross.image.x86_64>${dockcross.image}</dockcross.image.x86_64>
                 <dockcross.image.x86_32>dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
                 <dockcross.image.armv6>dockcross/linux-armv6:${dockcross.default-tag}</dockcross.image.armv6>
@@ -390,6 +393,16 @@
                 <dockcross.image.aarch64>dockcross/linux-arm64:${dockcross.default-tag}</dockcross.image.aarch64>
                 <dockcross.image.riscv32>dockcross/linux-riscv32:${dockcross.default-tag}</dockcross.image.riscv32>
                 <dockcross.image.riscv64>dockcross/linux-riscv64:${dockcross.default-tag}</dockcross.image.riscv64>
+
+                <dockcross.link-mode.x86_64>${dockcross.link-mode}</dockcross.link-mode.x86_64>
+                <dockcross.link-mode.x86_32>${dockcross.link-mode}</dockcross.link-mode.x86_32>
+                <dockcross.link-mode.armv6>${dockcross.link-mode}</dockcross.link-mode.armv6>
+                <dockcross.link-mode.armv7>${dockcross.link-mode}</dockcross.link-mode.armv7>
+                <dockcross.link-mode.armv7a>${dockcross.link-mode}</dockcross.link-mode.armv7a>
+                <dockcross.link-mode.armv7l>static</dockcross.link-mode.armv7l>
+                <dockcross.link-mode.aarch64>${dockcross.link-mode}</dockcross.link-mode.aarch64>
+                <dockcross.link-mode.riscv32>${dockcross.link-mode}</dockcross.link-mode.riscv32>
+                <dockcross.link-mode.riscv64>${dockcross.link-mode}</dockcross.link-mode.riscv64>
             </properties>
 
             <build>
@@ -420,6 +433,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.x86_64}</argument>
                                             <argument>x86_64</argument>
+                                            <argument>${dockcross.link-mode.x86_64}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -436,6 +450,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.x86_32}</argument>
                                             <argument>x86_32</argument>
+                                            <argument>${dockcross.link-mode.x86_32}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -452,6 +467,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.armv6}</argument>
                                             <argument>armv6</argument>
+                                            <argument>${dockcross.link-mode.armv6}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -468,6 +484,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.armv7}</argument>
                                             <argument>armv7</argument>
+                                            <argument>${dockcross.link-mode.armv7}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -484,6 +501,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.armv7a}</argument>
                                             <argument>armv7a</argument>
+                                            <argument>${dockcross.link-mode.armv7a}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -500,6 +518,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.armv7l}</argument>
                                             <argument>armv7l</argument>
+                                            <argument>${dockcross.link-mode.armv7l}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -516,6 +535,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.aarch64}</argument>
                                             <argument>aarch64</argument>
+                                            <argument>${dockcross.link-mode.aarch64}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -532,6 +552,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.riscv32}</argument>
                                             <argument>riscv32</argument>
+                                            <argument>${dockcross.link-mode.riscv32}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
@@ -548,6 +569,7 @@
                                             <argument>${project.version}</argument>
                                             <argument>${dockcross.image.riscv64}</argument>
                                             <argument>riscv64</argument>
+                                            <argument>${dockcross.link-mode.riscv64}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>

@@ -7,6 +7,7 @@ libname="${2?no lib name given}"
 version="${3?no version given}"
 dockcross_image="${4?no arch given}"
 classifier="${5?no classifier given}"
+link_mode="${6?no link mode}"
 
 if ! [ -e "$java_home/include/jni.h" ]; then
     java_home="$(dirname "$java_home")"
@@ -63,4 +64,21 @@ for c_file in "$src"/*.c "$jni"/**/*.c; do
     "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" "${cc_opts[@]}" || exit 1
     out_files+=("$out_file")
 done
-"$proxy" "$CC" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" -z noexecstack "${cc_opts[@]}" -fvisibility=hidden || exit 1
+
+case "$link_mode" in
+    static)
+        echo "static linking"
+        libc="$("$proxy" bash -c 'find "$CROSS_ROOT" /usr/lib -name "libc.a" | head -n 1')"
+        link_mode_options=("$libc" -lm)
+        ;;
+    dynamic)
+        echo "dynamic linking"
+        link_mode_options=()
+        ;;
+    *)
+        echo "Unknown link mode '$link_mode'" >&2
+        exit 1
+        ;;
+esac
+
+"$proxy" "$CC" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" "${link_mode_options[@]}" -z noexecstack "${cc_opts[@]}" -fvisibility=hidden || exit 1
