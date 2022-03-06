@@ -68,8 +68,7 @@ done
 case "$link_mode" in
     static)
         echo "static linking"
-        libc="$("$proxy" bash -c 'find "$CROSS_ROOT" /usr/lib -name "libc.a" | head -n 1')"
-        link_mode_options=("$libc" -lm)
+        link_mode_options=(-static)
         ;;
     dynamic)
         echo "dynamic linking"
