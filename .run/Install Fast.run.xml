@@ -14,7 +14,6 @@
               <option value="source:jar" />
               <option value="javadoc:jar" />
               <option value="install" />
-              <option value="-Djavacan.build.arch=x64" />
             </list>
           </option>
           <option name="pomFileName" />

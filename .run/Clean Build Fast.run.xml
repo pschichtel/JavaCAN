@@ -12,7 +12,6 @@
             <list>
               <option value="clean" />
               <option value="compile" />
-              <option value="-Djavacan.build.arch=x64" />
             </list>
           </option>
           <option name="pomFileName" />
