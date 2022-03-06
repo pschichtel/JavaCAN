@@ -46,7 +46,7 @@ Currently, the full build process includes the following architectures:
 * armv6
 * armv7
 * armv7a
-* armv7l (musl libc)
+* armv7l (musl libc, linked statically)
 * aarch64
 * riscv32
 * riscv64
@@ -113,6 +113,7 @@ For tests:
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
 * A CAN interface named "vcan0"
 * Java 8 or newer installed
+* a libc (unless compiled statically)
 
 For usage:
 
@@ -120,6 +121,7 @@ For usage:
 * For ISOTP channels, the can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * Java 8 or newer installed
 * A few kilobytes of disk space to extract the native components
+* a libc (unless compiled statically)
 
 
 ### Building
@@ -132,7 +134,8 @@ mvn clean package
 
 The `single-architecture` profile can build different architectures by specifying the properties `javacan.architecture` and `dockcross.image`. This can be used to build architectures
 that are not currently included in JavaCAN releases. Unit tests will be executed with the architecture being built. Overriding the test architecture is not possible, since other architectures are
-not being built.
+not being built. By default, the libraries are linked dynamically, by setting the `dockcross.link-mode` property to `static` it can be switched to static linking, however not every dockcross image
+supports static linking (musl libc based images usually do).
 
 In order to build all architectures that are currently part of releases, the `all-architectures` maven profile must be activated:
 
@@ -148,3 +151,5 @@ If the architecture you are building *on* is not part of the build, then tests w
 ```bash
 mvn clean package -P!test
 ```
+
+Each architecture in the `all-architectures` profile can have its dockcross image and linking mode overridden by setting the `dockcross.image.<arch>` and/or `dockcross.link-mode.<arch>` properties.
