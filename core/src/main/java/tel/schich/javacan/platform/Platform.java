@@ -64,6 +64,7 @@ public class Platform {
     public static void loadNativeLibrary(String name, Class<?> base) {
         try {
             System.loadLibrary(name);
+            LOGGER.trace("Loaded native library {} from library path", name);
         } catch (LinkageError e) {
             loadExplicitLibrary(name, base);
         }
@@ -72,40 +73,40 @@ public class Platform {
     private static void loadExplicitLibrary(String name, Class<?> base) {
         String explicitLibraryPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_FS_PATH);
         if (explicitLibraryPath != null) {
-            LOGGER.trace("Loading native library from {}", explicitLibraryPath);
+            LOGGER.trace("Loading native library {} from {}", name, explicitLibraryPath);
             System.load(explicitLibraryPath);
             return;
         }
 
         String explicitLibraryClassPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH);
         if (explicitLibraryClassPath != null) {
-            LOGGER.trace("Loading native library from explicit classpath at {}", explicitLibraryClassPath);
+            LOGGER.trace("Loading native library {} from explicit classpath at {}", name, explicitLibraryClassPath);
             try {
                 final Path tempDirectory = Files.createTempDirectory(name + "-");
                 final Path libPath = tempDirectory.resolve("lib" + name + ".so");
-                loadFromClassPath(base, explicitLibraryClassPath, libPath);
+                loadFromClassPath(name, base, explicitLibraryClassPath, libPath);
                 return;
             } catch (IOException e) {
-                throw new LinkageError("Unable to load native library '" + name + "'!", e);
+                throw new LinkageError("Unable to load native library " + name + "!", e);
             }
         }
 
         final String sourceLibPath = LIB_PREFIX + "/lib" + name + ".so";
-        LOGGER.trace("Loading native library from {}", sourceLibPath);
+        LOGGER.trace("Loading native library {} from {}", name, sourceLibPath);
 
         try {
             final Path tempDirectory = Files.createTempDirectory(name + "-");
             final Path libPath = tempDirectory.resolve("lib" + name + ".so");
-            loadFromClassPath(base, sourceLibPath, libPath);
+            loadFromClassPath(name, base, sourceLibPath, libPath);
         } catch (IOException e) {
-            throw new LinkageError("Unable to load native library '" + name + "'!", e);
+            throw new LinkageError("Unable to load native library " + name + "!", e);
         }
     }
 
-    private static void loadFromClassPath(Class<?> base, String classPath, Path fsPath) throws IOException {
+    private static void loadFromClassPath(String name, Class<?> base, String classPath, Path fsPath) throws IOException {
         try (InputStream libStream = base.getResourceAsStream(classPath)) {
             if (libStream == null) {
-                throw new LinkageError("Failed to load the native library: " + classPath + " not found.");
+                throw new LinkageError("Failed to load the native library " + name + ": " + classPath + " not found.");
             }
 
             Files.copy(libStream, fsPath, REPLACE_EXISTING);
