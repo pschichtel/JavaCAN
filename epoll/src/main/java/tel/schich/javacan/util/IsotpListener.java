@@ -125,8 +125,8 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
                         isotp.read(readBuffer);
                         readBuffer.flip();
                         ByteBuffer readOnlyBuffer = ByteBuffer.allocate(readBuffer.limit());
-                        readOnlyBuffer.put(readBuffer.asReadOnlyBuffer().limit(readBuffer.limit()));
-                        handler.handle(isotp, readOnlyBuffer);
+                        readOnlyBuffer.put((ByteBuffer) readBuffer.rewind());
+                        handler.handle(isotp, readOnlyBuffer.asReadOnlyBuffer());
                     } else {
                         LOGGER.warn("Handler not found for channel: " + ch);
                     }
