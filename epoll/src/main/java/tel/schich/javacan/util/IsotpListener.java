@@ -50,6 +50,7 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
     private final ByteBuffer readBuffer = IsotpCanChannel.allocateSufficientMemory();
 
     private final IdentityHashMap<IsotpCanChannel, MessageHandler> handlerMap = new IdentityHashMap<>();
+    private final IdentityHashMap<IsotpCanChannel, Boolean> copyOnWriteMap = new IdentityHashMap<>();
     private final Object handlerLock = new Object();
 
     public IsotpListener(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector, Duration timeout) {
@@ -59,12 +60,29 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
     /**
      * Adds the given {@link tel.schich.javacan.IsotpCanChannel} together with its
      * {@link tel.schich.javacan.util.MessageHandler} to this listener.
+     * In case of an event the MessageHandler will receive a reference to the ByteBuffer containing the message.
      *
      * @param ch the channel to add
      * @param handler the corresponding handler
      * @throws IOException if native calls fail
      */
     public void addChannel(IsotpCanChannel ch, MessageHandler handler) throws IOException {
+        addChannel(ch, handler, false);
+    }
+
+    /**
+     * Adds the given {@link tel.schich.javacan.IsotpCanChannel} together with its
+     * {@link tel.schich.javacan.util.MessageHandler} to this listener.
+     * In case of an event the MessageHandler will receive either
+     * a reference to the ByteBuffer containing the message or
+     * a copy of the ByteBuffer containing the message, depending on the copyOnWrite flag.
+     *
+     * @param ch the channel to add
+     * @param handler the corresponding handler
+     * @param copyOnWrite determines whether to hand over a copy or a reference to the MessageHandler
+     * @throws IOException if native calls fail
+     */
+    public void addChannel(IsotpCanChannel ch, MessageHandler handler, boolean copyOnWrite) throws IOException {
         synchronized (handlerLock) {
             if (handler == null) {
                 throw new NullPointerException("handle must not be null!");
@@ -77,6 +95,7 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
             }
             register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
             this.handlerMap.put(ch, handler);
+            this.copyOnWriteMap.put(ch, copyOnWrite);
             this.start();
         }
     }
@@ -124,9 +143,7 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
                         readBuffer.clear();
                         isotp.read(readBuffer);
                         readBuffer.flip();
-                        ByteBuffer readOnlyBuffer = ByteBuffer.allocate(readBuffer.limit());
-                        readOnlyBuffer.put((ByteBuffer) readBuffer.rewind());
-                        handler.handle(isotp, readOnlyBuffer.asReadOnlyBuffer());
+                        handler.handle(isotp, createProcessableByteBuffer(isotp, readBuffer));
                     } else {
                         LOGGER.warn("Handler not found for channel: " + ch);
                     }
@@ -135,5 +152,14 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
                 }
             }
         }
+    }
+
+    protected ByteBuffer createProcessableByteBuffer(IsotpCanChannel ch, ByteBuffer readBuffer) {
+        if(copyOnWriteMap.containsKey(ch) && Boolean.TRUE.equals(copyOnWriteMap.get(ch))) {
+            ByteBuffer readOnlyBuffer = ByteBuffer.allocate(readBuffer.limit());
+            readOnlyBuffer.put((ByteBuffer) readBuffer.rewind());
+            return readOnlyBuffer.asReadOnlyBuffer();
+        }
+        return readBuffer.asReadOnlyBuffer();
     }
 }
