@@ -42,7 +42,15 @@ import tel.schich.javacan.select.SelectorRegistration;
 /**
  * This class implements an event driven interface over several {@link tel.schich.javacan.IsotpCanChannel}s to
  * receive messages with callbacks. Received messages are passed on to a {@link tel.schich.javacan.util.MessageHandler}
- * for for each specific channel.
+ * for each specific channel.
+ *
+ * Messages are read into a single shared {@link ByteBuffer} and that buffer is passed as a read-only view into the
+ * {@link MessageHandler}. Since the buffer is shared, the content of the buffer after the handler completes is undefined.
+ * If the handler logic needs to keep the buffer around for longer than its own execution, than a copy of the buffer must
+ * be created. If messages are always passed on to other threads consider using the {@link CopyingMessageHandlerProxy}.
+ *
+ * @see tel.schich.javacan.util.EventLoop
+ * @see CopyingMessageHandlerProxy
  */
 public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CanBroker.class);
