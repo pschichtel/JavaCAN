@@ -22,21 +22,59 @@
  */
 package tel.schich.javacan;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.nio.ByteBuffer;
 
+import jdk.incubator.foreign.CLinker;
+import jdk.incubator.foreign.FunctionDescriptor;
+import jdk.incubator.foreign.ResourceScope;
+import jdk.incubator.foreign.SegmentAllocator;
+import jdk.incubator.foreign.SymbolLookup;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
+import static jdk.incubator.foreign.CLinker.C_INT;
+
 class SocketCAN {
+
+    private static final int PF_CAN = 29;
+    private static final int SOCK_STREAM = 1;
+    private static final int SOCK_DGRAM = 2;
+    private static final int SOCK_RAW = 3;
+    private static final int CAN_RAW = 1;
+    private static final int CAN_BCM = 2;
+    private static final int CAN_ISOTP = 6;
+
+    private static final SegmentAllocator ALLOCATOR = SegmentAllocator.arenaAllocator(ResourceScope.newImplicitScope());
+    private static final CLinker LINKER = CLinker.getInstance();
+    private static final SymbolLookup LIB_C = CLinker.systemLookup();
+
+    private static final MethodHandle SOCKET_FUNCTION =
+            LINKER.downcallHandle(LIB_C.lookup("socket").orElseThrow(), ALLOCATOR, MethodType.methodType(int.class), FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT));
 
     static {
         JavaCAN.initialize();
     }
 
-    public static native int createRawSocket() throws LinuxNativeOperationException;
+    private static int socket(int family, int socketType, int protocol) {
+        try {
+            return (int) SOCKET_FUNCTION.invokeExact(family, socketType, protocol);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public static native int createBcmSocket() throws LinuxNativeOperationException;
+    public static int createRawSocket() {
+        return socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    }
 
-    public static native int createIsotpSocket() throws LinuxNativeOperationException;
+	public static int createBcmSocket() {
+        return socket(PF_CAN, SOCK_DGRAM, CAN_BCM);
+    }
+
+    public static int createIsotpSocket() {
+        return socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP);
+    }
 
     public static native int bindSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 

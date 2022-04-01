@@ -20,36 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan.platform;
-
-/**
- * Helper class to detect and handle various platforms. Currently only Linux is handled.
- */
-public class Platform {
-    /**
-     * Checks if the currently running OS is Linux
-     *
-     * @return true if running on Linux
-     */
-    public static boolean isLinux() {
-        return System.getProperty("os.name").equalsIgnoreCase("Linux");
-    }
-
-    public static OS getOS() {
-        if (isLinux()) {
-            return OS.LINUX;
-        } else {
-            return OS.UNKNOWN;
-        }
-    }
-
-
-    public static void loadNativeLibrary(String name, Class<?> base) {
-        // no-op
-    }
-
-    public enum OS {
-        LINUX,
-        UNKNOWN
-    }
+module javacan.core {
+    requires jdk.incubator.foreign;
+    requires jni.access.generator;
+    requires org.slf4j;
 }
