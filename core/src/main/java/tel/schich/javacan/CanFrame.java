@@ -248,6 +248,21 @@ public class CanFrame {
         return CanId.isRemoteTransmissionRequest(getRawId());
     }
 
+    /**
+     * Creates a copy of the underlying data into a fresh {@link ByteBuffer}.
+     *
+     * @return a deep copy of this frame
+     */
+    public CanFrame copy() {
+        ByteBuffer view = buffer.duplicate();
+        ByteBuffer copy = ByteBuffer.allocate(size);
+        view.position(base);
+        view.limit(base + size);
+        copy.put(view);
+        copy.flip();
+        return new CanFrame(copy);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Can");
