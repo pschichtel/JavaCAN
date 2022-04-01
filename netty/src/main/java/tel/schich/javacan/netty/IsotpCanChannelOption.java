@@ -24,7 +24,6 @@ package tel.schich.javacan.netty;
 
 import io.netty.channel.ChannelOption;
 import io.netty.channel.unix.UnixChannelOption;
-import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.IsotpFlowControlOptions;
 import tel.schich.javacan.IsotpLinkLayerOptions;
 import tel.schich.javacan.IsotpOptions;
