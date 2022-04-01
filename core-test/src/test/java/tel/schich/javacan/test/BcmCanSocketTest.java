@@ -113,9 +113,7 @@ class BcmCanSocketTest {
             assertArrayEquals(frameData[i], dataBuffer.array());
         }
         // check no frame after the last index
-        assertThrows(IllegalArgumentException.class, () -> {
-            message.getFrame(frameData.length);
-        });
+        assertThrows(IllegalArgumentException.class, () -> message.getFrame(frameData.length));
     }
 
     @Test
@@ -151,9 +149,7 @@ class BcmCanSocketTest {
             assertArrayEquals(frameData[i], dataBuffer.array());
         }
         // check no frame after the last index
-        assertThrows(IllegalArgumentException.class, () -> {
-            message.getFrame(frameData.length);
-        });
+        assertThrows(IllegalArgumentException.class, () -> message.getFrame(frameData.length));
     }
 
     @Test

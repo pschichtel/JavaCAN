@@ -67,9 +67,7 @@ public class EPollSelectorTest {
                 selector.register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
 
                 CanFrame inputFrame = CanFrame.create(0x7EF, FD_NO_FLAGS, new byte[]{1, 2, 3, 4});
-                runDelayed(ofMillis(200), () -> {
-                    ch.write(inputFrame);
-                });
+                runDelayed(ofMillis(200), () -> ch.write(inputFrame));
                 assertTimeoutPreemptively(ofMillis(300), () -> {
                     List<IOEvent<UnixFileDescriptor>> events = selector.select();
                     assertEquals(1, events.size(), "With one registered channel there should only be one selection key!");
@@ -109,7 +107,7 @@ public class EPollSelectorTest {
         try (final EPollSelector selector = EPollSelector.open()) {
 
             SelectorRegistration<UnixFileDescriptor, RawCanChannel> firstRegistration = configureAndRegisterChannel(selector);
-            try (RawCanChannel firstChannel = firstRegistration.getChannel()) {
+            try (RawCanChannel ignored = firstRegistration.getChannel()) {
                 CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, CanFrame.create(0x3, CanFrame.FD_NO_FLAGS, new byte[] {1}));
                 assertEquals(1, selector.selectNow().size());
 

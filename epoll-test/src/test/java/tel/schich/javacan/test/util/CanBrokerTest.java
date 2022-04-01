@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan.test.util;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CanBrokerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(CanBrokerTest.class);
@@ -67,13 +65,11 @@ class CanBrokerTest {
             try {
                 brokerA.removeDevice(CanTestHelper.CAN_INTERFACE);
             } catch (IOException e) {
-                Assert.fail("Removing the device from brokerA should not fail: " + e.getLocalizedMessage());
+                fail("Removing the device from brokerA should not fail: " + e.getLocalizedMessage());
             }
         });
 
-        brokerB.addDevice(CanTestHelper.CAN_INTERFACE, (d, frame) -> {
-            LOGGER.debug(String.valueOf(frame));
-        });
+        brokerB.addDevice(CanTestHelper.CAN_INTERFACE, (d, frame) -> LOGGER.debug(String.valueOf(frame)));
         brokerB.send(expected);
 
         CanFrame actual = f.get(2, SECONDS);
@@ -91,9 +87,7 @@ class CanBrokerTest {
 
         CanBroker can = new CanBroker(FACTORY, EPollSelector.open());
         can.addFilter(new CanFilter(id));
-        can.addDevice(CanTestHelper.CAN_INTERFACE, (ch, frame) -> {
-            f.complete(frame);
-        });
+        can.addDevice(CanTestHelper.CAN_INTERFACE, (ch, frame) -> f.complete(frame));
 
         CanTestHelper.sendFrameViaUtils(CanTestHelper.CAN_INTERFACE, expected);
 

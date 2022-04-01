@@ -61,7 +61,6 @@ class IsotpListenerTest {
         IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
 
         try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
-
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
                     final ByteBuffer buf = IsotpCanChannel.allocateSufficientMemory();
@@ -74,8 +73,8 @@ class IsotpListenerTest {
                     broker.addChannel(a, new PingPing(lock, condition, buf));
                     broker.addChannel(b, new PingPing(lock, condition, buf));
 
-                    buf.put(randomByte())
-                            .flip();
+                    buf.put(randomByte());
+                    buf.flip();
                     a.write(buf);
 
                     try {
