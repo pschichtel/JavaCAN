@@ -12,7 +12,7 @@
 
     <groupId>tel.schich</groupId>
     <artifactId>javacan</artifactId>
-    <version>3.2.2-SNAPSHOT</version>
+    <version>3.2.2</version>
     <name>JavaCAN</name>
     <url>https://github.com/pschichtel/JavaCAN</url>
     <inceptionYear>2018</inceptionYear>
@@ -28,7 +28,7 @@
         <url>https://github.com/pschichtel/JavaCAN</url>
         <connection>scm:git:https://github.com/pschichtel/JavaCAN</connection>
         <developerConnection>scm:git:git@github.com:pschichtel/JavaCAN</developerConnection>
-        <tag>HEAD</tag>
+        <tag>javacan-3.2.2</tag>
     </scm>
 
     <developers>
@@ -58,7 +58,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.outputTimestamp>1649235582</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1651793802</project.build.outputTimestamp>
 
         <slf4j.version>1.7.35</slf4j.version>
         <logback.version>1.2.3</logback.version>
