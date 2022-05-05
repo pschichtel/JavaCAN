@@ -95,6 +95,10 @@ dynamically configuring the `javacan.native.javacan-<module>.path` properties in
 
 The value for the `<module>` placeholder used throughout this section is `core` and if the EPoll support is used, an additional option with `epoll` for `<module>` is necessary.
 
+## Troubleshooting
+
+In case you have issues, have a look at the [troubleshooting document](TROUBLESHOOTING.md).
+
 ## How to build
 
 ### Prerequisites
