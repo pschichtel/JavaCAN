@@ -85,6 +85,7 @@ public class CanFrame {
 
     /**
      * Returns the bare CAN ID (so just 11 or 29 bits from the LSB).
+     * If you want the raw ID from SocketCAN use {@link #getRawId()}.
      *
      * @return the CAN ID
      */
@@ -95,6 +96,7 @@ public class CanFrame {
     /**
      * Returns the full 32 bit CAN ID as given by the kernel. This includes additional metadata that can be extracted
      * using the methods from {@link tel.schich.javacan.CanId}.
+     * If you are only interested in the ID itself use {@link #getId()}.
      *
      * @return the CAN ID as given by the kernel
      */
