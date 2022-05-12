@@ -48,4 +48,4 @@ The some command with EFF addresses (`echo "11 22 33 44 55 66 11 22 33 44 55" | 
 (004.670046)  can0  000001FF   [2]  23 22
 ```
 
-The output concrete output is application specific.
+The concrete output is application specific.
