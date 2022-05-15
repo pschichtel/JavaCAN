@@ -47,7 +47,7 @@ inline int create_can_isotp_socket() {
 int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
-    addr.can_ifindex = interface;
+    addr.can_ifindex = (int) interface;
     addr.can_addr.tp.rx_id = rx;
     addr.can_addr.tp.tx_id = tx;
 
@@ -57,7 +57,7 @@ int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
 int connect_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
-    addr.can_ifindex = interface;
+    addr.can_ifindex = (int) interface;
     addr.can_addr.tp.rx_id = rx;
     addr.can_addr.tp.tx_id = tx;
 
@@ -67,8 +67,8 @@ int connect_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
 int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {
     socklen_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
-    timeout.tv_sec = seconds;
-    timeout.tv_usec = nanos / 1000;
+    timeout.tv_sec = (__time_t) seconds;
+    timeout.tv_usec = (__suseconds_t) nanos / 1000;
 
     return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
 }
