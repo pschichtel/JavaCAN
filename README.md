@@ -19,7 +19,7 @@ Implementing Java's SelectableChannel API is not possible with EPoll and SocketC
 
 * Support for other CAN protocols (e.g. CAN_MCNET)
 * [CAN XL](https://www.bosch-semiconductors.com/media/ip_modules/pdf_2/can_xl_1/canxl_intro_20210225.pdf)
-* A [netty](https://netty.io) integration (see #20)
+* A [netty](https://netty.io) integration (see [#20](https://github.com/pschichtel/JavaCAN/issues/20))
 * BSD Support
 * io_uring Support
 
