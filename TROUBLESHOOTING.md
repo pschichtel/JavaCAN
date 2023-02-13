@@ -36,9 +36,9 @@ If you are affected by this issue, then a command like `echo "11 22 33 44 55 66 
 (001.456351)  can0  0000017F   [8]  30 08 00 00 00 00 00 00
 ```
 
-Note different CAN IDs in the third column and the lack of further communication.
+Note the different CAN IDs in the third column and the lack of further communication.
 
-The some command with EFF addresses (`echo "11 22 33 44 55 66 11 22 33 44 55" | isotpsend -s 000001FF -d 0000017F -p 00 can0`) could look like this:
+The same command with EFF addresses (`echo "11 22 33 44 55 66 11 22 33 44 55" | isotpsend -s 000001FF -d 0000017F -p 00 can0`) could look like this:
 
 ```
 (004.665204)  can0  000001FF   [8]  10 15 00 11 22 33 44 55
