@@ -38,8 +38,8 @@ echo "Compiling for: ${classifier} (dockcross: ${dockcross_image})"
 compiler_output_dir="${compiler_dir}/${classifier}"
 mkdir -p "$compiler_output_dir" 2>/dev/null
 proxy="${compiler_output_dir}/proxy"
-#docker pull "$dockcross_image"
-docker run --rm "$dockcross_image" >"$proxy"
+#podman pull "$dockcross_image"
+podman run --rm "$dockcross_image" >"$proxy"
 chmod +x "$proxy"
 
 linker_output_dir="${relative_output_dir}/native/${classifier}/native"
