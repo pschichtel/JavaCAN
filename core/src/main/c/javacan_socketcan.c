@@ -22,7 +22,6 @@
  */
 #include "common.h"
 #include <javacan-core/jni-c-to-java.h>
-#include <jni.h>
 #include <linux/can.h>
 #include <linux/can/isotp.h>
 #include <linux/can/raw.h>
