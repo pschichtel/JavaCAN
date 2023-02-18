@@ -256,17 +256,19 @@ public class IsotpOptions {
     }
 
     public enum Flag {
-        LISTEN_MODE(0x001, "listen only (do not send FC)"),
-        EXTEND_ADDR(0x002, "enable extended addressing"),
-        TX_PADDING(0x004, "enable CAN frame padding tx path"),
-        RX_PADDING(0x008, "enable CAN frame padding rx path"),
-        CHK_PAD_LEN(0x010, "check received CAN frame padding"),
-        CHK_PAD_DATA(0x020, "check received CAN frame padding"),
-        HALF_DUPLEX(0x040, "half duplex error state handling"),
-        FORCE_TXSTMIN(0x080, "ignore stmin from received FC"),
-        FORCE_RXSTMIN(0x100, "ignore CFs depending on rx stmin"),
-        RX_EXT_ADDR(0x200, "different rx extended addressing"),
-        WAIT_TX_DONE(0x400, "wait for tx completion");
+        LISTEN_MODE(0x0001, "listen only (do not send FC)"),
+        EXTEND_ADDR(0x0002, "enable extended addressing"),
+        TX_PADDING(0x0004, "enable CAN frame padding tx path"),
+        RX_PADDING(0x0008, "enable CAN frame padding rx path"),
+        CHK_PAD_LEN(0x0010, "check received CAN frame padding"),
+        CHK_PAD_DATA(0x0020, "check received CAN frame padding"),
+        HALF_DUPLEX(0x0040, "half duplex error state handling"),
+        FORCE_TXSTMIN(0x0080, "ignore stmin from received FC"),
+        FORCE_RXSTMIN(0x0100, "ignore CFs depending on rx stmin"),
+        RX_EXT_ADDR(0x0200, "different rx extended addressing"),
+        WAIT_TX_DONE(0x0400, "wait for tx completion"),
+        SF_BROADCAST(0x0800, "1-to-N functional addressing"),
+        CF_BROADCAST(0x1000, "1-to-N transmission w/o FC");
 
         private final int bit;
         private final String description;
