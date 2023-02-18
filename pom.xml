@@ -68,8 +68,8 @@
         <junit.runner.version>1.${junit.minor}</junit.runner.version>
 
         <javacan.architecture>x86_64</javacan.architecture>
-        <dockcross.default-tag>20220224-bfdbf76</dockcross.default-tag>
-        <dockcross.image>dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
+        <dockcross.default-tag>20230215-2dd9a1c</dockcross.default-tag>
+        <dockcross.image>docker.io/dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
         <dockcross.link-mode>dynamic</dockcross.link-mode>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
@@ -385,17 +385,19 @@
                 <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
 
                 <dockcross.image.x86_64>${dockcross.image}</dockcross.image.x86_64>
-                <dockcross.image.x86_32>dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
-                <dockcross.image.armv6>dockcross/linux-armv6:${dockcross.default-tag}</dockcross.image.armv6>
-                <dockcross.image.armv7>dockcross/linux-armv7:${dockcross.default-tag}</dockcross.image.armv7>
-                <dockcross.image.armv7a>dockcross/linux-armv7a:${dockcross.default-tag}</dockcross.image.armv7a>
-                <dockcross.image.armv7l>dockcross/linux-armv7l-musl:${dockcross.default-tag}</dockcross.image.armv7l>
-                <dockcross.image.aarch64>dockcross/linux-arm64:${dockcross.default-tag}</dockcross.image.aarch64>
-                <dockcross.image.riscv32>dockcross/linux-riscv32:${dockcross.default-tag}</dockcross.image.riscv32>
-                <dockcross.image.riscv64>dockcross/linux-riscv64:${dockcross.default-tag}</dockcross.image.riscv64>
+                <dockcross.image.x86_32>docker.io/dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
+                <dockcross.image.armv5>docker.io/dockcross/linux-armv5:${dockcross.default-tag}</dockcross.image.armv5>
+                <dockcross.image.armv6>docker.io/dockcross/linux-armv6:${dockcross.default-tag}</dockcross.image.armv6>
+                <dockcross.image.armv7>docker.io/dockcross/linux-armv7:${dockcross.default-tag}</dockcross.image.armv7>
+                <dockcross.image.armv7a>docker.io/dockcross/linux-armv7a:${dockcross.default-tag}</dockcross.image.armv7a>
+                <dockcross.image.armv7l>docker.io/dockcross/linux-armv7l-musl:${dockcross.default-tag}</dockcross.image.armv7l>
+                <dockcross.image.aarch64>docker.io/dockcross/linux-arm64:${dockcross.default-tag}</dockcross.image.aarch64>
+                <dockcross.image.riscv32>docker.io/dockcross/linux-riscv32:${dockcross.default-tag}</dockcross.image.riscv32>
+                <dockcross.image.riscv64>docker.io/dockcross/linux-riscv64:${dockcross.default-tag}</dockcross.image.riscv64>
 
                 <dockcross.link-mode.x86_64>${dockcross.link-mode}</dockcross.link-mode.x86_64>
                 <dockcross.link-mode.x86_32>${dockcross.link-mode}</dockcross.link-mode.x86_32>
+                <dockcross.link-mode.armv5>${dockcross.link-mode}</dockcross.link-mode.armv5>
                 <dockcross.link-mode.armv6>${dockcross.link-mode}</dockcross.link-mode.armv6>
                 <dockcross.link-mode.armv7>${dockcross.link-mode}</dockcross.link-mode.armv7>
                 <dockcross.link-mode.armv7a>${dockcross.link-mode}</dockcross.link-mode.armv7a>
@@ -451,6 +453,23 @@
                                             <argument>${dockcross.image.x86_32}</argument>
                                             <argument>x86_32</argument>
                                             <argument>${dockcross.link-mode.x86_32}</argument>
+                                        </arguments>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>compile-native-armv5</id>
+                                    <phase>compile</phase>
+                                    <goals>
+                                        <goal>exec</goal>
+                                    </goals>
+                                    <configuration>
+                                        <arguments>
+                                            <argument>${java.home}</argument>
+                                            <argument>${project.artifactId}</argument>
+                                            <argument>${project.version}</argument>
+                                            <argument>${dockcross.image.armv5}</argument>
+                                            <argument>armv5</argument>
+                                            <argument>${dockcross.link-mode.armv5}</argument>
                                         </arguments>
                                     </configuration>
                                 </execution>
