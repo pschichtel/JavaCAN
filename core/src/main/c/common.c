@@ -24,10 +24,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <javacan-core/jni-c-to-java.h>
-#include <jni.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <stdint.h>
 #include <string.h>
 #include <poll.h>
 #include <sys/socket.h>

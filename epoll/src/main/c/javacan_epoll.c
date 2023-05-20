@@ -22,9 +22,7 @@
  */
 #include <errno.h>
 #include <javacan-epoll/jni-c-to-java.h>
-#include <jni.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>

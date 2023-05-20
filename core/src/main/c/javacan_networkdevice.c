@@ -21,7 +21,6 @@
  * THE SOFTWARE.
  */
 #include "common.h"
-#include <jni.h>
 #include <net/if.h>
 #include <string.h>
 
