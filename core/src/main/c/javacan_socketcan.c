@@ -105,7 +105,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv 
     if (result) {
         throw_native_exception(env, "Unable to get read timeout");
     }
-    return timeout;
+    return (jlong)timeout;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv *env, jclass class, jint sock, jlong seconds, jlong nanos) {
@@ -122,7 +122,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv
     if (result) {
         throw_native_exception(env, "Unable to get write timeout");
     }
-    return timeout;
+    return (jlong)timeout;
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveBufferSize(JNIEnv *env, jclass class, jint sock, jint size) {
@@ -319,7 +319,15 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpOpts(JNIEnv 
         return NULL;
     }
 
-    return create_tel_schich_javacan_IsotpOptions(env, opts.flags, opts.frame_txtime, opts.ext_address, opts.txpad_content, opts.rxpad_content, opts.rx_ext_address);
+    return create_tel_schich_javacan_IsotpOptions(
+        env,
+        (jint)opts.flags,
+        (jint)opts.frame_txtime,
+        (jbyte)opts.ext_address,
+        (jbyte)opts.txpad_content,
+        (jbyte)opts.rxpad_content,
+        (jbyte)opts.rx_ext_address
+    );
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *env, jclass class, jint sock, jbyte bs, jbyte stmin, jbyte wftmax) {
@@ -343,7 +351,12 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRecvFc(JNIEn
         return NULL;
     }
 
-    return create_tel_schich_javacan_IsotpFlowControlOptions(env, opts.bs, opts.stmin, opts.wftmax);
+    return create_tel_schich_javacan_IsotpFlowControlOptions(
+        env,
+        (jbyte)opts.bs,
+        (jbyte)opts.stmin,
+        (jbyte)opts.wftmax
+    );
 }
 
 
@@ -406,5 +419,10 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEn
         return NULL;
     }
 
-    return create_tel_schich_javacan_IsotpLinkLayerOptions(env, opts.mtu, opts.tx_dl, opts.tx_flags);
+    return create_tel_schich_javacan_IsotpLinkLayerOptions(
+        env,
+        (jbyte)opts.mtu,
+        (jbyte)opts.tx_dl,
+        (jbyte)opts.tx_flags
+    );
 }

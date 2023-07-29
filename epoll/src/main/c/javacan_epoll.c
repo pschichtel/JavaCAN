@@ -62,7 +62,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_clear
     if (result < 0) {
         return result;
     }
-    return val;
+    return (jlong)val;
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_newEvents(JNIEnv *env, jclass class, jint maxEvents) {
@@ -133,7 +133,7 @@ JNIEXPORT int JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_extract
 
     struct epoll_event* eventsPtr = (struct epoll_event*)(uintptr_t)eventsPointer;
     for (int i = 0; i < n; ++i) {
-        criticalEvents[i] = eventsPtr->events;
+        criticalEvents[i] = (jint) eventsPtr->events;
         criticalFds[i] = eventsPtr->data.fd;
         eventsPtr++;
     }
