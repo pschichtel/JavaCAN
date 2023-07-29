@@ -131,11 +131,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.1</version>
+                    <version>3.11.0</version>
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
-                        <optimize>true</optimize>
                         <showWarnings>true</showWarnings>
                         <showDeprecation>true</showDeprecation>
                     </configuration>
@@ -154,17 +153,27 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.6.0</version>
+                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>4.0.0-M9</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -184,7 +193,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <configuration>
                     <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
                     <notimestamp>true</notimestamp>
@@ -198,18 +207,22 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>4.1</version>
+                <version>4.2</version>
                 <configuration>
                     <strictCheck>true</strictCheck>
-                    <header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
-                    <includes>
-                        <include>src/**/*.java</include>
-                        <include>src/main/c/**/*.c</include>
-                        <include>src/main/c/**/*.h</include>
-                    </includes>
-                    <excludes>
-                        <exclude>${project.build.outputDirectory}</exclude>
-                    </excludes>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
+                            <includes>
+                                <include>src/**/*.java</include>
+                                <include>src/main/c/**/*.c</include>
+                                <include>src/main/c/**/*.h</include>
+                            </includes>
+                            <excludes>
+                                <exclude>${project.build.outputDirectory}</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                     <properties>
                         <owner>Phillip Schichtel</owner>
                     </properties>
@@ -229,12 +242,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M7</version>
+                <version>3.1.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>enforce-java</id>
@@ -302,7 +315,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
