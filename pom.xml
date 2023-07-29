@@ -61,14 +61,14 @@
         <project.build.outputTimestamp>1684587567</project.build.outputTimestamp>
 
         <slf4j.version>2.0.7</slf4j.version>
-        <logback.version>1.4.7</logback.version>
+        <logback.version>1.4.8</logback.version>
 
         <junit.minor>9.3</junit.minor>
         <junit.version>5.${junit.minor}</junit.version>
         <junit.runner.version>1.${junit.minor}</junit.runner.version>
 
         <javacan.architecture>x86_64</javacan.architecture>
-        <dockcross.default-tag>20230421-a0eaff4</dockcross.default-tag>
+        <dockcross.default-tag>20230622-7312d8f</dockcross.default-tag>
         <dockcross.image>docker.io/dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
         <dockcross.link-mode>dynamic</dockcross.link-mode>
 
