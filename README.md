@@ -42,15 +42,15 @@ The project uses [dockcross](https://github.com/dockcross/dockcross) to cross-co
 
 Currently, the full build process includes the following architectures:
 
-* x86_32
-* x86_64
-* armv6
-* armv7
-* armv7a
-* armv7l (musl libc, linked statically)
-* aarch64
-* riscv32
-* riscv64
+* `x86_32`
+* `x86_64`
+* `armv6`
+* `armv7`
+* `armv7a`
+* `armv7l` (musl libc, linked statically)
+* `aarch64`
+* `riscv32`
+* `riscv64`
 
 The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it! Alternatively read how to build another architecture
 down below.
@@ -59,7 +59,7 @@ down below.
 
 ### CAN_RAW, CAN_BCM and CAN_ISOTP channels
 
-1. Compile yourself or get a compiled release from [Maven Central](https://search.maven.org/search?q=a:javacan)
+1. Compile yourself or get a compiled release from Maven Central: [Core](https://central.sonatype.com/artifact/tel.schich/javacan-core), [EPoll](https://central.sonatype.com/artifact/tel.schich/javacan-epoll) (Check Versions -> Browse for published artifacts)
 2. Install the native components into your `LD_LIBRARY_PATH` or configure the appropriate Java properties (See next section)
 3. Create a channel by calling one of the `CanChannels.new...Channel()` methods
 4. Create a `NetworkDevice` using its static `lookup(String)` method
@@ -78,7 +78,7 @@ The library relies on several native (JNI) components. By default, these compone
 the classpath into a temporary folder.  
 
 While JavaCAN 2.x bundled the native components, starting with the 3.x release series no native components are bundles with the core libraries. Dedicated jar files are generated for each native
-component (classified by their architecture). JavaCAN will **not** attempt to discover the location of a library version appropriate for the correct architecture. This is instead left to
+component (classified by their architecture). The native components are published alongside the Java components to Maven Central. JavaCAN will **not** attempt to discover the location of a library version appropriate for the correct architecture. This is instead left to
 the downstream application developer.
 
 There are a few approaches to get the correct native libraries loaded:
@@ -86,9 +86,9 @@ There are a few approaches to get the correct native libraries loaded:
 1. Installing the libraries into the library path (the `LD_LIBRARY_PATH` environment variable or the `java.library.path` property)
 2. Configuring the `javacan.native.javacan-<module>.path` property to tell JavaCAN the exact file system path where the native component is located
 3. Configuring the `javacan.native.javacan-<module>.classpath` property to tell JavaCAN the exact location on the classpath where the native component is located
-4. Adding **one** of the architecture-specific jar files into the classpath (either add compile time or runtime)
+4. Adding **one** of the architecture-specific jar files into the classpath (either at compile time or runtime)
 
-Application that are intended to run on a single architecture or that build architecture-specific version already, the simplest solution is to bundle the provided architecture-specific jar files
+For applications that are intended to run on a single architecture or that build architecture-specific versions already, the simplest solution is to bundle the provided architecture-specific jar files
 matching the build architecture.
 
 For applications supporting multiple architectures at once I'd recommend dynamically adding the architecture-specific jar file at runtime or to repackage the available native libraries and
