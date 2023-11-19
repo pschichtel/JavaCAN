@@ -22,9 +22,6 @@ jobs:
         server-id: ossrh
         server-username: MAVEN_USERNAME
         server-password: MAVEN_PASSWORD
-    - name: Setup vcan
-      run: |
-        ./setup-vcan.sh
     - name: Build with Maven
       run: mvn -B package deploy -Pall-architectures
       env:
