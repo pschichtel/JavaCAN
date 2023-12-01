@@ -68,7 +68,7 @@
         <junit.runner.version>1.${junit.minor}</junit.runner.version>
 
         <javacan.architecture>x86_64</javacan.architecture>
-        <dockcross.default-tag>20230622-7312d8f</dockcross.default-tag>
+        <dockcross.default-tag>20231110-9476e91</dockcross.default-tag>
         <dockcross.image>docker.io/dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
         <dockcross.link-mode>dynamic</dockcross.link-mode>
 
