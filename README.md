@@ -77,10 +77,6 @@ on [GitHub](https://github.com/pschichtel/JavaCAN)!
 The library relies on several native (JNI) components. By default, these components are either loaded from the standard library path (`LD_LIBRARY_PATH` / `java.library.path`) or are extracted from
 the classpath into a temporary folder.  
 
-While JavaCAN 2.x bundled the native components, starting with the 3.x release series no native components are bundles with the core libraries. Dedicated jar files are generated for each native
-component (classified by their architecture). The native components are published alongside the Java components to Maven Central. JavaCAN will **not** attempt to discover the location of a library version appropriate for the correct architecture. This is instead left to
-the downstream application developer.
-
 There are a few approaches to get the correct native libraries loaded:
 
 1. Installing the libraries into the library path (the `LD_LIBRARY_PATH` environment variable or the `java.library.path` property)
