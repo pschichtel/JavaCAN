@@ -5,7 +5,7 @@
     <parent>
         <groupId>tel.schich</groupId>
         <artifactId>javacan</artifactId>
-        <version>3.2.6-SNAPSHOT</version>
+        <version>3.3.0</version>
     </parent>
 
     <artifactId>javacan-core-test</artifactId>
