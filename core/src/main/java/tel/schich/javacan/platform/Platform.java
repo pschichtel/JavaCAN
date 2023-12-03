@@ -38,6 +38,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class Platform {
     private static final Logger LOGGER = LoggerFactory.getLogger(Platform.class);
 
+    public static final String LINUX_LIBRARY_PREFIX = "lib";
     private static final String LIB_PREFIX = "/native";
     private static final String PATH_PROP_PREFIX = "javacan.native.";
     private static final String PATH_PROP_FS_PATH = ".path";
@@ -70,6 +71,30 @@ public class Platform {
         }
     }
 
+    public static String classPathPropertyNameForLibrary(String name) {
+        return PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH;
+    }
+
+    public static String detectCpuArch() {
+        String arch = System.getProperty("os.arch").toLowerCase();
+        if (arch.contains("arm")) {
+            return "armv7";
+        } else if (arch.contains("86") || arch.contains("amd")) {
+            if (arch.contains("64")) {
+                return "x86_64";
+            }
+            return "x86_32";
+        } else if (arch.contains("riscv")) {
+            if (arch.contains("64")) {
+                return "riscv64";
+            }
+            return "riscv32";
+        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+            return "aarch64";
+        }
+        return arch;
+    }
+
     private static void loadExplicitLibrary(String name, Class<?> base) {
         String explicitLibraryPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_FS_PATH);
         if (explicitLibraryPath != null) {
@@ -78,12 +103,12 @@ public class Platform {
             return;
         }
 
-        String explicitLibraryClassPath = System.getProperty(PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH);
+        String explicitLibraryClassPath = System.getProperty(classPathPropertyNameForLibrary(name));
         if (explicitLibraryClassPath != null) {
             LOGGER.trace("Loading native library {} from explicit classpath at {}", name, explicitLibraryClassPath);
             try {
                 final Path tempDirectory = Files.createTempDirectory(name + "-");
-                final Path libPath = tempDirectory.resolve("lib" + name + ".so");
+                final Path libPath = tempDirectory.resolve(LINUX_LIBRARY_PREFIX + name + ".so");
                 loadFromClassPath(name, base, explicitLibraryClassPath, libPath);
                 return;
             } catch (IOException e) {
@@ -91,12 +116,12 @@ public class Platform {
             }
         }
 
-        final String sourceLibPath = LIB_PREFIX + "/lib" + name + ".so";
+        final String sourceLibPath = LIB_PREFIX + "/" + LINUX_LIBRARY_PREFIX + name + ".so";
         LOGGER.trace("Loading native library {} from {}", name, sourceLibPath);
 
         try {
             final Path tempDirectory = Files.createTempDirectory(name + "-");
-            final Path libPath = tempDirectory.resolve("lib" + name + ".so");
+            final Path libPath = tempDirectory.resolve(LINUX_LIBRARY_PREFIX + name + ".so");
             loadFromClassPath(name, base, sourceLibPath, libPath);
         } catch (IOException e) {
             throw new LinkageError("Unable to load native library " + name + "!", e);

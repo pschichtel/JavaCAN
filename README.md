@@ -96,6 +96,18 @@ dynamically configuring the `javacan.native.javacan-<module>.path` properties in
 
 The value for the `<module>` placeholder used throughout this section is `core` and if the EPoll support is used, an additional option with `epoll` for `<module>` is necessary.
 
+##### Architecture Detection
+
+While JavaCAN 2.x bundled the native components in its main artifacts, starting with the 3.x release series the native components are instead provided as
+separate jar files (classified by their architecture). This provides full control over which library is loaded, especially on architectures on which the JVM doesn't provide enough
+information for a reliable architecture detection. Programs using JavaCAN usually depend on specific architectures and thus can pull just the relevant components and nothing more.
+
+For applications like test tools that don't really care about program size and don't need to support every possible architecture, starting with JavaCAN 3.3 `*-arch-detect` modules are provided.
+These modules bundle all prebuilt architectures and provide a function to automatically load the correct variant based on the `os.arch` system property.
+
+For example for the `javacan-core` module you would instead depend on the `javacan-core-arch-detect` module and then, somewhere early in your program, invoke `JavaCANAutoDetect.initialize()`.
+This will configure the necessary system property based on the architecture detection and eagerly initialize JavaCAN. 
+
 ## Troubleshooting
 
 In case you have issues, have a look at the [troubleshooting document](TROUBLESHOOTING.md).

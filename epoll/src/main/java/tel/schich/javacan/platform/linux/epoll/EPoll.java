@@ -30,7 +30,7 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
  */
 class EPoll {
 
-    private static final String LIB_NAME = "javacan-epoll";
+    public static final String LIB_NAME = "javacan-epoll";
 
     private static volatile boolean initialized = false;
 

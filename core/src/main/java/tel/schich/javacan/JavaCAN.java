@@ -31,7 +31,7 @@ public class JavaCAN {
 
     private static volatile boolean initialized = false;
 
-    private static final String LIB_NAME = "javacan-core";
+    public static final String LIB_NAME = "javacan-core";
 
     /**
      * Initializes the library by loading the native library.

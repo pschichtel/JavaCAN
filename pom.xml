@@ -735,6 +735,8 @@
 
     <modules>
         <module>core</module>
+        <module>core-arch-detect</module>
         <module>epoll</module>
+        <module>epoll-arch-detect</module>
     </modules>
 </project>
