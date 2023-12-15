@@ -257,13 +257,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[1.8,9)</version>
+                                    <version>[1.8,21)</version>
                                 </requireJavaVersion>
-                                <requireOS>
-                                    <name>Linux</name>
-                                    <family>unix</family>
-                                </requireOS>
-                                <dependencyConvergence />
                             </rules>
                         </configuration>
                     </execution>
@@ -735,6 +730,7 @@
 
     <modules>
         <module>core</module>
+        <module>canfd-test</module>
         <module>core-arch-detect</module>
         <module>epoll</module>
         <module>epoll-arch-detect</module>
