@@ -211,7 +211,7 @@ public class CanFrame {
      * @return true if this frame is an FD frame
      */
     public boolean isFDFrame() {
-        return this.getFlags() != 0 || getDataLength() > MAX_DATA_LENGTH;
+        return (getFlags() & FD_FLAG_FD_FRAME) == FD_FLAG_FD_FRAME || getDataLength() > MAX_DATA_LENGTH;
     }
 
     /**
@@ -391,7 +391,7 @@ public class CanFrame {
 
     /**
      * Creates a new frame from the given ID (full 32 bit as the kernel expects it), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
      *
      * @param id the CAN ID
