@@ -105,7 +105,7 @@ public class CanFrame {
     }
 
     /**
-     * Returns the CAN FD flags of this frames as-is. If this frame is not an FD frame the result is undefined.
+     * Returns the CAN FD flags of this frame as-is. If this frame is not an FD frame the result is undefined.
      *
      * @return the CAN FD flags or an undefined byte for non-FD frames
      */
@@ -319,7 +319,7 @@ public class CanFrame {
 
     /**
      * Creates a new frame from the given ID (full 32 bit as the kernel expects it), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
      *
      * This overload uses the entire data buffer.
@@ -335,7 +335,7 @@ public class CanFrame {
 
     /**
      * Creates a new SFF frame from the given ID (11 bit), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
      *
      * @param id the CAN ID
@@ -351,7 +351,7 @@ public class CanFrame {
 
     /**
      * Creates a new EFF frame from the given ID (29 bit), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
      *
      * @param id the CAN ID
@@ -365,7 +365,7 @@ public class CanFrame {
 
     /**
      * Creates a new EFF frame from the given ID (29 bit), flags (ignored for non-FD frames)
-     * and data. The given data buffer will by copied into a direct {@link java.nio.ByteBuffer} which will then be used
+     * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
      *
      * @param id the CAN ID

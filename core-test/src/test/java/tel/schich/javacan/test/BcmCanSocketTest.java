@@ -181,7 +181,7 @@ class BcmCanSocketTest {
             assertEquals(canId, output.getCanId());
             assertEquals(1, output.getFrames().size(), "unexpected frame count");
             assertEquals(input, output.getFrames().get(0), "What comes in should come out");
-            // check asynchronous fail on non readable socket
+            // check asynchronous fail on non-readable socket
             assertThrows(LinuxNativeOperationException.class, channel::read);
         }
     }
