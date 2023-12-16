@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eup pipefail
+set -euo pipefail
 
 sudo modprobe vcan can_raw can_bcm
 
