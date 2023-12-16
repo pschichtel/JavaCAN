@@ -32,12 +32,12 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Arrays;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.CanFrame.FD_NO_FLAGS;
-import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
+import static tel.schich.javacan.CanFrame.*;
 import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
 
@@ -232,12 +232,52 @@ class RawCanSocketTest {
 
             // more than 8 data bytes
             byte[] data = {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22};
-            final CanFrame input = CanFrame.create(0x7ED, FD_NO_FLAGS, data);
+            final CanFrame input = CanFrame.create(0x7ED, FD_FLAG_FD_FRAME, data);
             CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
             Thread.sleep(50);
             final CanFrame output = socket.read();
 
             assertEquals(input, output, "what comes in should come out");
+        }
+    }
+
+    @Test
+    void testSmallFDFrame() throws Exception {
+        byte[] data = new byte[]{0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+        try (final RawCanChannel writer = CanChannels.newRawChannel()) {
+            writer.bind(CAN_INTERFACE);
+            writer.setOption(FD_FRAMES, true);
+            writer.configureBlocking(false);
+
+            try (final RawCanChannel reader = CanChannels.newRawChannel()) {
+                reader.bind(CAN_INTERFACE);
+                reader.setOption(FD_FRAMES, true);
+                reader.configureBlocking(false);
+
+                final CanFrame input = CanFrame.create(0x7ED, FD_FLAG_FD_FRAME, data);
+                writer.write(input);
+                Thread.sleep(50);
+                final CanFrame output = reader.read();
+
+                assertEquals(input, output, "what comes in should come out with JavaCAN");
+            }
+        }
+
+        try (final RawCanChannel reader = CanChannels.newRawChannel()) {
+            reader.bind(CAN_INTERFACE);
+            reader.setOption(FD_FRAMES, true);
+            reader.configureBlocking(false);
+
+            final byte[] actualData;
+            actualData = new byte[MAX_FD_DATA_LENGTH];
+            Arrays.fill(actualData, (byte) 0);
+            System.arraycopy(data, 0, actualData, 0, data.length);
+            final CanFrame input = CanFrame.create(0x7ED, FD_FLAG_FD_FRAME, actualData);
+            CanTestHelper.sendFrameViaUtils(CAN_INTERFACE, input);
+            Thread.sleep(50);
+            final CanFrame output = reader.read();
+
+            assertEquals(input, output, "what comes in should come out with cansend");
         }
     }
 

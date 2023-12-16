@@ -69,8 +69,10 @@ public class CanFrame {
     public static final int MAX_FD_DATA_LENGTH = 64;
 
     private static final int OFFSET_ID = 0;
-    private static final int OFFSET_DATA_LENGTH = OFFSET_ID + Integer.BYTES;
-    private static final int OFFSET_FLAGS = OFFSET_DATA_LENGTH + 1;
+    private static final int SIZE_ID = Integer.BYTES;
+    private static final int OFFSET_DATA_LENGTH = OFFSET_ID + SIZE_ID;
+    private static final int SIZE_DATA_LENGTH = 1;
+    private static final int OFFSET_FLAGS = OFFSET_DATA_LENGTH + SIZE_DATA_LENGTH;
     private static final int OFFSET_DATA = HEADER_LENGTH;
 
     private final ByteBuffer buffer;
@@ -211,7 +213,7 @@ public class CanFrame {
      * @return true if this frame is an FD frame
      */
     public boolean isFDFrame() {
-        return (getFlags() & FD_FLAG_FD_FRAME) == FD_FLAG_FD_FRAME || getDataLength() > MAX_DATA_LENGTH;
+        return isFDFrame(getFlags(), getDataLength());
     }
 
     /**
@@ -403,10 +405,10 @@ public class CanFrame {
      */
     public static CanFrame createRaw(int id, byte flags, byte[] data, int offset, int length) {
         int bufSize;
-        if (data.length <= CanFrame.MAX_DATA_LENGTH) {
-            bufSize = RawCanChannel.MTU;
-        } else {
+        if (isFDFrame(flags, data.length)) {
             bufSize = RawCanChannel.FD_MTU;
+        } else {
+            bufSize = RawCanChannel.MTU;
         }
         ByteBuffer buffer = JavaCAN.allocateOrdered(bufSize);
         buffer.putInt(id)
@@ -456,5 +458,9 @@ public class CanFrame {
             throw new IllegalArgumentException("length must be either MTU or FD_MTU, but was " + length + "!");
         }
         return new CanFrame(buffer);
+    }
+
+    private static boolean isFDFrame(byte flags, int dataLength) {
+        return (flags & FD_FLAG_FD_FRAME) == FD_FLAG_FD_FRAME || dataLength > MAX_DATA_LENGTH;
     }
 }
