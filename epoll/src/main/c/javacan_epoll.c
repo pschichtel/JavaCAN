@@ -104,11 +104,16 @@ JNIEXPORT void JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_update
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_poll(JNIEnv *env, jclass class, jint epollfd, jlong eventsPointer, jint maxEvents, jlong timeout) {
-    jint result = epoll_wait(epollfd, (struct epoll_event*)(uintptr_t)eventsPointer, maxEvents, (int) timeout);
-    if (result == -1) {
-        throw_epoll_exception(env, "Unable to poll");
+    while (true) {
+        jint result = epoll_wait(epollfd, (struct epoll_event *) (uintptr_t) eventsPointer, maxEvents, (int) timeout);
+        if (result == -1) {
+            if (errno == EINTR) {
+                continue;
+            }
+            throw_epoll_exception(env, "Unable to poll");
+        }
+        return result;
     }
-    return result;
 }
 
 JNIEXPORT int JNICALL Java_tel_schich_javacan_platform_linux_epoll_EPoll_extractEvents(JNIEnv *env, jclass class, jlong eventsPointer, jint n, jintArray events, jintArray fds) {
