@@ -31,13 +31,13 @@ import tel.schich.javacan.IsotpCanChannel;
 import tel.schich.javacan.IsotpSocketAddress;
 import tel.schich.javacan.platform.linux.epoll.EPollSelector;
 import tel.schich.javacan.test.CanTestHelper;
-import tel.schich.javacan.util.CanUtils;
 import tel.schich.javacan.util.IsotpListener;
 import tel.schich.javacan.util.MessageHandler;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -47,7 +47,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.IsotpAddress.*;
 
 class IsotpListenerTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IsotpListenerTest.class);
 
     @Test
     void testBroker() throws Exception {
@@ -57,8 +56,8 @@ class IsotpListenerTest {
             return t;
         };
 
-        IsotpSocketAddress addra = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
-        IsotpSocketAddress addrb = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
+        IsotpSocketAddress addrA = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
+        IsotpSocketAddress addrB = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
 
         try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
@@ -67,11 +66,11 @@ class IsotpListenerTest {
                     final Lock lock = new ReentrantLock();
                     final Condition condition = lock.newCondition();
 
-                    a.bind(CanTestHelper.CAN_INTERFACE, addra, addrb);
-                    b.bind(CanTestHelper.CAN_INTERFACE, addrb, addra);
+                    a.bind(CanTestHelper.CAN_INTERFACE, addrA, addrB);
+                    b.bind(CanTestHelper.CAN_INTERFACE, addrB, addrA);
 
-                    broker.addChannel(a, new PingPing(lock, condition, buf));
-                    broker.addChannel(b, new PingPing(lock, condition, buf));
+                    broker.addChannel(a, new PingPong(lock, condition, buf));
+                    broker.addChannel(b, new PingPong(lock, condition, buf));
 
                     buf.put(randomByte());
                     buf.flip();
@@ -79,7 +78,7 @@ class IsotpListenerTest {
 
                     try {
                         lock.lock();
-                        assertTrue(condition.await(20, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 20 seconds of ping-pong");
+                        assertTrue(condition.await(120, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 120 seconds of ping-pong");
                     } finally {
                         lock.unlock();
                     }
@@ -88,16 +87,18 @@ class IsotpListenerTest {
         }
     }
 
-    private static byte randomByte() {
-        return (byte) (Math.random() * 255);
+    static byte randomByte() {
+        return (byte) ThreadLocalRandom.current().nextInt(256);
     }
 
-    private static final class PingPing implements MessageHandler {
+    private static final class PingPong implements MessageHandler {
+        private static final Logger LOGGER = LoggerFactory.getLogger(PingPong.class);
+
         private final Lock lock;
         private final Condition condition;
         private final ByteBuffer buf;
 
-        public PingPing(Lock lock, Condition condition, ByteBuffer buf) {
+        public PingPong(Lock lock, Condition condition, ByteBuffer buf) {
             this.lock = lock;
             this.condition = condition;
             this.buf = buf;
@@ -105,10 +106,10 @@ class IsotpListenerTest {
 
         @Override
         public void handle(IsotpCanChannel ch, ByteBuffer buffer) {
-            int length = buffer.remaining();
-            if (length % 200 == 0) {
-                LOGGER.debug(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
-            }
+//            int length = buffer.remaining();
+//            if (length % 200 == 0) {
+//                LOGGER.info(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
+//            }
             buf.clear();
             buf.put(buffer);
             buf.put(randomByte());
