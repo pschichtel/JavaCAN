@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.IsotpCanChannel;
+import tel.schich.javacan.IsotpCanSocketOptions;
+import tel.schich.javacan.IsotpOptions;
 import tel.schich.javacan.IsotpSocketAddress;
 import tel.schich.javacan.platform.linux.epoll.EPollSelector;
 import tel.schich.javacan.test.CanTestHelper;
@@ -62,6 +64,7 @@ class IsotpListenerTest {
         try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
+                    a.setOption(IsotpCanSocketOptions.OPTS, IsotpOptions.DEFAULT.withFrameTransmissionTime(IsotpOptions.FRAME_TXTIME_ZERO));
                     final ByteBuffer buf = IsotpCanChannel.allocateSufficientMemory();
                     final Lock lock = new ReentrantLock();
                     final Condition condition = lock.newCondition();

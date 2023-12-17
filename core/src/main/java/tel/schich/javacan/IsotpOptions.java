@@ -35,6 +35,7 @@ import static java.lang.Integer.toHexString;
  */
 public class IsotpOptions {
 
+    public static final int FRAME_TXTIME_ZERO = 0xFFFFFFFF;
     public static final byte DEFAULT_PADDING_CONTENT = (byte) 0xCC;
     public static final byte DEFAULT_EXTENDED_ADDRESS = (byte) 0x00;
 
@@ -119,7 +120,7 @@ public class IsotpOptions {
         return frameTransmissionTime;
     }
 
-    public IsotpOptions withFrameTransmissionType(int frameTransmissionTime) {
+    public IsotpOptions withFrameTransmissionTime(int frameTransmissionTime) {
         return new IsotpOptions(
                 rawFlags,
                 flags,
