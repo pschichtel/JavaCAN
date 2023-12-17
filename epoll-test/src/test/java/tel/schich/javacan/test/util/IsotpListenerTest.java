@@ -33,6 +33,7 @@ import tel.schich.javacan.IsotpOptions;
 import tel.schich.javacan.IsotpSocketAddress;
 import tel.schich.javacan.platform.linux.epoll.EPollSelector;
 import tel.schich.javacan.test.CanTestHelper;
+import tel.schich.javacan.util.CanUtils;
 import tel.schich.javacan.util.IsotpListener;
 import tel.schich.javacan.util.MessageHandler;
 
@@ -60,11 +61,15 @@ class IsotpListenerTest {
 
         IsotpSocketAddress addrA = IsotpSocketAddress.isotpAddress(SFF_ECU_REQUEST_BASE + DESTINATION_ECU_1);
         IsotpSocketAddress addrB = IsotpSocketAddress.isotpAddress(SFF_ECU_RESPONSE_BASE + DESTINATION_ECU_1);
+        final IsotpOptions isotpOptions = IsotpOptions.DEFAULT
+                .withFrameTransmissionTime(IsotpOptions.FRAME_TXTIME_ZERO);
 
         try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
-                    a.setOption(IsotpCanSocketOptions.OPTS, IsotpOptions.DEFAULT.withFrameTransmissionTime(IsotpOptions.FRAME_TXTIME_ZERO));
+                    a.setOption(IsotpCanSocketOptions.OPTS, isotpOptions);
+                    b.setOption(IsotpCanSocketOptions.OPTS, isotpOptions);
+
                     final ByteBuffer buf = IsotpCanChannel.allocateSufficientMemory();
                     final Lock lock = new ReentrantLock();
                     final Condition condition = lock.newCondition();
@@ -81,7 +86,7 @@ class IsotpListenerTest {
 
                     try {
                         lock.lock();
-                        assertTrue(condition.await(120, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 120 seconds of ping-pong");
+                        assertTrue(condition.await(20, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 20 seconds of ping-pong");
                     } finally {
                         lock.unlock();
                     }
@@ -109,10 +114,10 @@ class IsotpListenerTest {
 
         @Override
         public void handle(IsotpCanChannel ch, ByteBuffer buffer) {
-//            int length = buffer.remaining();
-//            if (length % 200 == 0) {
-//                LOGGER.info(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
-//            }
+            int length = buffer.remaining();
+            if (LOGGER.isInfoEnabled() && length % 200 == 0) {
+                LOGGER.info(String.format("(%04d) -> %08X#%s%n", length, ch.getTxAddress().getId(), CanUtils.hexDump(buffer)));
+            }
             buf.clear();
             buf.put(buffer);
             buf.put(randomByte());
