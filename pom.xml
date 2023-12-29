@@ -180,7 +180,7 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release-javacan</releaseProfiles>
-                    <goals>deploy</goals>
+                    <goals>package</goals>
                     <arguments>-Prelease-javacan,all-architectures,test</arguments>
                 </configuration>
             </plugin>
