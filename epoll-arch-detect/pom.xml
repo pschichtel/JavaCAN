@@ -5,7 +5,7 @@
     <parent>
         <groupId>tel.schich</groupId>
         <artifactId>javacan</artifactId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.2</version>
     </parent>
 
     <artifactId>javacan-epoll-arch-detect</artifactId>
