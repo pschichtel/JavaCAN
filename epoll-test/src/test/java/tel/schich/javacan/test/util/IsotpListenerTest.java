@@ -67,6 +67,9 @@ class IsotpListenerTest {
         try (IsotpListener broker = new IsotpListener(threadFactory, EPollSelector.open(), Duration.ofSeconds(5))) {
             try (IsotpCanChannel a = CanChannels.newIsotpChannel()) {
                 try (IsotpCanChannel b = CanChannels.newIsotpChannel()) {
+                    a.configureBlocking(true);
+                    b.configureBlocking(true);
+
                     a.setOption(IsotpCanSocketOptions.OPTS, isotpOptions);
                     b.setOption(IsotpCanSocketOptions.OPTS, isotpOptions);
 
