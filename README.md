@@ -115,7 +115,7 @@ In case you have issues, have a look at the [troubleshooting document](TROUBLESH
 For compilation:
 
 * Maven 3 or newer
-* A locally running docker daemon and permissions to run containers
+* Podman or docker and permissions to run containers (alternatively provide the `RUN_CONTAINER_COMMAND` env with a command that takes an image name)
 * Java 8 (Maven will enforce this)
 * Bash
 
