@@ -39,8 +39,10 @@ compiler_output_dir="${compiler_dir}/${classifier}"
 mkdir -p "$compiler_output_dir" 2>/dev/null
 proxy="${compiler_output_dir}/proxy"
 
-
-if [ -n "$(which podman)" ]
+if [ -n "${RUN_CONTAINER_COMMAND:-}" ]
+then
+    ${RUN_CONTAINER_COMMAND} "$dockcross_image"
+elif [ -n "$(which podman)" ]
 then
     podman run --rm "$dockcross_image" > "$proxy"
 elif [ -n "$(which docker)" ]
