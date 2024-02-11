@@ -13,7 +13,7 @@ if ! [ -e "$java_home/include/jni.h" ]; then
     java_home="$(dirname "$java_home")"
 fi
 
-cc_opts=('-shared' '-std=c99' '-fPIC' '-D' "MVN_VERSION=$version")
+cc_opts=('-std=c99' '-fPIC' '-D' "MVN_VERSION=$version")
 
 if grep -Pq -- '-SNAPSHOT$' <<<"$version"; then
     cc_opts+=('-g3' '-Og')
@@ -91,4 +91,4 @@ case "$link_mode" in
         ;;
 esac
 
-"$proxy" "$CC" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" "${link_mode_options[@]}" -z noexecstack "${cc_opts[@]}" -fvisibility=hidden || exit 1
+"$proxy" "$CC" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" "${link_mode_options[@]}" -z noexecstack -shared "${cc_opts[@]}" -fvisibility=hidden || exit 1
