@@ -39,19 +39,28 @@ compiler_output_dir="${compiler_dir}/${classifier}"
 mkdir -p "$compiler_output_dir" 2>/dev/null
 proxy="${compiler_output_dir}/proxy"
 
-if [ -n "${RUN_CONTAINER_COMMAND:-}" ]
+if [ -n "${GCC_BINARY:-}" ]
 then
-    ${RUN_CONTAINER_COMMAND} "$dockcross_image"
-elif [ -n "$(which podman)" ]
-then
-    podman run --rm "$dockcross_image" > "$proxy"
-elif [ -n "$(which docker)" ]
-then
-    docker run --rm "$dockcross_image" > "$proxy"
+    compiler_command=("$GCC_BINARY")
 else
-    echo "Either podman or docker are required to build JavaCAN!"
+    if [ -n "${RUN_CONTAINER_COMMAND:-}" ]
+    then
+        ${RUN_CONTAINER_COMMAND} "$dockcross_image"
+    elif [ -n "$(which podman)" ]
+    then
+        podman run --rm "$dockcross_image" > "$proxy"
+    elif [ -n "$(which docker)" ]
+    then
+        docker run --rm "$dockcross_image" > "$proxy"
+    else
+        echo "Either podman or docker are required to build JavaCAN!"
+    fi
+    chmod +x "$proxy"
+    # shellcheck disable=SC2016
+    CC="$("$proxy" bash -c 'echo "$CC"' | tr -d '\r')"
+    compiler_command=("$proxy" "$CC")
 fi
-chmod +x "$proxy"
+echo "Compiler: ${compiler_command[*]}"
 
 linker_output_dir="${relative_output_dir}/native/${classifier}/native"
 mkdir -p "$linker_output_dir" 2>/dev/null
@@ -66,13 +75,11 @@ includes=(
     -I"$jni_headers/linux"
 )
 out_files=()
-# shellcheck disable=SC2016
-CC="$("$proxy" bash -c 'echo "$CC"' | tr -d '\r')"
 for c_file in "$src"/*.c "$jni"/**/*.c; do
     name="$(basename "$c_file" .c)"
     out_file="$compiler_output_dir/$(dirname "$c_file")/$name.o"
     mkdir -p "$(dirname "$out_file")"
-    "$proxy" "$CC" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" "${cc_opts[@]}" || exit 1
+    "${compiler_command[@]}" "${includes[@]}" -Werror -o"$out_file" -c "$c_file" "${cc_opts[@]}" || exit 1
     out_files+=("$out_file")
 done
 
@@ -91,4 +98,4 @@ case "$link_mode" in
         ;;
 esac
 
-"$proxy" "$CC" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" "${link_mode_options[@]}" -z noexecstack -shared "${cc_opts[@]}" -fvisibility=hidden || exit 1
+"${compiler_command[@]}" -I "$jni_libs" -o"$linker_output" "${out_files[@]}" "${link_mode_options[@]}" -z noexecstack -shared "${cc_opts[@]}" -fvisibility=hidden || exit 1
