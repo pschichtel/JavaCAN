@@ -55,6 +55,15 @@ Currently, the full build process includes the following architectures:
 The implementation can handle word sizes up to 64 bit and is byte order aware. If you need another architecture, feel free to ask for it! Alternatively read how to build another architecture
 down below.
 
+### Android
+
+Additionally, the following architectures are included specifically for Android:
+
+* `android-arm`
+* `android-arm64`
+* `android-x86_64`
+* `android-x86_32`
+
 ## How to use
 
 ### CAN_RAW, CAN_BCM and CAN_ISOTP channels
@@ -158,6 +167,8 @@ mvn clean package -Pall-architectures
 
 The `all-architectures` profile will execute the tests using the `x86_64` libraries by default. To override this the property `javacan.test.architecture` can be set to any other architecture that
 is part of the build.
+
+To build android-specific architectures add the `android` profile.
 
 If the architecture you are building *on* is not part of the build, then tests will always fail. To prevent this you have to disable the `test` maven profile:
 
