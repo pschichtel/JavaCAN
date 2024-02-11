@@ -38,9 +38,15 @@ class SocketCAN {
 
     public static native int createIsotpSocket() throws LinuxNativeOperationException;
 
+    public static native int createJ1939Socket() throws LinuxNativeOperationException;
+
     public static native int bindSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
     public static native int connectSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
+
+    public static native int bindSocketJ1939(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
+
+    public static native int connectSocketJ1939(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
 
     public static native void close(int sock) throws LinuxNativeOperationException;
 

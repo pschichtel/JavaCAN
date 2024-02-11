@@ -74,6 +74,45 @@ public class CanChannels {
     }
 
     /**
+     * Creates a new {@link tel.schich.javacan.J1939CanChannel} without binding it to a device.
+     *
+     * @return The new channel
+     * @throws IOException if the native socket could not be created
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
+     */
+    public static J1939CanChannel newJ1939Channel() throws IOException {
+        int fd = SocketCAN.createJ1939Socket();
+        return new J1939CanChannelImpl(fd);
+    }
+
+    /**
+     * Creates a new {@link tel.schich.javacan.J1939CanChannel} already bound to the given
+     * {@link NetworkDevice}.
+     *
+     * @param device the device to bind to
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
+     */
+    public static J1939CanChannel newJ1939Channel(NetworkDevice device) throws IOException {
+        J1939CanChannel ch = newJ1939Channel();
+        ch.bind(device);
+        return ch;
+    }
+
+    /**
+     * Creates a new {@link tel.schich.javacan.J1939CanChannel} already bound to the given device.
+     *
+     * @param device the device to bind to
+     * @return The new channel
+     * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
+     */
+    public static J1939CanChannel newJ1939Channel(String device) throws IOException {
+        return newJ1939Channel(NetworkDevice.lookup(device));
+    }
+
+    /**
      * Creates a new {@link BcmCanChannel} without binding it to a device.
      *
      * @return The new channel
@@ -120,6 +159,7 @@ public class CanChannels {
      */
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
+
         return new IsotpCanChannelImpl(fd);
     }
 
