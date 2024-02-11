@@ -80,7 +80,7 @@
             <dependency>
                 <groupId>tel.schich</groupId>
                 <artifactId>jni-access-generator</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2</version>
                 <scope>provided</scope>
             </dependency>
 
