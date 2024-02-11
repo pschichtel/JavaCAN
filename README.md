@@ -123,20 +123,22 @@ In case you have issues, have a look at the [troubleshooting document](TROUBLESH
 
 For local compilation:
 
-* Maven 3 or newer
+* Maven 3.3.1 or newer
 * GCC (or compatible)
 * Java 8 (Maven will enforce this)
+* a libc
 * Bash
 
 For cross compilation:
 
-* Maven 3 or newer
+* Maven 3.3.1 or newer
 * Podman or docker and permissions to run containers (alternatively provide the `RUN_CONTAINER_COMMAND` env with a command that takes an image name)
 * Java 8 (Maven will enforce this)
 * Bash
 
 For tests:
 
+* Maven 3.3.1 or newer
 * A fairly recent Linux kernel with CAN support
 * The can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`

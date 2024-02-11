@@ -73,7 +73,7 @@
         <dockcross.link-mode>dynamic</dockcross.link-mode>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
-        <javacan.compile-script>./compile-native.sh</javacan.compile-script>
+        <javacan.compile-script>${maven.multiModuleProjectDirectory}/compile-native.sh</javacan.compile-script>
     </properties>
 
     <dependencyManagement>
@@ -416,10 +416,6 @@
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>exec-maven-plugin</artifactId>
-                            <configuration>
-                                <workingDirectory>${project.basedir}</workingDirectory>
-                                <executable>${javacan.compile-script}</executable>
-                            </configuration>
                             <executions>
                                 <execution>
                                     <id>compile-native-default</id>
