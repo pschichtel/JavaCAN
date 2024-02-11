@@ -87,7 +87,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
 
 	@Override
 	public CanFrame read() throws IOException {
-		int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
+		int length = MTU;
 		ByteBuffer frameBuf = JavaCAN.allocateOrdered(length);
 		return read(frameBuf);
 	}
