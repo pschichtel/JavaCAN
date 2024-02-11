@@ -121,7 +121,14 @@ In case you have issues, have a look at the [troubleshooting document](TROUBLESH
 
 ### Prerequisites
 
-For compilation:
+For local compilation:
+
+* Maven 3 or newer
+* GCC (or compatible)
+* Java 8 (Maven will enforce this)
+* Bash
+
+For cross compilation:
 
 * Maven 3 or newer
 * Podman or docker and permissions to run containers (alternatively provide the `RUN_CONTAINER_COMMAND` env with a command that takes an image name)
@@ -148,15 +155,19 @@ For usage:
 
 ### Building
 
-By default, the project only builds the x86_64 native components (`single-architecture` maven profile):
+By default, the project only builds the native components (`single-architecture` maven profile) for the host system architecture:
 
 ```bash
 mvn clean package
 ```
 
-The `single-architecture` profile can build different architectures by specifying the properties `javacan.architecture` and `dockcross.image`. This can be used to build architectures
-that are not currently included in JavaCAN releases. Unit tests will be executed with the architecture being built. Overriding the test architecture is not possible, since other architectures are
-not being built. By default, the libraries are linked dynamically, by setting the `dockcross.link-mode` property to `static` it can be switched to static linking, however not every dockcross image
+This default build configuration will also execute the test suite.
+
+Specifying the `javacan.architecture` option enables cross-compilation of the native components to the given architecture. If an architecture is specified that is not currently supported by the build,
+then the property `dockcross.image` must also be provided to provide the necessary dockcross image for the architecture.
+This can be used to build architectures that are not currently included in JavaCAN releases. The test suite will not be executed by default when cross-compiling, since the host system might not
+be able to execute the resulting binaries. If test execution on the host system is possible, enabling the `test` profile will include all tests into the build.
+By default, the libraries are linked dynamically, by setting the `dockcross.link-mode` property to `static` it can be switched to static linking, however not every dockcross image
 supports static linking (musl libc based images usually do).
 
 In order to build all architectures that are currently part of releases, the `all-architectures` maven profile must be activated:
@@ -165,8 +176,8 @@ In order to build all architectures that are currently part of releases, the `al
 mvn clean package -Pall-architectures
 ```
 
-The `all-architectures` profile will execute the tests using the `x86_64` libraries by default. To override this the property `javacan.test.architecture` can be set to any other architecture that
-is part of the build.
+The `all-architectures` profile will execute the test suite using the `x86_64` libraries, however tests are not included by default. To override this the property `javacan.test.architecture` can be
+set to any other architecture that is part of the build.
 
 To build android-specific architectures add the `android` profile.
 

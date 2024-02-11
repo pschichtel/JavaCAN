@@ -67,7 +67,7 @@
         <junit.version>5.${junit.minor}</junit.version>
         <junit.runner.version>1.${junit.minor}</junit.runner.version>
 
-        <javacan.architecture>x86_64</javacan.architecture>
+        <javacan.architecture>local</javacan.architecture>
         <dockcross.default-tag>20240104-6eda627</dockcross.default-tag>
         <dockcross.image>docker.io/dockcross/linux-x64:${dockcross.default-tag}</dockcross.image>
         <dockcross.link-mode>dynamic</dockcross.link-mode>
@@ -277,6 +277,11 @@
     <profiles>
         <profile>
             <id>release-javacan</id>
+
+            <properties>
+                <javacan.test.architecture>x86_64</javacan.test.architecture>
+            </properties>
+
             <build>
                 <plugins>
                     <plugin>
@@ -335,6 +340,9 @@
             <id>single-architecture</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>javacan.architecture</name>
+                </property>
             </activation>
 
             <properties>
@@ -353,7 +361,7 @@
                             </configuration>
                             <executions>
                                 <execution>
-                                    <id>compile-native-${javacan.architecture}</id>
+                                    <id>compile-native-default</id>
                                     <phase>compile</phase>
                                     <goals>
                                         <goal>exec</goal>
@@ -391,13 +399,47 @@
                     </plugins>
                 </pluginManagement>
             </build>
+        </profile>
+        <profile>
+            <id>local-architecture</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>javacan.architecture</name>
+                    <value>local</value>
+                </property>
+            </activation>
 
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>exec-maven-plugin</artifactId>
+                            <configuration>
+                                <workingDirectory>${project.basedir}</workingDirectory>
+                                <executable>${javacan.compile-script}</executable>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>compile-native-default</id>
+                                    <configuration>
+                                        <environmentVariables>
+                                            <GCC_BINARY>gcc</GCC_BINARY>
+                                        </environmentVariables>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
         <profile>
             <id>all-architectures</id>
 
             <properties>
-                <javacan.test.architecture>${javacan.architecture}</javacan.test.architecture>
+                <javacan.test.architecture>x86_64</javacan.test.architecture>
 
                 <dockcross.image.x86_64>${dockcross.image}</dockcross.image.x86_64>
                 <dockcross.image.x86_32>docker.io/dockcross/linux-x86:${dockcross.default-tag}</dockcross.image.x86_32>
@@ -433,10 +475,6 @@
                                 <executable>${javacan.compile-script}</executable>
                             </configuration>
                             <executions>
-                                <execution>
-                                    <id>compile-native-default</id>
-                                    <phase>none</phase>
-                                </execution>
                                 <execution>
                                     <id>compile-native-x86_64</id>
                                     <phase>compile</phase>
@@ -756,10 +794,6 @@
                         </configuration>
                         <executions>
                             <execution>
-                                <id>compile-native-default</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>compile-native-android-arm</id>
                                 <phase>compile</phase>
                                 <goals>
@@ -834,10 +868,6 @@
                         <artifactId>maven-jar-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>native-default</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>native-android-arm</id>
                                 <phase>package</phase>
                                 <goals>
@@ -891,6 +921,10 @@
             <id>test</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>javacan.architecture</name>
+                    <value>local</value>
+                </property>
             </activation>
 
             <modules>
