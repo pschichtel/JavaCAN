@@ -73,6 +73,7 @@
         <dockcross.link-mode>dynamic</dockcross.link-mode>
 
         <headers.target>${project.build.directory}/jni/${project.artifactId}</headers.target>
+        <javacan.compile-script>./compile-native.sh</javacan.compile-script>
     </properties>
 
     <dependencyManagement>
@@ -348,7 +349,7 @@
                             <artifactId>exec-maven-plugin</artifactId>
                             <configuration>
                                 <workingDirectory>${project.basedir}</workingDirectory>
-                                <executable>./compile-native.sh</executable>
+                                <executable>${javacan.compile-script}</executable>
                             </configuration>
                             <executions>
                                 <execution>
@@ -429,7 +430,7 @@
                             <artifactId>exec-maven-plugin</artifactId>
                             <configuration>
                                 <workingDirectory>${project.basedir}</workingDirectory>
-                                <executable>./compile-native.sh</executable>
+                                <executable>${javacan.compile-script}</executable>
                             </configuration>
                             <executions>
                                 <execution>
@@ -751,7 +752,7 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <configuration>
                             <workingDirectory>${project.basedir}</workingDirectory>
-                            <executable>./compile-native.sh</executable>
+                            <executable>${javacan.compile-script}</executable>
                         </configuration>
                         <executions>
                             <execution>

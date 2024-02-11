@@ -23,7 +23,7 @@ jobs:
         server-username: MAVEN_USERNAME
         server-password: MAVEN_PASSWORD
     - name: Build with Maven
-      run: mvn -B package deploy -Pall-architectures,android
+      run: mvn -B package deploy -Djavacan.compile-script="./ci/compile-native.sh" -Pall-architectures,android
       env:
         MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
