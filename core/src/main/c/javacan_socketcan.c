@@ -25,6 +25,7 @@
 #include <linux/can.h>
 #include <linux/can/isotp.h>
 #include <linux/can/raw.h>
+#include <linux/can/j1939.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -450,3 +451,61 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEn
         (jbyte)opts.tx_flags
     );
 }
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939Promisc(JNIEnv *env, jclass class, jint sock, jint promisc) {
+    jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_PROMISC, &promisc, sizeof(promisc));
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set Promiscuous flag");
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939Promisc(JNIEnv *env, jclass class, jint sock) {
+    int promisc = 0;
+    socklen_t size = sizeof(promisc);
+    int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_PROMISC, &promisc, &size);
+    if (result) {
+        throw_native_exception(env, "Unable to get the Promiscuous flag");
+        return result;
+    }
+    return promisc;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939ErrQueue(JNIEnv *env, jclass class, jint sock, jint errqueue) {
+    jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_ERRQUEUE, &errqueue, sizeof(errqueue));
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set Err Queue flag");
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939ErrQueue(JNIEnv *env, jclass class, jint sock) {
+    int errqueue = 0;
+    socklen_t size = sizeof(errqueue);
+    int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_ERRQUEUE, &errqueue, &size);
+    if (result) {
+        throw_native_exception(env, "Unable to get the Err Queue flag");
+        return result;
+    }
+    return errqueue;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939SendPrio(JNIEnv *env, jclass class, jint sock, jint sendprio) {
+    jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_SEND_PRIO, &sendprio, sizeof(sendprio));
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set Send Priority level");
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPrio(JNIEnv *env, jclass class, jint sock) {
+    int sendprio = 0;
+    socklen_t size = sizeof(sendprio);
+    int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_SEND_PRIO, &sendprio, &size);
+    if (result) {
+        throw_native_exception(env, "Unable to get the Send Priority level");
+        return result;
+    }
+    return sendprio;
+}
+

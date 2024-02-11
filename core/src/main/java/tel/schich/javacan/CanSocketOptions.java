@@ -39,7 +39,8 @@ import static java.time.temporal.ChronoUnit.MICROS;
 public class CanSocketOptions {
     public static final int MAX_FILTERS = 512;
 
-    private CanSocketOptions() {}
+    private CanSocketOptions() {
+    }
 
     /**
      * Option to configure whether to join filters.
@@ -133,12 +134,15 @@ public class CanSocketOptions {
 
         @Override
         public void set(int sock, CanFilter[] val, boolean validate) throws IOException {
+
             if (validate) {
+
                 if (val.length > MAX_FILTERS) {
                     throw new IllegalArgumentException("A maximum of 512 filters are supported!");
                 }
             }
             ByteBuffer filterData = JavaCAN.allocateOrdered(val.length * CanFilter.BYTES);
+
             for (CanFilter f : val) {
                 filterData.putInt(f.getId());
                 filterData.putInt(f.getMask());
@@ -154,6 +158,7 @@ public class CanSocketOptions {
             filterData.order(ByteOrder.nativeOrder()).rewind();
             int count = filterData.remaining() / CanFilter.BYTES;
             CanFilter[] filters = new CanFilter[count];
+
             for (int i = 0; i < count; i++) {
                 int id = filterData.getInt();
                 int mask = filterData.getInt();
@@ -211,6 +216,7 @@ public class CanSocketOptions {
     public static final SocketOption<Integer> SO_RCVBUF = new CanSocketOption<>("SO_RCVBUF", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
         public void set(int sock, Integer val, boolean validate) throws IOException {
+
             if (val <= 0) {
                 throw new IllegalArgumentException("Buffer size must be positive!");
             }
@@ -220,6 +226,74 @@ public class CanSocketOptions {
         @Override
         public Integer get(int sock) throws IOException {
             return SocketCAN.getReceiveBufferSize(sock);
+        }
+    });
+
+    /**
+     * J1939 Option
+     * When set, j1939 will receive all packets, not just those with a destination
+     * on the local system.
+     * default off. (0 is off, 1 is on)
+     */
+    public static final SocketOption<Integer> SO_J1939_PROMISC = new CanSocketOption<>("SO_J1939_PROMISC", Integer.class, new LinuxSocketOptionHandler<Integer>() {
+        @Override
+        public void set(int sock, Integer val, boolean validate) throws IOException {
+
+            if (val <= 0) {
+                throw new IllegalArgumentException("Buffer size must be positive!");
+            }
+            SocketCAN.setJ1939Promisc(sock, val);
+        }
+
+        @Override
+        public Integer get(int sock) throws IOException {
+            return SocketCAN.getJ1939Promisc(sock);
+        }
+    });
+
+    /**
+     * J1939 Option
+     */
+    public static final SocketOption<Integer> SO_J1939_ERRQUEUE = new CanSocketOption<>("SO_J1939_ERRQUEUE", Integer.class, new LinuxSocketOptionHandler<Integer>() {
+        @Override
+        public void set(int sock, Integer val, boolean validate) throws IOException {
+
+            if (val <= 0) {
+                throw new IllegalArgumentException("Buffer size must be positive!");
+            }
+            SocketCAN.setJ1939ErrQueue(sock, val);
+        }
+
+        @Override
+        public Integer get(int sock) throws IOException {
+            return SocketCAN.getJ1939ErrQueue(sock);
+        }
+    });
+
+    /**
+     * J1939 Option
+     * To set the priority field for outgoing packets, the SO_J1939_SEND_PRIO can
+     * be changed. This int field specifies the priority that will be used.
+     * j1939 defines a priority between 0 and 7 inclusive, 	 * with 7 the lowest priority.
+     * Per default, the priority is set to 6 (conforming J1939).
+     * This priority socket option operates on the same value that is modified
+     * with the SOL_SOCKET, SO_PRIORITY socket option, with a difference that SOL_SOCKET/SO_PRIORITY is defined with
+     * 0 the lowest priority. SOL_CAN_J1939/SO_J1939_SEND_PRIO inverts this value
+     * for you.
+     */
+    public static final SocketOption<Integer> SO_J1939_SEND_PRIO = new CanSocketOption<>("SO_J1939_SEND_PRIO", Integer.class, new LinuxSocketOptionHandler<Integer>() {
+        @Override
+        public void set(int sock, Integer val, boolean validate) throws IOException {
+
+            if (val <= 0) {
+                throw new IllegalArgumentException("Buffer size must be positive!");
+            }
+            SocketCAN.setJ1939SendPrio(sock, val);
+        }
+
+        @Override
+        public Integer get(int sock) throws IOException {
+            return SocketCAN.getJ1939SendPrio(sock);
         }
     });
 }
