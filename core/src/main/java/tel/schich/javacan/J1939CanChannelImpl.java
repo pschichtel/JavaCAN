@@ -41,12 +41,31 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public J1939CanChannel bind(NetworkDevice device) throws IOException {
+    public J1939CanChannel bind(NetworkDevice device, long name, int pgn, short addr) throws IOException {
+
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
+
         try {
-            SocketCAN.bindSocketJ1939(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0L, 0, (short) 0);
+            SocketCAN.bindSocketJ1939(getSocket(), ((LinuxNetworkDevice) device).getIndex(), name, pgn, addr);
+
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
+        this.device = device;
+        return this;
+    }
+
+    @Override
+    public J1939CanChannel connect(NetworkDevice device, long name, int pgn, short addr) throws IOException {
+
+        if (!(device instanceof LinuxNetworkDevice)) {
+            throw new IllegalArgumentException("Unsupported network device given!");
+        }
+
+        try {
+            SocketCAN.connectSocketJ1939(getSocket(), ((LinuxNetworkDevice) device).getIndex(), name, pgn, addr);
 
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
@@ -57,6 +76,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
 
     @Override
     public NetworkDevice getDevice() {
+
         if (!isBound()) {
             throw new NotYetBoundException();
         }
@@ -91,6 +111,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     @Override
     public J1939CanChannel write(CanFrame frame) throws IOException {
         long written = writeUnsafe(frame.getBuffer());
+
         if (written != frame.getSize()) {
             throw new IOException("Frame written incompletely!");
         }
