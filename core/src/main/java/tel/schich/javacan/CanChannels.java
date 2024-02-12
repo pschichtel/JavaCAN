@@ -37,9 +37,9 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.RawCanChannel} without binding it to a device.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static RawCanChannel newRawChannel() throws IOException {
         int fd = SocketCAN.createRawSocket();
@@ -50,10 +50,10 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given
      * {@link NetworkDevice}.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static RawCanChannel newRawChannel(NetworkDevice device) throws IOException {
         RawCanChannel ch = newRawChannel();
@@ -64,10 +64,10 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.RawCanChannel} already bound to the given device.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static RawCanChannel newRawChannel(String device) throws IOException {
         return newRawChannel(NetworkDevice.lookup(device));
@@ -76,9 +76,9 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} without binding it to a device.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static BcmCanChannel newBcmChannel() throws IOException {
         int fd = SocketCAN.createBcmSocket();
@@ -88,10 +88,10 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} already bound to the given {@link NetworkDevice}.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static BcmCanChannel newBcmChannel(NetworkDevice device) throws IOException {
         BcmCanChannel ch = newBcmChannel();
@@ -102,10 +102,10 @@ public class CanChannels {
     /**
      * Creates a new {@link BcmCanChannel} already bound to the given device.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static BcmCanChannel newBcmChannel(String device) throws IOException {
         return newBcmChannel(NetworkDevice.lookup(device));
@@ -114,9 +114,9 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} without binding it to a device and addresses.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @return The new channel
      * @throws IOException if the native socket could not be created
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
@@ -127,16 +127,15 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
      * {@link NetworkDevice} and {@link tel.schich.javacan.IsotpSocketAddress}es.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
-     * @param rx the receiving address
-     * @param tx the destination address
+     * @param rx     the receiving address
+     * @param tx     the destination address
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static IsotpCanChannel newIsotpChannel(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx)
-            throws IOException
-    {
+            throws IOException {
         IsotpCanChannel ch = newIsotpChannel();
         ch.bind(device, rx, tx);
         return ch;
@@ -146,16 +145,15 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and
      * {@link tel.schich.javacan.IsotpSocketAddress}es.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
-     * @param rx the receiving address
-     * @param tx the destination address
+     * @param rx     the receiving address
+     * @param tx     the destination address
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static IsotpCanChannel newIsotpChannel(String device, IsotpSocketAddress rx, IsotpSocketAddress tx)
-            throws IOException
-    {
+            throws IOException {
         return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
     }
 
@@ -163,12 +161,12 @@ public class CanChannels {
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given
      * {@link NetworkDevice} and addresses.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
-     * @param rx the receiving address
-     * @param tx the destination address
+     * @param rx     the receiving address
+     * @param tx     the destination address
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static IsotpCanChannel newIsotpChannel(NetworkDevice device, int rx, int tx) throws IOException {
         return newIsotpChannel(device, IsotpSocketAddress.isotpAddress(rx), IsotpSocketAddress.isotpAddress(tx));
@@ -177,12 +175,12 @@ public class CanChannels {
     /**
      * Creates a new {@link tel.schich.javacan.IsotpCanChannel} already bound to the given device and addresses.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      * @param device the device to bind to
-     * @param rx the receiving address
-     * @param tx the destination address
+     * @param rx     the receiving address
+     * @param tx     the destination address
      * @return The new channel
      * @throws IOException if the native socket could not be created or not be bound
+     * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
     public static IsotpCanChannel newIsotpChannel(String device, int rx, int tx) throws IOException {
         return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
