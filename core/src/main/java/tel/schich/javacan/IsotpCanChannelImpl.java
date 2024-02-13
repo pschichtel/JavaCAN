@@ -49,7 +49,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
         try {
-            SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
+            SocketCAN.bindTpAddress(getSocket(), ((LinuxNetworkDevice) device).getIndex(), rx.getId(), tx.getId());
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
@@ -90,8 +90,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
 
     @Override
     public int read(ByteBuffer buffer) throws IOException {
-        long bytesRead = readSocket(buffer);
-        return (int) bytesRead;
+        return (int) readSocket(buffer);
     }
 
     @Override

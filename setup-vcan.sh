@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-sudo modprobe vcan can_raw can_bcm
+sudo modprobe vcan can_raw can_bcm can_j1939
 
 interface_name="${1:-vcan0}"
 

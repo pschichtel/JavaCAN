@@ -22,7 +22,10 @@
  */
 package tel.schich.javacan;
 
+import org.junit.Assert;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
+
+import java.nio.ByteBuffer;
 
 public class TestHelper {
 
@@ -34,5 +37,22 @@ public class TestHelper {
         int fd = SocketCAN.createRawSocket();
         SocketCAN.close(fd);
         return fd;
+    }
+
+    public static ByteBuffer directBufferOf(byte[] data) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+        buffer.put(data);
+        buffer.flip();
+        return buffer;
+    }
+
+    public static void assertByteBufferEquals(ByteBuffer expected, ByteBuffer actual) {
+        final ByteBuffer expectedArrayBacked = ByteBuffer.allocate(expected.remaining());
+        final ByteBuffer actualArrayBacked = ByteBuffer.allocate(actual.remaining());
+
+        expectedArrayBacked.put(expected);
+        actualArrayBacked.put(actual);
+
+        Assert.assertArrayEquals(expectedArrayBacked.array(), actualArrayBacked.array());
     }
 }

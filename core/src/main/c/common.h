@@ -33,11 +33,11 @@
 int create_can_raw_socket();
 int create_can_bcm_socket();
 int create_can_isotp_socket();
-int create_can_J1939_socket();
-int bind_can_socket(int, uint32_t, uint32_t, uint32_t);
-int connect_can_socket(int, uint32_t, uint32_t, uint32_t);
-int bind_can_socketJ1939(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr);
-int connect_can_socketJ1939(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr);
+int create_can_j1939_socket();
+int bind_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx);
+int connect_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx);
+int bind_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr);
+int connect_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr);
 int set_timeout(int, int, uint64_t, uint64_t);
 int get_timeout(int, int, uint64_t*);
 int set_blocking_mode(int, bool);

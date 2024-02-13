@@ -42,11 +42,11 @@ inline int create_can_isotp_socket() {
     return socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP);
 }
 
-inline int create_can_J1939_socket() {
+inline int create_can_j1939_socket() {
     return socket(PF_CAN, SOCK_DGRAM, CAN_J1939);
 }
 
-int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
+int bind_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
     addr.can_ifindex = (int) interface;
@@ -56,7 +56,7 @@ int bind_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     return bind(sock, (const struct sockaddr *) &addr, sizeof(addr));
 }
 
-int connect_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
+int connect_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
     addr.can_ifindex = (int) interface;
@@ -66,7 +66,7 @@ int connect_can_socket(int sock, uint32_t interface, uint32_t rx, uint32_t tx) {
     return connect(sock, (const struct sockaddr *) &addr, sizeof(addr));
 }
 
-int bind_can_socketJ1939(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
+int bind_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
     addr.can_ifindex = (int) interface;
@@ -77,7 +77,7 @@ int bind_can_socketJ1939(int sock, uint32_t interface, uint64_t name, uint32_t p
     return bind(sock, (const struct sockaddr *) &addr, sizeof(addr));
 }
 
-int connect_can_socketJ1939(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
+int connect_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
     struct sockaddr_can addr = {0};
     addr.can_family = AF_CAN;
     addr.can_ifindex = (int) interface;

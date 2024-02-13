@@ -40,13 +40,13 @@ class SocketCAN {
 
     public static native int createJ1939Socket() throws LinuxNativeOperationException;
 
-    public static native int bindSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
+    public static native int bindTpAddress(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
-    public static native int connectSocket(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
+    public static native int connectTpAddress(int sock, long interfaceId, int rx, int tx) throws LinuxNativeOperationException;
 
-    public static native int bindSocketJ1939(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
+    public static native int bindJ1939Address(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
 
-    public static native int connectSocketJ1939(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
+    public static native int connectJ1939Address(int sock, long interfaceId, long name, int pgn, short addr) throws LinuxNativeOperationException;
 
     public static native void close(int sock) throws LinuxNativeOperationException;
 
@@ -65,6 +65,10 @@ class SocketCAN {
     public static native int setReceiveBufferSize(int sock, int size) throws LinuxNativeOperationException;
 
     public static native int getReceiveBufferSize(int sock) throws LinuxNativeOperationException;
+
+    public static native int setBroadcast(int sock, boolean enable) throws LinuxNativeOperationException;
+
+    public static native int getBroadcast(int sock) throws LinuxNativeOperationException;
 
     public static native long write(int sock, ByteBuffer buf, int offset, int len) throws LinuxNativeOperationException;
 

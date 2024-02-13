@@ -9,7 +9,7 @@ Implementing Java's SelectableChannel API is not possible with EPoll and SocketC
 
 ## What works?
 
-* Creating and binding CAN_RAW, CAN_BCM and CAN_ISOTP sockets
+* Creating and binding CAN_RAW, CAN_BCM, CAN_ISOTP and CAN_J1939 sockets
 * Sending and receiving standard CAN and CAN-FD frames with and without EFF
 * Getting and setting all supported socket options
 * Event-driven networking using an [IOSelector](https://github.com/pschichtel/JavaCAN/blob/master/epoll/src/main/java/tel/schich/javacan/select/IOSelector.java)

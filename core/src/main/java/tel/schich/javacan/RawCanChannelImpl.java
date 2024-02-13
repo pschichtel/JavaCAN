@@ -46,7 +46,7 @@ final class RawCanChannelImpl extends RawCanChannel {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
         try {
-            SocketCAN.bindSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
+            SocketCAN.bindTpAddress(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }

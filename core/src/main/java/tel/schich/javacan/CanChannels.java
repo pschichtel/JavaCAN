@@ -96,7 +96,7 @@ public class CanChannels {
      */
     public static J1939CanChannel newJ1939Channel(NetworkDevice device) throws IOException {
         J1939CanChannel ch = newJ1939Channel();
-        ch.bind(device, J1939CanChannel.J1939_NO_NAME, J1939CanChannel.J1939_NO_PGN, J1939CanChannel.J1939_NO_ADDR);
+        ch.bind(device);
         return ch;
     }
 

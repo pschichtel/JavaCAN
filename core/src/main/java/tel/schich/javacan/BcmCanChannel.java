@@ -90,7 +90,7 @@ public class BcmCanChannel extends AbstractCanChannel {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
         try {
-            SocketCAN.connectSocket(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
+            SocketCAN.connectTpAddress(getSocket(), ((LinuxNetworkDevice) device).getIndex(), 0, 0);
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }

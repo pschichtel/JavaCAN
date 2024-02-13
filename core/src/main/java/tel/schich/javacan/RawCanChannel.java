@@ -48,67 +48,73 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     /**
      * Binds this channel to a device. The channel will be non-functional until bound.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @param device the device to bind to.
      * @return fluent interface
      * @throws IOException if the bind operation failed.
+     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      */
     public abstract RawCanChannel bind(NetworkDevice device) throws IOException;
 
     /**
      * Reads a CAM frame from the channel by internally allocating a new direct {@link ByteBuffer}.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @return the CAN frame
      * @throws IOException if the IO operations failed or invalid data was read.
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      */
     public abstract CanFrame read() throws IOException;
 
     /**
      * Reads a CAM frame from the channel using the supplied buffer.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
      *               flipped after the read has been completed.
      * @return the CAN frame
      * @throws IOException if the IO operations failed, the supplied buffer was insufficient or invalid data was read.
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      */
     public abstract CanFrame read(ByteBuffer buffer) throws IOException;
 
     /**
+     * <p>
      * Reads raw bytes from the channel.
-     *
+     * </p>
+     * <p>
      * This method does not apply any checks on the data that has been read or on the supplied buffer. This method
      * is primarily intended for downstream libraries that implement their own parsing on the data from the socket.
+     * </p>
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
-     * @param buffer the buffer to read into.The buffer's {@link ByteOrder} will be set to native and it will be
+     * @param buffer the buffer to read into. The buffer's {@link ByteOrder} will be set to native and it will be
      *               flipped after the read has been completed.
      * @return the number of bytes
      * @throws IOException if the IO operations failed.
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      */
     public abstract long readUnsafe(ByteBuffer buffer) throws IOException;
 
     /**
      * Writes the given CAN frame.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param frame the frame to be written.
      * @return fluent interface.
      * @throws IOException if the IO operations failed.
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      */
     public abstract RawCanChannel write(CanFrame frame) throws IOException;
 
     /**
+     * <p>
      * Writes the given buffer in its entirety to the socket.
-     *
+     * </p>
+     * <p>
      * This method does not apply any checks on the given buffer. This method is primarily intended for downstream libraries
      * that create these buffers using other facilities.
+     * </p>
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param buffer the buffer to be written.
      * @return the bytes written.
      * @throws IOException if the IO operations failed.
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      */
     public abstract long writeUnsafe(ByteBuffer buffer) throws IOException;
 

@@ -59,39 +59,41 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createIsotpSocket(JNIEn
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createJ1939Socket(JNIEnv *env, jclass class) {
-    jint fd = create_can_J1939_socket();
+    jint fd = create_can_j1939_socket();
     if (fd == -1) {
         throw_native_exception(env, "Unable to create J1939 socket");
     }
     return fd;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
-    jint result = bind_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindTpAddress(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+    jint result = bind_tp_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
     if (result) {
         throw_native_exception(env, "Unable to bind");
     }
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocket(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
-    jint result = connect_can_socket(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectTpAddress(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+    jint result = connect_tp_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
     if (result) {
         throw_native_exception(env, "Unable to connect");
     }
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindSocketJ1939(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
-    jint result = bind_can_socketJ1939(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint64_t) name, (uint32_t) pgn, (uint16_t) addr);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindJ1939Address(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
+    jint result = bind_j1939_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint64_t) name, (uint32_t) pgn,
+                                     (uint16_t) addr);
     if (result) {
         throw_native_exception(env, "Unable to bind");
     }
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectSocketJ1939(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
-    jint result = connect_can_socketJ1939(sock, (unsigned int) (iface & 0xFFFFFFFF),  (uint64_t) name, (uint32_t) pgn, (uint16_t) addr);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectJ1939Address(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
+    jint result = connect_j1939_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint64_t) name, (uint32_t) pgn,
+                                        (uint16_t) addr);
     if (result) {
         throw_native_exception(env, "Unable to connect");
     }
@@ -166,6 +168,22 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JN
         throw_native_exception(env, "Unable to get receive buffer size");
     }
     return size;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+    jint result = set_boolean_opt(sock, SO_BROADCAST, enable);
+    if (result) {
+        throw_native_exception(env, "Unable to enable broadcast");
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBroadcast(JNIEnv *env, jclass class, jint sock) {
+    int result = get_boolean_opt(sock, SO_BROADCAST);
+    if (result) {
+        throw_native_exception(env, "Unable to get broadcast state");
+    }
+    return result;
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_write(JNIEnv *env, jclass class, jint sock, jobject buf, jint offset, jint length) {
