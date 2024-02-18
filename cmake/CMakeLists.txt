@@ -12,7 +12,7 @@ include_directories(../epoll/target/jni)
 add_library(javacan-core
         ../core/src/main/c/common.c
         ../core/src/main/c/common.h
-        ../core/src/main/c/javacan_bcmmessage.c
+        ../core/src/main/c/javacan_bcm.c
         ../core/src/main/c/javacan_bufferhelper.c
         ../core/src/main/c/javacan_networkdevice.c
         ../core/src/main/c/javacan_socketcan.c
