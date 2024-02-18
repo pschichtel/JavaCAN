@@ -59,7 +59,16 @@ public class CanChannels {
      */
     public static RawCanChannel newRawChannel(NetworkDevice device) throws IOException {
         RawCanChannel ch = newRawChannel();
-        ch.bind(device);
+        try {
+            ch.bind(device);
+        } catch (Throwable t) {
+            try {
+                ch.close();
+            } catch (Throwable ct) {
+                t.addSuppressed(ct);
+            }
+            throw t;
+        }
         return ch;
     }
 
@@ -135,7 +144,16 @@ public class CanChannels {
      */
     public static BcmCanChannel newBcmChannel(NetworkDevice device) throws IOException {
         BcmCanChannel ch = newBcmChannel();
-        ch.connect(device);
+        try {
+            ch.connect(device);
+        } catch (Throwable t) {
+            try {
+                ch.close();
+            } catch (Throwable ct) {
+                t.addSuppressed(ct);
+            }
+            throw t;
+        }
         return ch;
     }
 
@@ -178,7 +196,16 @@ public class CanChannels {
     public static IsotpCanChannel newIsotpChannel(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx)
             throws IOException {
         IsotpCanChannel ch = newIsotpChannel();
-        ch.bind(device, rx, tx);
+        try {
+            ch.bind(device, rx, tx);
+        } catch (Throwable t) {
+            try {
+                ch.close();
+            } catch (Throwable ct) {
+                t.addSuppressed(ct);
+            }
+            throw t;
+        }
         return ch;
     }
 
