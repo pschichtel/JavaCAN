@@ -105,7 +105,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
 
     private static native String findDeviceNameByIndex(int index) throws LinuxNativeOperationException;
 
-    public static LinuxNetworkDevice fromLinuxDeviceIndex(int index) {
+    public static LinuxNetworkDevice fromDeviceIndex(int index) {
         return new LinuxNetworkDevice(null, index);
     }
 }

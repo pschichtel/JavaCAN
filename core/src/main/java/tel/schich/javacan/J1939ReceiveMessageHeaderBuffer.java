@@ -45,11 +45,11 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
         this(JavaCAN.allocateOrdered(BYTES));
     }
 
-    private J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer) {
+    public J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer) {
         this(buffer, buffer.position());
     }
 
-    private J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer, int offset) {
+    public J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
         this.offset = offset;
         this.sourceAddressBuffer = new J1939AddressBuffer(buffer, SOURCE_ADDRESS_OFFSET);

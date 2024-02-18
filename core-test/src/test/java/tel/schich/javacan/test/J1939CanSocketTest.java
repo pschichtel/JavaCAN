@@ -25,12 +25,16 @@ package tel.schich.javacan.test;
 import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.ImmutableJ1939Address;
+import tel.schich.javacan.J1939Address;
+import tel.schich.javacan.J1939AddressBuffer;
 import tel.schich.javacan.J1939CanChannel;
 import tel.schich.javacan.J1939CanSocketOptions;
 import tel.schich.javacan.J1939Filter;
 import tel.schich.javacan.ImmutableJ1939ReceiveMessageHeader;
 import tel.schich.javacan.J1939ReceiveMessageHeaderBuffer;
+import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -40,6 +44,7 @@ import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RAW_HARDWARE;
 import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RX_SOFTWARE;
 import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.SOFTWARE;
+import static tel.schich.javacan.J1939Address.NO_ADDR;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -74,7 +79,7 @@ class J1939CanSocketTest {
     @Test
     void testOptions() throws Exception {
         ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, ImmutableJ1939Address.IDLE_ADDR);
-        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, ImmutableJ1939Address.NO_ADDR);
+        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, NO_ADDR);
         try (final J1939CanChannel socket = CanChannels.newJ1939Channel()) {
             socket.bind(source);
             assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts are disabled by default");
@@ -154,6 +159,49 @@ class J1939CanSocketTest {
             // getsockopt is not currently implemented for SO_J1939_FILTER
             // assertArrayEquals(filters, channel.getOption(J1939CanSocketOptions.SO_J1939_FILTER));
         }
+    }
 
+    @Test
+    void testSendingToDifferentInterfaceResultsInBadFd() {
+        J1939Address bindAddr = new ImmutableJ1939Address(CAN_INTERFACE);
+        J1939Address destAddr = new ImmutableJ1939Address(LinuxNetworkDevice.fromDeviceIndex(CAN_INTERFACE.getIndex() + 1));
+
+
+        LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
+            try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
+                channel.bind(bindAddr);
+                channel.send(directBufferOf(new byte[] { 0x33 }), destAddr);
+            }
+        });
+
+        assertEquals(77, e.getErrorNumber());
+    }
+
+    @Test
+    void testSendingOnUnboundChannelResultsInBadFd() {
+        J1939Address destAddr = new ImmutableJ1939Address(CAN_INTERFACE);
+
+        LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
+            try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
+                channel.send(directBufferOf(new byte[] { 0x33 }), destAddr);
+            }
+        });
+
+        assertEquals(77, e.getErrorNumber());
+    }
+
+    @Test
+    void testSendingWithoutSourceNameAndAddrResultsInBadFd() {
+        J1939Address bindAddr = new ImmutableJ1939Address(CAN_INTERFACE, 0, 0, NO_ADDR);
+        J1939Address destAddr = new ImmutableJ1939Address(CAN_INTERFACE);
+
+        LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
+            try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
+                channel.bind(bindAddr);
+                channel.send(directBufferOf(new byte[] { 0x33 }), destAddr);
+            }
+        });
+
+        assertEquals(77, e.getErrorNumber());
     }
 }

@@ -50,25 +50,22 @@ public class J1939AddressBuffer implements J1939Address {
         this(JavaCAN.allocateOrdered(BYTES));
     }
 
-    J1939AddressBuffer(ByteBuffer buffer) {
+    public J1939AddressBuffer(ByteBuffer buffer) {
         this(buffer, buffer.position());
     }
 
-    J1939AddressBuffer(ByteBuffer buffer, int offset) {
+    public J1939AddressBuffer(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
         this.offset = offset;
     }
 
     @Override
     public LinuxNetworkDevice getDevice() {
-        return LinuxNetworkDevice.fromLinuxDeviceIndex(buffer.getInt(offset + DEVICE_INDEX_OFFSET));
+        return LinuxNetworkDevice.fromDeviceIndex(buffer.getInt(offset + DEVICE_INDEX_OFFSET));
     }
 
-    public J1939AddressBuffer setDevice(NetworkDevice device) {
-        if (!(device instanceof LinuxNetworkDevice)) {
-            throw new IllegalArgumentException("Unsupported network device given!");
-        }
-        buffer.putInt(offset + DEVICE_INDEX_OFFSET, ((LinuxNetworkDevice) device).getIndex());
+    public J1939AddressBuffer setDevice(LinuxNetworkDevice device) {
+        buffer.putInt(offset + DEVICE_INDEX_OFFSET, device.getIndex());
         return this;
     }
 
@@ -99,6 +96,14 @@ public class J1939AddressBuffer implements J1939Address {
 
     public J1939AddressBuffer setAddress(byte address) {
         buffer.put(offset + ADDR_OFFSET, address);
+        return this;
+    }
+
+    public J1939AddressBuffer set(J1939Address other) {
+        setDevice(other.getDevice());
+        setName(other.getName());
+        setParameterGroupNumber(other.getParameterGroupNumber());
+        setAddress(other.getAddress());
         return this;
     }
 
