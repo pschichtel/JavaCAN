@@ -25,11 +25,12 @@ package tel.schich.javacan;
 import tel.schich.jniaccess.JNIAccess;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * This class represents the extended message headers included with J1939 messages.
  */
-public class J1939ReceivedMessageHeader {
+public final class J1939ReceivedMessageHeader {
     private final long bytesReceived;
     private final Instant timestamp;
     private final byte destinationAddress;
@@ -65,5 +66,29 @@ public class J1939ReceivedMessageHeader {
 
     public byte getPriority() {
         return priority;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        J1939ReceivedMessageHeader that = (J1939ReceivedMessageHeader) o;
+        return bytesReceived == that.bytesReceived && destinationAddress == that.destinationAddress && destinationName == that.destinationName && priority == that.priority && Objects.equals(timestamp, that.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bytesReceived, timestamp, destinationAddress, destinationName, priority);
+    }
+
+    @Override
+    public String toString() {
+        return "J1939ReceivedMessageHeader{" +
+                "bytesReceived=" + bytesReceived +
+                ", timestamp=" + timestamp +
+                ", destinationAddress=" + destinationAddress +
+                ", destinationName=" + destinationName +
+                ", priority=" + priority +
+                '}';
     }
 }

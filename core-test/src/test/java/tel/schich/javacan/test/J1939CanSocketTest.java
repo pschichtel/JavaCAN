@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.J1939Address;
 import tel.schich.javacan.J1939CanChannel;
+import tel.schich.javacan.J1939ReceivedMessageHeader;
 
 import java.nio.ByteBuffer;
 
@@ -39,7 +40,6 @@ class J1939CanSocketTest {
 
     @Test
     void testLoopback() throws Exception {
-
         J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x20);
         J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x30);
 
@@ -59,8 +59,6 @@ class J1939CanSocketTest {
                 inputBuffer.flip();
                 outputBuffer.flip();
                 assertByteBufferEquals(inputBuffer, outputBuffer);
-
-                // a.setOption(LOOPBACK, false);
             }
         }
     }
@@ -78,6 +76,34 @@ class J1939CanSocketTest {
 //            assertTrue(socket.getOption(SO_BROADCAST), "Broadcasts can be enabled");
             socket.setOption(SO_BROADCAST, false);
             assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts can be disable again");
+        }
+    }
+
+    @Test
+    void testReadMessage() throws Exception {
+        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x20);
+        final byte destAddr = (byte) 0x30;
+        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, destAddr);
+
+        try (final J1939CanChannel a = CanChannels.newJ1939Channel()) {
+            a.bind(source);
+            a.connect(destination);
+
+            try (final J1939CanChannel b = CanChannels.newJ1939Channel()) {
+                b.bind(destination);
+                b.connect(source);
+                b.configureBlocking(true);
+
+                final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
+                final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
+                assertEquals(2, a.sendData(inputBuffer));
+                J1939ReceivedMessageHeader expected = new J1939ReceivedMessageHeader(2L, 0L, 0L, destAddr, 0L, (byte) 6);
+                // TODO the timestamp should not match...
+                assertEquals(expected, b.receiveMessage(outputBuffer, null));
+                inputBuffer.flip();
+                outputBuffer.flip();
+                assertByteBufferEquals(inputBuffer, outputBuffer);
+            }
         }
     }
 }

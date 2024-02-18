@@ -113,7 +113,10 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             address = J1939Address.NO_ADDR;
         }
 
-        return SocketCAN.receiveJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        final int offset = buffer.position();
+        final J1939ReceivedMessageHeader header = SocketCAN.receiveJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        buffer.position((int) (offset + header.getBytesReceived()));
+        return header;
     }
 
     @Override
@@ -141,6 +144,9 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             pgn = J1939Address.NO_PGN;
             address = J1939Address.NO_ADDR;
         }
-        return SocketCAN.sendJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        final int offset = buffer.position();
+        final long bytesSent = SocketCAN.sendJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        buffer.position((int) (offset + bytesSent));
+        return bytesSent;
     }
 }
