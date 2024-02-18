@@ -152,18 +152,34 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPriority(JN
     return sendprio;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags) {
-    void *raw_buf = (*env)->GetDirectBufferAddress(env, data);
-    void *data_start = raw_buf + offset;
+struct j1939_message_header_buffer {
+    struct sockaddr_can source_address;
+    jlong timestamp_seconds;
+    jlong timestamp_nanos;
+    jbyte dst_addr;
+    jlong dst_name;
+    jbyte priority;
+};
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithJ1939Headers(JNIEnv *env, jclass clazz, jint sock, jobject buffer, jint offset, jint len, jint flags, jobject headerBuffer, jint headerOffset) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buffer);
+    void *buf = raw_buf + offset;
     char control[200];
-    struct sockaddr_can src = {0};
+
+
+    void *raw_header_buf = (*env)->GetDirectBufferAddress(env, headerBuffer);
+    struct j1939_message_header_buffer* header_buffer = (struct j1939_message_header_buffer*) (raw_header_buf + headerOffset);
+    memset(header_buffer, 0, sizeof(*header_buffer));
+    header_buffer->dst_addr = J1939_NO_ADDR;
+    header_buffer->dst_name = J1939_NO_NAME;
+
 
     struct iovec iov = {
-            .iov_base = data_start,
+            .iov_base = buf,
             .iov_len = (size_t) len,
     };
     struct msghdr header = {
-            .msg_name = &src,
+            .msg_name = &header_buffer->source_address,
             .msg_namelen = sizeof(struct sockaddr_can),
             .msg_control = control,
             .msg_controllen = sizeof(control),
@@ -175,35 +191,30 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(
     ssize_t bytes_received = recvmsg(sock, &header, flags);
     if (bytes_received == -1) {
         throw_native_exception(env, "Unable to recvmsg from the socket");
-        return NULL;
+        return bytes_received;
     }
 
-    jbyte dst_addr = J1939_NO_ADDR;
-    jlong dst_name = J1939_NO_NAME;
-    jbyte priority = 0;
-    jlong timestamp_seconds = 0;
-    jlong timestamp_nanos = 0;
     for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&header); cmsg; cmsg = CMSG_NXTHDR(&header, cmsg)) {
         if (cmsg->cmsg_level == SOL_CAN_J1939) {
             switch (cmsg->cmsg_type) {
                 case SCM_J1939_DEST_ADDR:
-                    dst_addr = (jbyte) *CMSG_DATA(cmsg);
+                    header_buffer->dst_addr = (jbyte) *CMSG_DATA(cmsg);
                     break;
                 case SCM_J1939_DEST_NAME:
-                    memcpy(&dst_name, CMSG_DATA(cmsg), cmsg->cmsg_len - CMSG_LEN(0));
+                    memcpy(&header_buffer->dst_name, CMSG_DATA(cmsg), cmsg->cmsg_len - CMSG_LEN(0));
                     break;
                 case SCM_J1939_ERRQUEUE:
                     break;
                 case SCM_J1939_PRIO:
-                    priority = (jbyte) *CMSG_DATA(cmsg);
+                    header_buffer->priority = (jbyte) *CMSG_DATA(cmsg);
                     break;
             }
         } else {
-            parse_timestamp(cmsg, &timestamp_seconds, &timestamp_nanos);
+            parse_timestamp(cmsg, &header_buffer->timestamp_seconds, &header_buffer->timestamp_nanos);
         }
     }
 
-    return create_tel_schich_javacan_J1939ReceivedMessageHeader(env, src.can_ifindex, (jlong)src.can_addr.j1939.name, (jint)src.can_addr.j1939.pgn, (jbyte)src.can_addr.j1939.addr, bytes_received, timestamp_seconds, timestamp_nanos, dst_addr, dst_name, priority);
+    return bytes_received;
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_sendJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong destination_ifindex, jlong destination_name, jint destination_pgn, jbyte destination_address) {
@@ -281,4 +292,52 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939Filter_getStructAddrOffset(J
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939Filter_getStructAddrMaskOffset(JNIEnv *env, jclass clazz) {
     return offsetof(struct j1939_filter, addr_mask);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructSize(JNIEnv *env, jclass clazz) {
+    return sizeof(struct sockaddr_can);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructDeviceIndexOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct sockaddr_can, can_ifindex);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructNameOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct sockaddr_can, can_addr);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructPgnOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct sockaddr_can, can_addr) + sizeof(uint64_t);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructAddrOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct sockaddr_can, can_addr) + sizeof(uint64_t) + sizeof(uint32_t);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructSize(JNIEnv *env, jclass clazz) {
+    return sizeof(struct j1939_message_header_buffer);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructSourceAddressOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, source_address);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, timestamp_seconds);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, timestamp_nanos);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructDstAddrOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, dst_addr);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructDstNameOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, dst_name);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructPriorityOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, priority);
 }

@@ -24,8 +24,8 @@
 #include <net/if.h>
 #include <string.h>
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevice_resolveInterfaceName(JNIEnv *env, jclass class, jstring interface_name) {
-    const char* ifname = (*env)->GetStringUTFChars(env, interface_name, NULL);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevice_findDeviceIndexByName(JNIEnv *env, jclass clazz, jstring interfaceName) {
+    const char* ifname = (*env)->GetStringUTFChars(env, interfaceName, NULL);
     if (ifname == NULL) {
         throw_native_exception(env, "failed to get c string from java string");
         return -1;
@@ -39,6 +39,15 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevic
         strcat((char *) &message, ifname);
         throw_native_exception(env, message);
     }
-    (*env)->ReleaseStringUTFChars(env, interface_name, ifname);
-    return ifindex;
+    (*env)->ReleaseStringUTFChars(env, interfaceName, ifname);
+    return (jint)ifindex;
+}
+;
+
+JNIEXPORT jstring JNICALL Java_tel_schich_javacan_platform_linux_LinuxNetworkDevice_findDeviceNameByIndex(JNIEnv *env, jclass clazz, jint index) {
+    char interface_name[IF_NAMESIZE];
+    if (if_indextoname(index, interface_name) == NULL) {
+        return NULL;
+    }
+    return (*env)->NewStringUTF(env, interface_name);
 }

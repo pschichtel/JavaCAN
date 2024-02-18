@@ -81,7 +81,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been received
      * @throws IOException if the native calls fail
      */
-    public abstract long receiveData(@NonNull ByteBuffer buffer) throws IOException;
+    public abstract long receive(@NonNull ByteBuffer buffer) throws IOException;
 
     /**
      * Receives a message from the socket into the given {@link java.nio.ByteBuffer} and returns its extended message headers.
@@ -93,7 +93,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
-    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer) throws IOException;
+    public abstract long receive(@NonNull ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
 
     /**
      * Sends data from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
@@ -105,7 +105,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract long sendData(@NonNull ByteBuffer buffer) throws IOException;
+    public abstract long send(@NonNull ByteBuffer buffer) throws IOException;
 
     /**
      * Sends a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
@@ -117,5 +117,5 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;
+    public abstract long send(@NonNull ByteBuffer buffer, @Nullable ImmutableJ1939Address destination) throws IOException;
 }

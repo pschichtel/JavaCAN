@@ -1,0 +1,134 @@
+/*
+ * The MIT License
+ * Copyright © 2018 Phillip Schichtel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package tel.schich.javacan;
+
+import java.nio.ByteBuffer;
+import java.time.Instant;
+
+public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeader {
+
+    private static final int SOURCE_ADDRESS_OFFSET = getStructSourceAddressOffset();
+    private static final int TIMESTAMP_SECONDS_OFFSET = getStructTimestampSecondsOffset();
+    private static final int TIMESTAMP_NANOS_OFFSET = getStructTimestampNanosOffset();
+    private static final int DST_ADDR_OFFSET = getStructDstAddrOffset();
+    private static final int DST_NAME_OFFSET = getStructDstNameOffset();
+    private static final int PRIORITY_OFFSET = getStructPriorityOffset();
+
+    public static int BYTES = getStructSize();
+
+    private final ByteBuffer buffer;
+    private final int offset;
+
+    private final J1939AddressBuffer sourceAddressBuffer;
+
+    public J1939ReceiveMessageHeaderBuffer() {
+        this(JavaCAN.allocateOrdered(BYTES));
+    }
+
+    private J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer) {
+        this(buffer, buffer.position());
+    }
+
+    private J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer, int offset) {
+        this.buffer = buffer;
+        this.offset = offset;
+        this.sourceAddressBuffer = new J1939AddressBuffer(buffer, SOURCE_ADDRESS_OFFSET);
+    }
+
+    public J1939AddressBuffer getSourceAddressBuffer() {
+        return this.sourceAddressBuffer;
+    }
+
+    @Override
+    public ImmutableJ1939Address getSourceAddress() {
+        return this.sourceAddressBuffer.copy();
+    }
+
+    @Override
+    public Instant getTimestamp() {
+        return Instant.ofEpochSecond(buffer.getLong(offset + TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + TIMESTAMP_NANOS_OFFSET));
+    }
+
+    public J1939ReceiveMessageHeaderBuffer setTimestamp(Instant timestamp) {
+        buffer.putLong(offset + TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
+        buffer.putLong(offset + TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
+        return this;
+    }
+
+    @Override
+    public byte getDestinationAddress() {
+        return buffer.get(offset + DST_ADDR_OFFSET);
+    }
+
+    public J1939ReceiveMessageHeaderBuffer setDestinationAddress(byte destinationAddress) {
+        buffer.put(offset + DST_ADDR_OFFSET, destinationAddress);
+        return this;
+    }
+
+    @Override
+    public long getDestinationName() {
+        return buffer.getLong(offset + DST_NAME_OFFSET);
+    }
+
+    public J1939ReceiveMessageHeaderBuffer setDestinationName(long destinationName) {
+        buffer.putLong(offset + DST_NAME_OFFSET, destinationName);
+        return this;
+    }
+
+    @Override
+    public byte getPriority() {
+        return buffer.get(offset + PRIORITY_OFFSET);
+    }
+
+    public J1939ReceiveMessageHeaderBuffer setPriority(byte priority) {
+        buffer.put(offset + PRIORITY_OFFSET, priority);
+        return this;
+    }
+
+    @Override
+    public ImmutableJ1939ReceiveMessageHeader copy() {
+        return new ImmutableJ1939ReceiveMessageHeader(
+            getSourceAddress(),
+            getTimestamp(),
+            getDestinationAddress(),
+            getDestinationName(),
+            getPriority()
+        );
+    }
+
+    ByteBuffer getBuffer() {
+        return buffer;
+    }
+
+    int getOffset() {
+        return offset;
+    }
+
+    private static native int getStructSize();
+    private static native int getStructSourceAddressOffset();
+    private static native int getStructTimestampSecondsOffset();
+    private static native int getStructTimestampNanosOffset();
+    private static native int getStructDstAddrOffset();
+    private static native int getStructDstNameOffset();
+    private static native int getStructPriorityOffset();
+}

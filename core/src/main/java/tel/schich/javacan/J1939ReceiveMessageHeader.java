@@ -22,16 +22,14 @@
  */
 package tel.schich.javacan;
 
-public interface J1939Address {
-    long NO_NAME = 0L;
-    int NO_PGN = 0x40000;
-    byte NO_ADDR = (byte) 0xFF;
-    byte IDLE_ADDR = (byte) 0xFE;
+import java.time.Instant;
 
-    NetworkDevice getDevice();
-    long getName();
-    int getParameterGroupNumber();
-    byte getAddress();
+public interface J1939ReceiveMessageHeader {
+    ImmutableJ1939Address getSourceAddress();
+    Instant getTimestamp();
+    byte getDestinationAddress();
+    long getDestinationName();
+    byte getPriority();
 
-    ImmutableJ1939Address copy();
+    ImmutableJ1939ReceiveMessageHeader copy();
 }

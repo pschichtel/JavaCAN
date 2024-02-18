@@ -98,7 +98,7 @@ public class CanChannels {
 
     /**
      * Creates a new {@link tel.schich.javacan.J1939CanChannel} already bound and connected to the given
-     * {@link J1939Address} pair.
+     * {@link ImmutableJ1939Address} pair.
      *
      * @param source the source address to bind to
      * @param destination the source address to bind to

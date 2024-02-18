@@ -37,15 +37,22 @@ public class LinuxNetworkDevice implements NetworkDevice {
 
     @Nullable
     private final String name;
-    private final long index;
+    private final int index;
 
-    private LinuxNetworkDevice(@Nullable String name, long index) {
+    private LinuxNetworkDevice(@Nullable String name, int index) {
         this.name = name;
         this.index = index;
     }
 
     @Nullable
     public String getName() {
+        if (name == null) {
+            try {
+                return findDeviceNameByIndex(index);
+            } catch (LinuxNativeOperationException ignored) {
+                return null;
+            }
+        }
         return name;
     }
 
@@ -54,7 +61,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
      *
      * @return the device index
      */
-    public long getIndex() {
+    public int getIndex() {
         return index;
     }
 
@@ -70,13 +77,13 @@ public class LinuxNetworkDevice implements NetworkDevice {
         if (name == null) {
             throw new IllegalArgumentException("The device name may not be null!");
         }
-        long index = resolveInterfaceName(name);
+        int index = findDeviceIndexByName(name);
         return new LinuxNetworkDevice(name, index);
     }
 
     @Override
     public String toString() {
-        return "LinuxNetworkDevice(" + "name='" + name + '\'' + ", index=" + index + ')';
+        return "LinuxNetworkDevice(" + "name='" + getName() + '\'' + ", index=" + index + ')';
     }
 
     @Override
@@ -94,9 +101,11 @@ public class LinuxNetworkDevice implements NetworkDevice {
         return Objects.hash(index);
     }
 
-    private static native long resolveInterfaceName(String interfaceName) throws LinuxNativeOperationException;
+    private static native int findDeviceIndexByName(String interfaceName) throws LinuxNativeOperationException;
 
-    public static LinuxNetworkDevice fromLinuxDeviceIndex(long index) {
+    private static native String findDeviceNameByIndex(int index) throws LinuxNativeOperationException;
+
+    public static LinuxNetworkDevice fromLinuxDeviceIndex(int index) {
         return new LinuxNetworkDevice(null, index);
     }
 }

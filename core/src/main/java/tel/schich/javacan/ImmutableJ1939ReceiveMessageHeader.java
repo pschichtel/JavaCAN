@@ -22,18 +22,14 @@
  */
 package tel.schich.javacan;
 
-import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
-import tel.schich.jniaccess.JNIAccess;
-
 import java.time.Instant;
 import java.util.Objects;
 
 /**
  * This class represents the extended message headers included with J1939 messages.
  */
-public final class J1939ReceivedMessageHeader {
-    private final J1939Address sourceAddress;
-    private final long bytesReceived;
+public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMessageHeader {
+    private final ImmutableJ1939Address sourceAddress;
     private final Instant timestamp;
     private final byte destinationAddress;
     private final long destinationName;
@@ -41,58 +37,61 @@ public final class J1939ReceivedMessageHeader {
 
     // TODO add support for SCM_J1939_ERRQUEUE
 
-    @JNIAccess
-    public J1939ReceivedMessageHeader(long sourceDeviceIndex, long sourceName, int sourcePgn, byte sourceAddr, long bytesReceived, long timestampSeconds, long timestampNanos, byte destinationAddress, long destinationName, byte priority) {
-        this.sourceAddress = new J1939Address(LinuxNetworkDevice.fromLinuxDeviceIndex(sourceDeviceIndex), sourceName, sourcePgn, sourceAddr);
-        this.bytesReceived = bytesReceived;
-        this.timestamp = Instant.ofEpochSecond(timestampSeconds, timestampNanos);
+    public ImmutableJ1939ReceiveMessageHeader(ImmutableJ1939Address sourceAddress, Instant timestamp, byte destinationAddress, long destinationName, byte priority) {
+        this.sourceAddress = sourceAddress;
+        this.timestamp = timestamp;
         this.destinationAddress = destinationAddress;
         this.destinationName = destinationName;
         this.priority = priority;
     }
 
-    public J1939Address getSourceAddress() {
+    @Override
+    public ImmutableJ1939Address getSourceAddress() {
         return sourceAddress;
     }
 
-    public long getBytesReceived() {
-        return bytesReceived;
-    }
-
+    @Override
     public Instant getTimestamp() {
         return timestamp;
     }
 
+    @Override
     public byte getDestinationAddress() {
         return destinationAddress;
     }
 
+    @Override
     public long getDestinationName() {
         return destinationName;
     }
 
+    @Override
     public byte getPriority() {
         return priority;
+    }
+
+    @Override
+    public ImmutableJ1939ReceiveMessageHeader copy() {
+        return this;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        J1939ReceivedMessageHeader header = (J1939ReceivedMessageHeader) o;
-        return bytesReceived == header.bytesReceived && destinationAddress == header.destinationAddress && destinationName == header.destinationName && priority == header.priority && Objects.equals(sourceAddress, header.sourceAddress) && Objects.equals(timestamp, header.timestamp);
+        ImmutableJ1939ReceiveMessageHeader header = (ImmutableJ1939ReceiveMessageHeader) o;
+        return destinationAddress == header.destinationAddress && destinationName == header.destinationName && priority == header.priority && Objects.equals(sourceAddress, header.sourceAddress) && Objects.equals(timestamp, header.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sourceAddress, bytesReceived, timestamp, destinationAddress, destinationName, priority);
+        return Objects.hash(sourceAddress, timestamp, destinationAddress, destinationName, priority);
     }
 
     @Override
     public String toString() {
         return "J1939ReceivedMessageHeader{" +
                 "sourceAddress=" + sourceAddress +
-                ", bytesReceived=" + bytesReceived +
                 ", timestamp=" + timestamp +
                 ", destinationAddress=" + destinationAddress +
                 ", destinationName=" + destinationName +

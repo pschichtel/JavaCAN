@@ -37,8 +37,8 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 final class J1939CanChannelImpl extends J1939CanChannel {
     // TODO add flag constants
 
-    private J1939Address boundAddress;
-    private J1939Address connectedAddress;
+    private ImmutableJ1939Address boundAddress;
+    private ImmutableJ1939Address connectedAddress;
 
     J1939CanChannelImpl(int sock) {
         super(sock);
@@ -50,25 +50,26 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             throw new AlreadyBoundException();
         }
 
-
+        ImmutableJ1939Address copy = address.copy();
         try {
-            SocketCAN.bindJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupNumber(), address.getAddress());
+            SocketCAN.bindJ1939Address(getSocket(), copy.getLinuxDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
 
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
-        this.boundAddress = address;
+        this.boundAddress = copy;
         return this;
     }
 
     @Override
     public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
+        ImmutableJ1939Address copy = address.copy();
         try {
-            SocketCAN.connectJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupNumber(), address.getAddress());
+            SocketCAN.connectJ1939Address(getSocket(), copy.getLinuxDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
-        this.connectedAddress = address;
+        this.connectedAddress = copy;
         return this;
     }
 
@@ -90,28 +91,41 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public long receiveData(@NonNull ByteBuffer buffer) throws IOException {
+    public long receive(@NonNull ByteBuffer buffer) throws IOException {
         return receiveFromSocket(buffer, 0);
     }
 
     @Override
-    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer) throws IOException {
+    public long receive(@NonNull ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
+        if (messageHeaderBuffer == null) {
+            return receive(buffer);
+        }
         ensureDirectBuffer(buffer);
 
         final int offset = buffer.position();
-        final J1939ReceivedMessageHeader header = SocketCAN.receiveJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0);
-        buffer.position((int) (offset + header.getBytesReceived()));
-        return header;
+        final ByteBuffer headerBuffer = messageHeaderBuffer.getBuffer();
+        final int headerOffset = messageHeaderBuffer.getOffset();
+        final long bytesReceived = SocketCAN.receiveWithJ1939Headers(
+            getSocket(),
+            buffer,
+            offset,
+            buffer.remaining(),
+            0,
+            headerBuffer,
+            headerOffset
+        );
+        buffer.position((int) (offset + bytesReceived));
+        return bytesReceived;
     }
 
     @Override
-    public long sendData(@NonNull ByteBuffer buffer) throws IOException {
+    public long send(@NonNull ByteBuffer buffer) throws IOException {
         // TODO check for max message size
         return sendToSocket(buffer, 0);
     }
 
     @Override
-    public long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
+    public long send(@NonNull ByteBuffer buffer, @Nullable ImmutableJ1939Address destination) throws IOException {
         ensureDirectBuffer(buffer);
         // TODO check for max message size
         final long deviceIndex;
@@ -125,9 +139,9 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             address = destination.getAddress();
         } else {
             deviceIndex = 0;
-            name = J1939Address.NO_NAME;
-            pgn = J1939Address.NO_PGN;
-            address = J1939Address.NO_ADDR;
+            name = ImmutableJ1939Address.NO_NAME;
+            pgn = ImmutableJ1939Address.NO_PGN;
+            address = ImmutableJ1939Address.NO_ADDR;
         }
         final int offset = buffer.position();
         final long bytesSent = SocketCAN.sendJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0, deviceIndex, name, pgn, address);

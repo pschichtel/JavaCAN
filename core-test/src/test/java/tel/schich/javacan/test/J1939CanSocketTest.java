@@ -24,14 +24,16 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
-import tel.schich.javacan.J1939Address;
+import tel.schich.javacan.ImmutableJ1939Address;
 import tel.schich.javacan.J1939CanChannel;
 import tel.schich.javacan.J1939CanSocketOptions;
 import tel.schich.javacan.J1939Filter;
-import tel.schich.javacan.J1939ReceivedMessageHeader;
+import tel.schich.javacan.ImmutableJ1939ReceiveMessageHeader;
+import tel.schich.javacan.J1939ReceiveMessageHeaderBuffer;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanSocketOptions.SO_BROADCAST;
@@ -43,8 +45,8 @@ class J1939CanSocketTest {
 
     @Test
     void testLoopback() throws Exception {
-        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x20);
-        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x30);
+        ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, (byte) 0x20);
+        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, (byte) 0x30);
 
         try (final J1939CanChannel a = CanChannels.newJ1939Channel()) {
             a.bind(source);
@@ -57,8 +59,8 @@ class J1939CanSocketTest {
 
                 final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
                 final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
-                assertEquals(2, a.sendData(inputBuffer));
-                assertEquals(2, b.receiveData(outputBuffer));
+                assertEquals(2, a.send(inputBuffer));
+                assertEquals(2, b.receive(outputBuffer));
                 inputBuffer.flip();
                 outputBuffer.flip();
                 assertByteBufferEquals(inputBuffer, outputBuffer);
@@ -68,8 +70,8 @@ class J1939CanSocketTest {
 
     @Test
     void testOptions() throws Exception {
-        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, J1939Address.IDLE_ADDR);
-        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, J1939Address.NO_ADDR);
+        ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, ImmutableJ1939Address.IDLE_ADDR);
+        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, ImmutableJ1939Address.NO_ADDR);
         try (final J1939CanChannel socket = CanChannels.newJ1939Channel()) {
             socket.bind(source);
             assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts are disabled by default");
@@ -85,9 +87,9 @@ class J1939CanSocketTest {
     @Test
     void testReadMessage() throws Exception {
         final byte sourceADdr = (byte) 0x20;
-        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, sourceADdr);
+        ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, 0, sourceADdr);
         final byte destAddr = (byte) 0x30;
-        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, destAddr);
+        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, destAddr);
 
         try (final J1939CanChannel a = CanChannels.newJ1939Channel()) {
             a.bind(source);
@@ -100,22 +102,18 @@ class J1939CanSocketTest {
 
                 final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
                 final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
-                assertEquals(2, a.sendData(inputBuffer));
-                J1939ReceivedMessageHeader expected = new J1939ReceivedMessageHeader(
-                    CAN_INTERFACE.getIndex(),
-                    source.getName(),
-                    // TODO why is the source PGN 0 ?
-                    0,
-                    source.getAddress(),
-                    2L,
-                    0L,
-                    0L,
+                assertEquals(2, a.send(inputBuffer));
+                J1939ReceiveMessageHeaderBuffer headerBuffer = new J1939ReceiveMessageHeaderBuffer();
+                assertEquals(2, b.receive(outputBuffer, headerBuffer));
+                ImmutableJ1939ReceiveMessageHeader expected = new ImmutableJ1939ReceiveMessageHeader(
+                    source,
+                    Instant.ofEpochSecond(0, 0),
                     destination.getAddress(),
                     destination.getName(),
                     (byte) 6
                 );
                 // TODO the timestamp should not match...
-                assertEquals(expected, b.receiveMessage(outputBuffer));
+                assertEquals(expected, headerBuffer.copy());
                 inputBuffer.flip();
                 outputBuffer.flip();
                 assertByteBufferEquals(inputBuffer, outputBuffer);
@@ -125,7 +123,7 @@ class J1939CanSocketTest {
 
     @Test
     void testConnectingToNoAddrFailsWithPermissionError() {
-        J1939Address addr = new J1939Address(CAN_INTERFACE);
+        ImmutableJ1939Address addr = new ImmutableJ1939Address(CAN_INTERFACE);
         LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
             try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
                 channel.bind(addr);
@@ -138,7 +136,7 @@ class J1939CanSocketTest {
 
     @Test
     void testFilters() throws Exception {
-        J1939Address addr = new J1939Address(CAN_INTERFACE);
+        ImmutableJ1939Address addr = new ImmutableJ1939Address(CAN_INTERFACE);
         try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
             channel.bind(addr);
 
