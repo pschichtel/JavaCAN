@@ -26,6 +26,9 @@ import tel.schich.jniaccess.JNIAccess;
 
 import java.time.Instant;
 
+/**
+ * This class represents the extended message headers included with J1939 messages.
+ */
 public class J1939ReceivedMessageHeader {
     private final long bytesReceived;
     private final Instant timestamp;

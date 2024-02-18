@@ -90,12 +90,12 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public int receiveData(@NonNull ByteBuffer buffer, int flags) throws IOException {
-        return (int) receiveFromSocket(buffer, flags);
+    public long receiveData(@NonNull ByteBuffer buffer) throws IOException {
+        return receiveFromSocket(buffer, 0);
     }
 
     @Override
-    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address source) throws IOException {
+    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException {
         ensureDirectBuffer(buffer);
         final long deviceIndex;
         final long name;
@@ -113,17 +113,17 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             address = J1939Address.NO_ADDR;
         }
 
-        return SocketCAN.receiveJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), flags, deviceIndex, name, pgn, address);
+        return SocketCAN.receiveJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), 0, deviceIndex, name, pgn, address);
     }
 
     @Override
-    public int sendData(@NonNull ByteBuffer buffer, int flags) throws IOException {
+    public long sendData(@NonNull ByteBuffer buffer) throws IOException {
         // TODO check for max message size
-        return (int) sendToSocket(buffer, flags);
+        return sendToSocket(buffer, 0);
     }
 
     @Override
-    public long sendMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address destination) throws IOException {
+    public long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
         ensureDirectBuffer(buffer);
         // TODO check for max message size
         final long deviceIndex;
@@ -141,6 +141,6 @@ final class J1939CanChannelImpl extends J1939CanChannel {
             pgn = J1939Address.NO_PGN;
             address = J1939Address.NO_ADDR;
         }
-        return SocketCAN.sendJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), flags, deviceIndex, name, pgn, address);
+        return SocketCAN.sendJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), 0, deviceIndex, name, pgn, address);
     }
 }

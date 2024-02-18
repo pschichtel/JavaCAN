@@ -28,25 +28,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
-import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
-import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
-
 public abstract class J1939CanChannel extends AbstractCanChannel {
     public J1939CanChannel(int sock) {
         super(sock);
     }
-
-
-    /**
-     * The MTU of a standard non-FD CAN socket. This is also the exact size of a valid non-FD CAN frame.
-     */
-    public static final int MTU = HEADER_LENGTH + MAX_DATA_LENGTH;
-
-    /**
-     * The MTU of a standard CAN FD socket. This is also the exact size of a valid CAN FD frame.
-     */
-    public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
 
     /**
      * <p>
@@ -64,10 +49,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * connect(2).
      * </p>
      *
-     * @param device the device to bind to.
-     * @param name
-     * @param pgn    Parameter Group Number
-     * @param addr
+     * @param address the local address to bind to
      * @return fluent interface
      * @throws IOException if the bind operation failed.
      * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
@@ -78,121 +60,62 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
     /**
      * connect(2) assigns the remote address, i.e. the destination address. The PGN from connect(2) is used as the
      * default PGN when sending packets. If ADDR or NAME is set it will be used as the default destination ADDR or NAME.
-     * Further a set ADDR or NAME during connect(2) is used as a receive filter. It will match the source NAME or ADDR
+     * Further a set ADDR or NAME during connect(2) is used as a receive-filter. It will match the source NAME or ADDR
      * of the incoming packet.
      *
-     * @param device the device to bind to.
-     * @param name
-     * @param pgn    Parameter Group Number
-     * @param addr
+     * @param address the remote address to connect to
      * @return fluent interface
-     * @throws IOException if the bind operation failed.
-     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
+     * @throws IOException if the connect operation failed.
+     * @see <a href="https://man7.org/linux/man-pages/man2/connect.2.html">connect man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
     public abstract J1939CanChannel connect(@NonNull J1939Address address) throws IOException;
 
     /**
-     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
-     * respected and will be updated according to the data that has been read.
+     * Receives data from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
+     * respected and will be updated according to the data that has been received.
      * If this channel is in blocking mode, this call might block indefinitely.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
+     * @param buffer the destination buffer
+     * @return the amount of bytes that have been received
+     * @throws IOException if the native calls fail
+     */
+    public abstract long receiveData(@NonNull ByteBuffer buffer) throws IOException;
+
+    /**
+     * Receives a message from the socket into the given {@link java.nio.ByteBuffer} and returns its extended message headers.
+     * Buffer position and limit will be respected and will be updated according to the data that has been received.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">recvmsg man page</a>
      * @param buffer the destination buffer
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
-    public abstract int receiveData(@NonNull ByteBuffer buffer, int flags) throws IOException;
+    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException;
 
     /**
-     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
-     * respected and will be updated according to the data that has been read.
+     * Sends data from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been sent.
      * If this channel is in blocking mode, this call might block indefinitely.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
-     * @param buffer the destination buffer
-     * @return the amount of bytes that have been read
-     * @throws IOException if the native calls fail
-     */
-    public int receiveData(@NonNull ByteBuffer buffer) throws IOException {
-        return receiveData(buffer, 0);
-    }
-
-    /**
-     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
-     * respected and will be updated according to the data that has been read.
-     * If this channel is in blocking mode, this call might block indefinitely.
-     *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
-     * @param buffer the destination buffer
-     * @return the amount of bytes that have been read
-     * @throws IOException if the native calls fail
-     */
-    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address source) throws IOException;
-
-    /**
-     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
-     * respected and will be updated according to the data that has been read.
-     * If this channel is in blocking mode, this call might block indefinitely.
-     *
-     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
-     * @param buffer the destination buffer
-     * @return the amount of bytes that have been read
-     * @throws IOException if the native calls fail
-     */
-    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException {
-        return receiveMessage(buffer, 0, source);
-    }
-
-    /**
-     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
-     * respected and will be updated according to the data that has been written.
-     * If this channel is in blocking mode, this call might block indefinitely.
-     *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the source buffer
-     * @return the amount of bytes that have been written
+     * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract int sendData(@NonNull ByteBuffer buffer, int flags) throws IOException;
+    public abstract long sendData(@NonNull ByteBuffer buffer) throws IOException;
 
     /**
-     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
-     * respected and will be updated according to the data that has been written.
+     * Sends a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been sent.
      * If this channel is in blocking mode, this call might block indefinitely.
      *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the source buffer
-     * @return the amount of bytes that have been written
+     * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public int sendData(@NonNull ByteBuffer buffer) throws IOException {
-        return sendData(buffer, 0);
-    }
-
-    /**
-     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
-     * respected and will be updated according to the data that has been written.
-     * If this channel is in blocking mode, this call might block indefinitely.
-     *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
-     * @param buffer the source buffer
-     * @return the amount of bytes that have been written
-     * @throws IOException if the native calls fail
-     */
-    public abstract long sendMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address destination) throws IOException;
-
-    /**
-     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
-     * respected and will be updated according to the data that has been written.
-     * If this channel is in blocking mode, this call might block indefinitely.
-     *
-     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
-     * @param buffer the source buffer
-     * @return the amount of bytes that have been written
-     * @throws IOException if the native calls fail
-     */
-    public long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
-        return sendMessage(buffer, 0, destination);
-    }
+    public abstract long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;
 }
