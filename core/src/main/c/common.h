@@ -41,8 +41,8 @@ int set_timeout(int, int, uint64_t, uint64_t);
 int get_timeout(int, int, uint64_t*);
 int set_blocking_mode(int, bool);
 int is_blocking(int);
-int set_boolean_opt(int sock, int opt, bool enable);
-int get_boolean_opt(int sock, int opt);
+int set_boolean_opt(int sock, int level, int opt, bool enable);
+int get_boolean_opt(int sock, int level, int opt);
 short poll_single(int, short, int);
 void throw_native_exception(JNIEnv *env, char *msg);
 

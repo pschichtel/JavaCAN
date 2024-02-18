@@ -172,7 +172,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JN
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
-    jint result = set_boolean_opt(sock, SO_BROADCAST, enable);
+    jint result = set_boolean_opt(sock, SOL_SOCKET, SO_BROADCAST, enable);
     if (result) {
         throw_native_exception(env, "Unable to enable broadcast");
     }
@@ -180,7 +180,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *en
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBroadcast(JNIEnv *env, jclass clazz, jint sock) {
-    int result = get_boolean_opt(sock, SO_BROADCAST);
+    int result = get_boolean_opt(sock, SOL_SOCKET, SO_BROADCAST);
     if (result) {
         throw_native_exception(env, "Unable to get broadcast state");
     }
@@ -271,7 +271,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
-    jint result = set_boolean_opt(sock, CAN_RAW_LOOPBACK, enable);
+    jint result = set_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_LOOPBACK, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set loopback state");
     }
@@ -279,7 +279,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getLoopback(JNIEnv *env, jclass clazz, jint sock) {
-    jint result = get_boolean_opt(sock, CAN_RAW_LOOPBACK);
+    jint result = get_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_LOOPBACK);
     if (result == -1) {
         throw_native_exception(env, "Unable to get loopback state");
     }
@@ -287,7 +287,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getLoopback(JNIEnv *env
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveOwnMessages(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
-    jint result = set_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS, enable);
+    jint result = set_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set receive own messages state");
     }
@@ -295,7 +295,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveOwnMessages(J
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveOwnMessages(JNIEnv *env, jclass clazz, jint sock) {
-    jint result = get_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS);
+    jint result = get_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS);
     if (result == -1) {
         throw_native_exception(env, "Unable to get receive own messages state");
     }
@@ -303,7 +303,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveOwnMessages(J
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJoinFilters(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
-    jint result = set_boolean_opt(sock, CAN_RAW_JOIN_FILTERS, enable);
+    jint result = set_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_JOIN_FILTERS, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set the filter joining mode");
     }
@@ -311,7 +311,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJoinFilters(JNIEnv *
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJoinFilters(JNIEnv *env, jclass clazz, jint sock) {
-    jint result = get_boolean_opt(sock, CAN_RAW_JOIN_FILTERS);
+    jint result = get_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_JOIN_FILTERS);
     if (result == -1) {
         throw_native_exception(env, "Unable to get the filter joining mode");
     }
@@ -319,7 +319,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJoinFilters(JNIEnv *
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setAllowFDFrames(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
-    jint result = set_boolean_opt(sock, CAN_RAW_FD_FRAMES, enable);
+    jint result = set_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set FD frame support");
     }
@@ -327,7 +327,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setAllowFDFrames(JNIEnv
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getAllowFDFrames(JNIEnv *env, jclass clazz, jint sock) {
-    jint result = get_boolean_opt(sock, CAN_RAW_FD_FRAMES);
+    jint result = get_boolean_opt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES);
     if (result == -1) {
         throw_native_exception(env, "Unable to get FD frame support");
     }

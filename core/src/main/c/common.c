@@ -135,18 +135,18 @@ int is_blocking(int sock) {
     return (flags & O_NONBLOCK) == 0 ? 1 : 0;
 }
 
-int set_boolean_opt(int sock, int opt, bool enable) {
+int set_boolean_opt(int sock, int level, int opt, bool enable) {
     int enabled = enable ? 1 : 0;
     socklen_t len = sizeof(enabled);
 
-    return setsockopt(sock, SOL_CAN_RAW, opt, &enabled, len);
+    return setsockopt(sock, level, opt, &enabled, len);
 }
 
-int get_boolean_opt(int sock, int opt) {
+int get_boolean_opt(int sock, int level, int opt) {
     int enabled;
     socklen_t len = sizeof(enabled);
 
-    int result = getsockopt(sock, SOL_CAN_RAW, opt, &enabled, &len);
+    int result = getsockopt(sock, level, opt, &enabled, &len);
     if (result == -1) {
         return -1;
     }

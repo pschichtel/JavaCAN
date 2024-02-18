@@ -30,6 +30,7 @@ import tel.schich.javacan.J1939CanChannel;
 import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tel.schich.javacan.CanSocketOptions.SO_BROADCAST;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -66,16 +67,17 @@ class J1939CanSocketTest {
 
     @Test
     void testOptions() throws Exception {
-        // TODO figure broadcast out
-//        try (final J1939CanChannel socket = CanChannels.newJ1939Channel()) {
-//            socket.bind(CAN_INTERFACE, J1939CanChannel.NO_NAME, J1939CanChannel.NO_PGN, J1939CanChannel.IDLE_ADDR);
-//            //assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts are disabled by default");
-//            socket.setOption(SO_BROADCAST, true);
-//            socket.connect(CAN_INTERFACE, 1L, 1, J1939CanChannel.NO_ADDR);
-//
+        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, J1939Address.IDLE_ADDR);
+        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, J1939Address.NO_ADDR);
+        try (final J1939CanChannel socket = CanChannels.newJ1939Channel()) {
+            socket.bind(source);
+            assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts are disabled by default");
+            socket.setOption(SO_BROADCAST, true);
+            socket.connect(destination);
+
 //            assertTrue(socket.getOption(SO_BROADCAST), "Broadcasts can be enabled");
-//            socket.setOption(SO_BROADCAST, false);
-//            assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts can be disable again");
-//        }
+            socket.setOption(SO_BROADCAST, false);
+            assertFalse(socket.getOption(SO_BROADCAST), "Broadcasts can be disable again");
+        }
     }
 }
