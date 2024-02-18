@@ -26,7 +26,6 @@
 #include <jni.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <sys/time.h>
 
 #define MICROS_PER_SECOND 1000000
 

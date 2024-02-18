@@ -205,14 +205,34 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the native call fails
      */
     protected long readSocket(ByteBuffer buffer) throws IOException {
-        if (!buffer.isDirect()) {
-            throw new IllegalArgumentException("The buffer must be a direct buffer!");
-        }
+        ensureDirectBuffer(buffer);
         try {
             int pos = buffer.position();
             int bytesRead = (int) SocketCAN.read(sock, buffer, pos, buffer.remaining());
             buffer.position(pos + bytesRead);
             return bytesRead;
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
+    }
+
+    /**
+     * Receives a message from this socket into the given {@link java.nio.ByteBuffer}.
+     * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
+     * Buffer position and limit will be respected and the position will be updated.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">recv man page</a>
+     * @param buffer the buffer to receive into
+     * @return The number of bytes receive from the socket
+     * @throws IOException if the native call fails
+     */
+    protected long receiveFromSocket(ByteBuffer buffer, int flags) throws IOException {
+        ensureDirectBuffer(buffer);
+        try {
+            int pos = buffer.position();
+            int bytesReceived = (int) SocketCAN.receive(sock, buffer, pos, buffer.remaining(), flags);
+            buffer.position(pos + bytesReceived);
+            return bytesReceived;
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
@@ -229,9 +249,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @throws IOException if the native call fails
      */
     protected long writeSocket(ByteBuffer buffer) throws IOException {
-        if (!buffer.isDirect()) {
-            throw new IllegalArgumentException("The buffer must be a direct buffer!");
-        }
+        ensureDirectBuffer(buffer);
         try {
             int pos = buffer.position();
             int bytesWritten = (int) SocketCAN.write(sock, buffer, pos, buffer.remaining());
@@ -242,9 +260,37 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         }
     }
 
+    /**
+     * Sends data to this socket from the given {@link java.nio.ByteBuffer}.
+     * The {@link java.nio.ByteBuffer} must be a direct buffer as it is passed into native code.
+     * Buffer position and limit will be respected and the position will be updated.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
+     * @param buffer the buffer to send from
+     * @return The number of bytes sent to the socket
+     * @throws IOException if the native call fails
+     */
+    protected long sendToSocket(ByteBuffer buffer, int flags) throws IOException {
+        ensureDirectBuffer(buffer);
+        try {
+            int pos = buffer.position();
+            int bytesReceived = (int) SocketCAN.send(sock, buffer, pos, buffer.remaining(), flags);
+            buffer.position(pos + bytesReceived);
+            return bytesReceived;
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(device=" + getDevice() + ", handle=" + getHandle() + ")";
+    }
+
+    protected static void ensureDirectBuffer(ByteBuffer buffer) {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("The buffer must be a direct buffer!");
+        }
     }
 
     protected static IOException checkForClosedChannel(LinuxNativeOperationException orig) throws IOException {

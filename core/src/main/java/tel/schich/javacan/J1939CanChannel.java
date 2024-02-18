@@ -22,9 +22,11 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
@@ -35,10 +37,6 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
         super(sock);
     }
 
-    public static final long NO_NAME = 0L;
-    public static final int NO_PGN = 0x40000;
-    public static final short NO_ADDR = 0xFF;
-    public static final short IDLE_ADDR = 0xFE;
 
     /**
      * The MTU of a standard non-FD CAN socket. This is also the exact size of a valid non-FD CAN frame.
@@ -49,26 +47,6 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * The MTU of a standard CAN FD socket. This is also the exact size of a valid CAN FD frame.
      */
     public static final int FD_MTU = HEADER_LENGTH + MAX_FD_DATA_LENGTH;
-
-    /**
-     * <p>
-     * Binds this channel to a device. The channel will be non-functional until bound.
-     * </p>
-     * <p>
-     * The bind(2) system call assigns the local address, i.e. the source address when sending packages. No PGN, ADDR or NAME are passed to bind.
-     * </p>
-     * <p>
-     * Both write(2) and send(2) will send a packet with local address from bind(2) and the remote address from
-     * connect(2).
-     * </p>
-     *
-     * @param device the device to bind to.
-     * @return fluent interface
-     * @throws IOException if the bind operation failed.
-     * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
-     * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
-     */
-    public abstract J1939CanChannel bind(NetworkDevice device) throws IOException;
 
     /**
      * <p>
@@ -95,7 +73,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
-    public abstract J1939CanChannel bind(NetworkDevice device, long name, int pgn, short addr) throws IOException;
+    public abstract J1939CanChannel bind(@NonNull J1939Address address) throws IOException;
 
     /**
      * connect(2) assigns the remote address, i.e. the destination address. The PGN from connect(2) is used as the
@@ -112,7 +90,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
-    public abstract J1939CanChannel connect(NetworkDevice device, long name, int pgn, short addr) throws IOException;
+    public abstract J1939CanChannel connect(@NonNull J1939Address address) throws IOException;
 
     /**
      * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
@@ -124,7 +102,47 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
-    public abstract int read(ByteBuffer buffer) throws IOException;
+    public abstract int receiveData(@NonNull ByteBuffer buffer, int flags) throws IOException;
+
+    /**
+     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
+     * respected and will be updated according to the data that has been read.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
+     * @param buffer the destination buffer
+     * @return the amount of bytes that have been read
+     * @throws IOException if the native calls fail
+     */
+    public int receiveData(@NonNull ByteBuffer buffer) throws IOException {
+        return receiveData(buffer, 0);
+    }
+
+    /**
+     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
+     * respected and will be updated according to the data that has been read.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
+     * @param buffer the destination buffer
+     * @return the amount of bytes that have been read
+     * @throws IOException if the native calls fail
+     */
+    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address source) throws IOException;
+
+    /**
+     * Reads a message from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
+     * respected and will be updated according to the data that has been read.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
+     * @param buffer the destination buffer
+     * @return the amount of bytes that have been read
+     * @throws IOException if the native calls fail
+     */
+    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException {
+        return receiveMessage(buffer, 0, source);
+    }
 
     /**
      * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
@@ -136,5 +154,45 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been written
      * @throws IOException if the native calls fail
      */
-    public abstract int write(ByteBuffer buffer) throws IOException;
+    public abstract int sendData(@NonNull ByteBuffer buffer, int flags) throws IOException;
+
+    /**
+     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been written.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
+     * @param buffer the source buffer
+     * @return the amount of bytes that have been written
+     * @throws IOException if the native calls fail
+     */
+    public int sendData(@NonNull ByteBuffer buffer) throws IOException {
+        return sendData(buffer, 0);
+    }
+
+    /**
+     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been written.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
+     * @param buffer the source buffer
+     * @return the amount of bytes that have been written
+     * @throws IOException if the native calls fail
+     */
+    public abstract long sendMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address destination) throws IOException;
+
+    /**
+     * Writes a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
+     * respected and will be updated according to the data that has been written.
+     * If this channel is in blocking mode, this call might block indefinitely.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
+     * @param buffer the source buffer
+     * @return the amount of bytes that have been written
+     * @throws IOException if the native calls fail
+     */
+    public long sendMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
+        return sendMessage(buffer, 0, destination);
+    }
 }

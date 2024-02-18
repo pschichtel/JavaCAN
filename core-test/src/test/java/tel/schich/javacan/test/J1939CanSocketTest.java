@@ -24,12 +24,12 @@ package tel.schich.javacan.test;
 
 import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
+import tel.schich.javacan.J1939Address;
 import tel.schich.javacan.J1939CanChannel;
 
 import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -39,19 +39,22 @@ class J1939CanSocketTest {
     @Test
     void testLoopback() throws Exception {
 
+        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x20);
+        J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x30);
+
         try (final J1939CanChannel a = CanChannels.newJ1939Channel()) {
-            a.bind(CAN_INTERFACE, J1939CanChannel.NO_NAME, J1939CanChannel.NO_PGN, (short) 0x20);
-            a.connect(CAN_INTERFACE, J1939CanChannel.NO_NAME, J1939CanChannel.NO_PGN, (short) 0x30);
+            a.bind(source);
+            a.connect(destination);
 
             try (final J1939CanChannel b = CanChannels.newJ1939Channel()) {
-                b.bind(CAN_INTERFACE, J1939CanChannel.NO_NAME, J1939CanChannel.NO_PGN, (short) 0x30);
-                b.connect(CAN_INTERFACE, J1939CanChannel.NO_NAME, J1939CanChannel.NO_PGN, (short) 0x20);
+                b.bind(destination);
+                b.connect(source);
                 b.configureBlocking(false);
 
                 final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
                 final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
-                assertEquals(2, a.write(inputBuffer));
-                assertEquals(2, b.read(outputBuffer));
+                assertEquals(2, a.sendData(inputBuffer));
+                assertEquals(2, b.receiveData(outputBuffer));
                 inputBuffer.flip();
                 outputBuffer.flip();
                 assertByteBufferEquals(inputBuffer, outputBuffer);

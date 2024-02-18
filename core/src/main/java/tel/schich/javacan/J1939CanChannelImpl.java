@@ -27,55 +27,48 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
 import java.nio.channels.NotYetBoundException;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
-import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 /**
  * Naming has been adopted from the JDK here (Interface + InterfaceImpl)
  */
 final class J1939CanChannelImpl extends J1939CanChannel {
+    // TODO add flag constants
 
-    private NetworkDevice device;
+    private J1939Address boundAddress;
+    private J1939Address connectedAddress;
 
     J1939CanChannelImpl(int sock) {
         super(sock);
     }
 
-    public J1939CanChannel bind(NetworkDevice device) throws IOException {
-        return bind(device, NO_NAME, NO_PGN, NO_ADDR);
-    }
-
     @Override
-    public J1939CanChannel bind(NetworkDevice device, long name, int pgn, short addr) throws IOException {
+    public J1939CanChannel bind(@NonNull J1939Address address) throws IOException {
         if (isBound()) {
             throw new AlreadyBoundException();
         }
-        if (!(device instanceof LinuxNetworkDevice)) {
-            throw new IllegalArgumentException("Unsupported network device given!");
-        }
+
 
         try {
-            SocketCAN.bindJ1939Address(getSocket(), ((LinuxNetworkDevice) device).getIndex(), name, pgn, addr);
+            SocketCAN.bindJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupName(), address.getAddress());
 
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
-        this.device = device;
+        this.boundAddress = address;
         return this;
     }
 
     @Override
-    public J1939CanChannel connect(NetworkDevice device, long name, int pgn, short addr) throws IOException {
-        if (!(device instanceof LinuxNetworkDevice)) {
-            throw new IllegalArgumentException("Unsupported network device given!");
-        }
-
+    public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
         try {
-            SocketCAN.connectJ1939Address(getSocket(), ((LinuxNetworkDevice) device).getIndex(), name, pgn, addr);
+            SocketCAN.connectJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupName(), address.getAddress());
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
-        this.device = device;
+        this.connectedAddress = address;
         return this;
     }
 
@@ -84,22 +77,70 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         if (!isBound()) {
             throw new NotYetBoundException();
         }
-        return this.device;
+        return this.boundAddress.getDevice();
     }
 
     @Override
     public boolean isBound() {
-        return this.device != null;
+        return this.boundAddress != null;
+    }
+
+    public boolean isConnected() {
+        return this.connectedAddress != null;
     }
 
     @Override
-    public int read(ByteBuffer buffer) throws IOException {
-        return (int) readSocket(buffer);
+    public int receiveData(@NonNull ByteBuffer buffer, int flags) throws IOException {
+        return (int) receiveFromSocket(buffer, flags);
     }
 
     @Override
-    public int write(ByteBuffer buffer) throws IOException {
+    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address source) throws IOException {
+        ensureDirectBuffer(buffer);
+        final long deviceIndex;
+        final long name;
+        final int pgn;
+        final byte address;
+        if (source != null) {
+            deviceIndex = source.getLinuxDevice().getIndex();
+            name = source.getName();
+            pgn = source.getParameterGroupName();
+            address = source.getAddress();
+        } else {
+            deviceIndex = 0;
+            name = J1939Address.NO_NAME;
+            pgn = J1939Address.NO_PGN;
+            address = J1939Address.NO_ADDR;
+        }
+
+        return SocketCAN.receiveJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), flags, deviceIndex, name, pgn, address);
+    }
+
+    @Override
+    public int sendData(@NonNull ByteBuffer buffer, int flags) throws IOException {
         // TODO check for max message size
-        return (int) writeSocket(buffer);
+        return (int) sendToSocket(buffer, flags);
+    }
+
+    @Override
+    public long sendMessage(@NonNull ByteBuffer buffer, int flags, @Nullable J1939Address destination) throws IOException {
+        ensureDirectBuffer(buffer);
+        // TODO check for max message size
+        final long deviceIndex;
+        final long name;
+        final int pgn;
+        final byte address;
+        if (destination != null) {
+            deviceIndex = destination.getLinuxDevice().getIndex();
+            name = destination.getName();
+            pgn = destination.getParameterGroupName();
+            address = destination.getAddress();
+        } else {
+            deviceIndex = 0;
+            name = J1939Address.NO_NAME;
+            pgn = J1939Address.NO_PGN;
+            address = J1939Address.NO_ADDR;
+        }
+        return SocketCAN.sendJ1939Message(getSocket(), buffer, buffer.position(), buffer.remaining(), flags, deviceIndex, name, pgn, address);
     }
 }

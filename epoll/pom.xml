@@ -20,6 +20,10 @@
             <artifactId>javacan-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -31,6 +31,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
+#include <bits/types/struct_timespec.h>
 
 #define GET_FILTERS_DEFAULT_AMOUNT 10
 
@@ -66,7 +67,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createJ1939Socket(JNIEn
     return fd;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindTpAddress(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindTpAddress(JNIEnv *env, jclass clazz, jint sock, jlong iface, jint rx, jint tx) {
     jint result = bind_tp_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
     if (result) {
         throw_native_exception(env, "Unable to bind");
@@ -74,7 +75,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindTpAddress(JNIEnv *e
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectTpAddress(JNIEnv *env, jclass class, jint sock, jlong iface, jint rx, jint tx) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectTpAddress(JNIEnv *env, jclass clazz, jint sock, jlong iface, jint rx, jint tx) {
     jint result = connect_tp_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint32_t) rx, (uint32_t) tx);
     if (result) {
         throw_native_exception(env, "Unable to connect");
@@ -82,7 +83,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectTpAddress(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindJ1939Address(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindJ1939Address(JNIEnv *env, jclass clazz, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
     jint result = bind_j1939_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint64_t) name, (uint32_t) pgn,
                                      (uint16_t) addr);
     if (result) {
@@ -91,7 +92,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_bindJ1939Address(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectJ1939Address(JNIEnv *env, jclass class, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectJ1939Address(JNIEnv *env, jclass clazz, jint sock, jlong iface, jlong name, jint pgn, jshort addr) {
     jint result = connect_j1939_address(sock, (unsigned int) (iface & 0xFFFFFFFF), (uint64_t) name, (uint32_t) pgn,
                                         (uint16_t) addr);
     if (result) {
@@ -100,13 +101,13 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_connectJ1939Address(JNI
     return result;
 }
 
-JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass clazz, jint sock) {
     if (close(sock)) {
         throw_native_exception(env, "Unable to close epoll fd");
     }
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv *env, jclass class, jint sock, jboolean block) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv *env, jclass clazz, jint sock, jboolean block) {
     jint result = set_blocking_mode(sock, block);
     if (result == -1) {
         throw_native_exception(env, "Unable to set the blocking mode");
@@ -114,11 +115,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBlockingMode(JNIEnv 
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBlockingMode(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBlockingMode(JNIEnv *env, jclass clazz, jint sock) {
     return is_blocking(sock);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReadTimeout(JNIEnv *env, jclass class, jint sock, jlong seconds, jlong nanos) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReadTimeout(JNIEnv *env, jclass clazz, jint sock, jlong seconds, jlong nanos) {
     jint result = set_timeout(sock, SO_RCVTIMEO, (uint64_t) seconds, (uint64_t) nanos);
     if (result == -1) {
         throw_native_exception(env, "Unable to set read timeout");
@@ -126,7 +127,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReadTimeout(JNIEnv *
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv *env, jclass clazz, jint sock) {
     uint64_t timeout;
     int result = get_timeout(sock, SO_RCVTIMEO, &timeout);
     if (result) {
@@ -135,7 +136,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getReadTimeout(JNIEnv 
     return (jlong)timeout;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv *env, jclass class, jint sock, jlong seconds, jlong nanos) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv *env, jclass clazz, jint sock, jlong seconds, jlong nanos) {
     jint result = set_timeout(sock, SO_SNDTIMEO, (uint64_t) seconds, (uint64_t) nanos);
     if (result == -1) {
         throw_native_exception(env, "Unable to set write timeout");
@@ -143,7 +144,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setWriteTimeout(JNIEnv 
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv *env, jclass clazz, jint sock) {
     uint64_t timeout;
     int result = get_timeout(sock, SO_SNDTIMEO, &timeout);
     if (result) {
@@ -152,7 +153,7 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_getWriteTimeout(JNIEnv
     return (jlong)timeout;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveBufferSize(JNIEnv *env, jclass class, jint sock, jint size) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveBufferSize(JNIEnv *env, jclass clazz, jint sock, jint size) {
     jint result = setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
     if (result) {
         throw_native_exception(env, "Unable to set receive buffer size");
@@ -160,7 +161,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveBufferSize(JN
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JNIEnv *env, jclass clazz, jint sock) {
     int size = 0;
     socklen_t size_size = sizeof(size);
     int result = getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &size, &size_size);
@@ -170,7 +171,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveBufferSize(JN
     return size;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
     jint result = set_boolean_opt(sock, SO_BROADCAST, enable);
     if (result) {
         throw_native_exception(env, "Unable to enable broadcast");
@@ -178,7 +179,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setBroadcast(JNIEnv *en
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBroadcast(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBroadcast(JNIEnv *env, jclass clazz, jint sock) {
     int result = get_boolean_opt(sock, SO_BROADCAST);
     if (result) {
         throw_native_exception(env, "Unable to get broadcast state");
@@ -186,27 +187,47 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getBroadcast(JNIEnv *en
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_write(JNIEnv *env, jclass class, jint sock, jobject buf, jint offset, jint length) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_write(JNIEnv *env, jclass clazz, jint sock, jobject buf, jint offset, jint len) {
     void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
     void *data_start = raw_buf + offset;
-    ssize_t bytes_written = write(sock, data_start, (size_t) length);
+    ssize_t bytes_written = write(sock, data_start, (size_t) len);
     if (bytes_written == -1) {
         throw_native_exception(env, "Unable to write to the socket");
     }
     return bytes_written;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_read(JNIEnv *env, jclass class, jint sock, jobject buf, jint offset, jint length) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_read(JNIEnv *env, jclass clazz, jint sock, jobject buf, jint offset, jint len) {
     void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
     void *data_start = raw_buf + offset;
-    ssize_t bytes_read = read(sock, data_start, (size_t) length);
+    ssize_t bytes_read = read(sock, data_start, (size_t) len);
     if (bytes_read == -1) {
         throw_native_exception(env, "Unable to read from the socket");
     }
     return bytes_read;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setFilters(JNIEnv *env, jclass class, jint sock, jobject data) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_send(JNIEnv *env, jclass clazz, jint sock, jobject buf, jint offset, jint len, jint flags) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
+    void *data_start = raw_buf + offset;
+    ssize_t bytes_sent = send(sock, data_start, (size_t) len, flags);
+    if (bytes_sent == -1) {
+        throw_native_exception(env, "Unable to send to the socket");
+    }
+    return bytes_sent;
+}
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receive(JNIEnv *env, jclass clazz, jint sock, jobject buf, jint offset, jint len, jint flags) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buf);
+    void *data_start = raw_buf + offset;
+    ssize_t bytes_received = recv(sock, data_start, (size_t) len, flags);
+    if (bytes_received == -1) {
+        throw_native_exception(env, "Unable to recv from the socket");
+    }
+    return bytes_received;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setFilters(JNIEnv *env, jclass clazz, jint sock, jobject data) {
     void *rawData = (*env)->GetDirectBufferAddress(env, data);
     int result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, rawData, (socklen_t) (*env)->GetDirectBufferCapacity(env, data));
     if (result == -1) {
@@ -215,7 +236,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setFilters(JNIEnv *env,
     return result;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *env, jclass clazz, jint sock) {
     socklen_t size = sizeof(struct can_filter) * GET_FILTERS_DEFAULT_AMOUNT;
     void* filters = malloc(size);
     if (filters == NULL) {
@@ -249,7 +270,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getFilters(JNIEnv *e
     return (*env)->NewDirectByteBuffer(env, filters, size);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
     jint result = set_boolean_opt(sock, CAN_RAW_LOOPBACK, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set loopback state");
@@ -257,7 +278,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setLoopback(JNIEnv *env
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getLoopback(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getLoopback(JNIEnv *env, jclass clazz, jint sock) {
     jint result = get_boolean_opt(sock, CAN_RAW_LOOPBACK);
     if (result == -1) {
         throw_native_exception(env, "Unable to get loopback state");
@@ -265,7 +286,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getLoopback(JNIEnv *env
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveOwnMessages(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveOwnMessages(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
     jint result = set_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set receive own messages state");
@@ -273,7 +294,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveOwnMessages(J
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveOwnMessages(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveOwnMessages(JNIEnv *env, jclass clazz, jint sock) {
     jint result = get_boolean_opt(sock, CAN_RAW_RECV_OWN_MSGS);
     if (result == -1) {
         throw_native_exception(env, "Unable to get receive own messages state");
@@ -281,7 +302,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveOwnMessages(J
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJoinFilters(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJoinFilters(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
     jint result = set_boolean_opt(sock, CAN_RAW_JOIN_FILTERS, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set the filter joining mode");
@@ -289,7 +310,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJoinFilters(JNIEnv *
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJoinFilters(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJoinFilters(JNIEnv *env, jclass clazz, jint sock) {
     jint result = get_boolean_opt(sock, CAN_RAW_JOIN_FILTERS);
     if (result == -1) {
         throw_native_exception(env, "Unable to get the filter joining mode");
@@ -297,7 +318,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJoinFilters(JNIEnv *
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setAllowFDFrames(JNIEnv *env, jclass class, jint sock, jboolean enable) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setAllowFDFrames(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
     jint result = set_boolean_opt(sock, CAN_RAW_FD_FRAMES, enable);
     if (result == -1) {
         throw_native_exception(env, "Unable to set FD frame support");
@@ -305,7 +326,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setAllowFDFrames(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getAllowFDFrames(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getAllowFDFrames(JNIEnv *env, jclass clazz, jint sock) {
     jint result = get_boolean_opt(sock, CAN_RAW_FD_FRAMES);
     if (result == -1) {
         throw_native_exception(env, "Unable to get FD frame support");
@@ -313,7 +334,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getAllowFDFrames(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setErrorFilter(JNIEnv *env, jclass class, jint sock, jint mask) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setErrorFilter(JNIEnv *env, jclass clazz, jint sock, jint mask) {
     can_err_mask_t err_mask = (can_err_mask_t) mask;
     jint result = setsockopt(sock, SOL_CAN_RAW, CAN_RAW_ERR_FILTER, &err_mask, sizeof(err_mask));
     if (result == -1) {
@@ -322,7 +343,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setErrorFilter(JNIEnv *
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *env, jclass clazz, jint sock) {
     int mask = 0;
     socklen_t len = sizeof(mask);
 
@@ -334,11 +355,11 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *
     return mask;
 }
 
-JNIEXPORT jshort JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, jclass class, jint sock, jint events, jint timeout) {
+JNIEXPORT jshort JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, jclass clazz, jint sock, jint events, jint timeout) {
     return poll_single(sock, (short) events, timeout);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpOpts(JNIEnv *env, jclass class, jint sock, jint flags, jint frame_txtime, jbyte ext_address, jbyte txpad_content, jbyte rxpad_content, jbyte rx_ext_address) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpOpts(JNIEnv *env, jclass clazz, jint sock, jint flags, jint frame_txtime, jbyte ext_address, jbyte txpad_content, jbyte rxpad_content, jbyte rx_ext_address) {
     struct can_isotp_options opts;
     opts.flags = (uint32_t) flags;
     opts.frame_txtime = (uint32_t) frame_txtime;
@@ -354,7 +375,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpOpts(JNIEnv *en
     return result;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpOpts(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpOpts(JNIEnv *env, jclass clazz, jint sock) {
     struct can_isotp_options opts;
     socklen_t len = sizeof(opts);
     if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_OPTS, &opts, &len) != 0) {
@@ -373,7 +394,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpOpts(JNIEnv 
     );
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *env, jclass class, jint sock, jbyte bs, jbyte stmin, jbyte wftmax) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *env, jclass clazz, jint sock, jbyte bs, jbyte stmin, jbyte wftmax) {
     struct can_isotp_fc_options opts;
     opts.bs = (uint8_t) bs;
     opts.stmin = (uint8_t) stmin;
@@ -386,7 +407,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRecvFc(JNIEnv *
     return result;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRecvFc(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRecvFc(JNIEnv *env, jclass clazz, jint sock) {
     struct can_isotp_fc_options opts;
     socklen_t len = sizeof(opts);
     if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RECV_FC, &opts, &len) != 0) {
@@ -403,7 +424,7 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRecvFc(JNIEn
 }
 
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpTxStmin(JNIEnv *env, jclass class, jint sock, jint tx_stmin) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpTxStmin(JNIEnv *env, jclass clazz, jint sock, jint tx_stmin) {
     jint result = setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &tx_stmin, sizeof(tx_stmin));
     if (result == -1) {
         throw_native_exception(env, "Unable to set the minimum transmission separation time");
@@ -411,7 +432,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpTxStmin(JNIEnv 
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpTxStmin(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpTxStmin(JNIEnv *env, jclass clazz, jint sock) {
     int tx_stmin = 0;
     socklen_t size = sizeof(tx_stmin);
     int result = getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_TX_STMIN, &tx_stmin, &size);
@@ -422,7 +443,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpTxStmin(JNIEnv 
     return tx_stmin;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRxStmin(JNIEnv *env, jclass class, jint sock, jint rx_stmin) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRxStmin(JNIEnv *env, jclass clazz, jint sock, jint rx_stmin) {
     jint result = setsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RX_STMIN, &rx_stmin, sizeof(rx_stmin));
     if (result == -1) {
         throw_native_exception(env, "Unable to set the minimum receive separation time");
@@ -430,7 +451,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpRxStmin(JNIEnv 
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRxStmin(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRxStmin(JNIEnv *env, jclass clazz, jint sock) {
     int rx_stmin = 0;
     socklen_t size = sizeof(rx_stmin);
     int result = getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_RX_STMIN, &rx_stmin, &size);
@@ -441,7 +462,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpRxStmin(JNIEnv 
     return rx_stmin;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpLlOpts(JNIEnv *env, jclass class, jint sock, jbyte mtu, jbyte tx_dl, jbyte tx_flags) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpLlOpts(JNIEnv *env, jclass clazz, jint sock, jbyte mtu, jbyte tx_dl, jbyte tx_flags) {
     struct can_isotp_ll_options opts;
     opts.mtu = (uint8_t) mtu;
     opts.tx_dl = (uint8_t) tx_dl;
@@ -454,7 +475,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setIsotpLlOpts(JNIEnv *
     return result;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEnv *env, jclass clazz, jint sock) {
     struct can_isotp_ll_options opts;
     socklen_t len = sizeof(opts);
     if (getsockopt(sock, SOL_CAN_ISOTP, CAN_ISOTP_LL_OPTS, &opts, &len) != 0) {
@@ -470,26 +491,26 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_getIsotpLlOpts(JNIEn
     );
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939Promisc(JNIEnv *env, jclass class, jint sock, jint promisc) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939PromiscuousMode(JNIEnv *env, jclass clazz, jint sock, jint promisc) {
     jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_PROMISC, &promisc, sizeof(promisc));
     if (result == -1) {
-        throw_native_exception(env, "Unable to set Promiscuous flag");
+        throw_native_exception(env, "Unable to set promiscuous flag");
     }
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939Promisc(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939PromiscuousMode(JNIEnv *env, jclass clazz, jint sock) {
     int promisc = 0;
     socklen_t size = sizeof(promisc);
     int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_PROMISC, &promisc, &size);
     if (result) {
-        throw_native_exception(env, "Unable to get the Promiscuous flag");
+        throw_native_exception(env, "Unable to get the promiscuous flag");
         return result;
     }
     return promisc;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939ErrQueue(JNIEnv *env, jclass class, jint sock, jint errqueue) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939ErrQueue(JNIEnv *env, jclass clazz, jint sock, jint errqueue) {
     jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_ERRQUEUE, &errqueue, sizeof(errqueue));
     if (result == -1) {
         throw_native_exception(env, "Unable to set Err Queue flag");
@@ -497,7 +518,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939ErrQueue(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939ErrQueue(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939ErrQueue(JNIEnv *env, jclass clazz, jint sock) {
     int errqueue = 0;
     socklen_t size = sizeof(errqueue);
     int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_ERRQUEUE, &errqueue, &size);
@@ -508,7 +529,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939ErrQueue(JNIEnv
     return errqueue;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939SendPrio(JNIEnv *env, jclass class, jint sock, jint sendprio) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939SendPriority(JNIEnv *env, jclass clazz, jint sock, jint sendprio) {
     jint result = setsockopt(sock, SOL_CAN_J1939, SO_J1939_SEND_PRIO, &sendprio, sizeof(sendprio));
     if (result == -1) {
         throw_native_exception(env, "Unable to set Send Priority level");
@@ -516,7 +537,7 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setJ1939SendPrio(JNIEnv
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPrio(JNIEnv *env, jclass class, jint sock) {
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPriority(JNIEnv *env, jclass clazz, jint sock) {
     int sendprio = 0;
     socklen_t size = sizeof(sendprio);
     int result = getsockopt(sock, SOL_CAN_J1939, SO_J1939_SEND_PRIO, &sendprio, &size);
@@ -525,5 +546,102 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPrio(JNIEnv
         return result;
     }
     return sendprio;
+}
+
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong source_ifindex, jlong source_name, jint source_pgn, jbyte source_address) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, data);
+    void *data_start = raw_buf + offset;
+    char control[200];
+
+    struct iovec iov = {
+            .iov_base = data_start,
+            .iov_len = (size_t) len,
+    };
+    struct msghdr header = {
+            .msg_name = NULL,
+            .msg_namelen = 0,
+            .msg_control = control,
+            .msg_controllen = sizeof(control),
+            .msg_flags = 0,
+            .msg_iov = &iov,
+            .msg_iovlen = 1,
+    };
+
+    if (source_ifindex != 0) {
+        struct sockaddr_can src = {0};
+        src.can_ifindex = (int) source_ifindex;
+        src.can_family = AF_CAN;
+        src.can_addr.j1939.name = source_name;
+        src.can_addr.j1939.pgn = source_pgn;
+        src.can_addr.j1939.addr = source_address;
+
+        header.msg_name = &src;
+        header.msg_namelen = sizeof(struct sockaddr_can);
+    }
+
+    ssize_t bytes_received = recvmsg(sock, &header, flags);
+    if (bytes_received == -1) {
+        throw_native_exception(env, "Unable to recvmsg from the socket");
+        return NULL;
+    }
+
+    jbyte dst_addr = J1939_NO_ADDR;
+    jlong dst_name = J1939_NO_NAME;
+    jbyte priority = 0;
+    jlong timestamp_seconds = 0;
+    jlong timestamp_nanos = 0;
+    struct timespec* timestamp;
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&header); cmsg; cmsg = CMSG_NXTHDR(&header, cmsg)) {
+        if (cmsg->cmsg_level == SOL_CAN_J1939) {
+            switch (cmsg->cmsg_type) {
+                case SCM_J1939_DEST_ADDR:
+                    dst_addr = (jbyte) *CMSG_DATA(cmsg);
+                    break;
+                case SCM_J1939_DEST_NAME:
+                    memcpy(&dst_name, CMSG_DATA(cmsg), cmsg->cmsg_len - CMSG_LEN(0));
+                    break;
+                case SCM_J1939_ERRQUEUE:
+                    break;
+                case SCM_J1939_PRIO:
+                    priority = (jbyte) *CMSG_DATA(cmsg);
+                    break;
+            }
+        } else if (cmsg->cmsg_level == SOL_SOCKET) {
+            switch (cmsg->cmsg_type) {
+                case SO_TIMESTAMPNS:
+                case SO_TIMESTAMPING:
+                    timestamp = (struct timespec *) CMSG_DATA(cmsg);
+                    timestamp_seconds = timestamp->tv_sec;
+                    timestamp_nanos = timestamp->tv_nsec;
+                    break;
+            }
+        }
+    }
+    return create_tel_schich_javacan_J1939ReceivedMessageHeader(env, bytes_received, timestamp_seconds, timestamp_nanos, dst_addr, dst_name, priority);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_sendJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong destination_ifindex, jlong destination_name, jint destination_pgn, jbyte destination_address) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, data);
+    void *data_start = raw_buf + offset;
+
+    ssize_t bytes_sent;
+    if (destination_ifindex != 0) {
+        struct sockaddr_can src = {};
+        src.can_ifindex = (int) destination_ifindex;
+        src.can_family = AF_CAN;
+        src.can_addr.j1939.name = destination_name;
+        src.can_addr.j1939.pgn = destination_pgn;
+        src.can_addr.j1939.addr = destination_address;
+
+        bytes_sent = sendto(sock, data_start, len, flags, (const struct sockaddr *) &src, sizeof(src));
+    } else {
+        bytes_sent = sendto(sock, data_start, len, flags, NULL, 0);
+    }
+
+    if (bytes_sent == -1) {
+        throw_native_exception(env, "Unable to sendto to the socket");
+    }
+    return bytes_sent;
+
 }
 

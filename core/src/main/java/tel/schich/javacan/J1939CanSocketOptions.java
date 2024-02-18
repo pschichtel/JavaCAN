@@ -45,12 +45,12 @@ public class J1939CanSocketOptions {
     public static final SocketOption<Boolean> SO_J1939_PROMISC = new CanSocketOption<>("SO_J1939_PROMISC", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
         public void set(int sock, Boolean val, boolean validate) throws IOException {
-            SocketCAN.setJ1939Promisc(sock, val == Boolean.TRUE ? 1 : 0);
+            SocketCAN.setJ1939PromiscuousMode(sock, val == Boolean.TRUE ? 1 : 0);
         }
 
         @Override
         public Boolean get(int sock) throws IOException {
-            return SocketCAN.getJ1939Promisc(sock) == 1;
+            return SocketCAN.getJ1939PromiscuousMode(sock) == 1;
         }
     });
 
@@ -91,12 +91,12 @@ public class J1939CanSocketOptions {
                     throw new IllegalArgumentException("The priority must be at most 7!");
                 }
             }
-            SocketCAN.setJ1939SendPrio(sock, val);
+            SocketCAN.setJ1939SendPriority(sock, val);
         }
 
         @Override
         public Integer get(int sock) throws IOException {
-            return SocketCAN.getJ1939SendPrio(sock);
+            return SocketCAN.getJ1939SendPriority(sock);
         }
     });
 

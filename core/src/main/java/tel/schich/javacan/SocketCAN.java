@@ -74,6 +74,10 @@ class SocketCAN {
 
     public static native long read(int sock, ByteBuffer buf, int offset, int len) throws LinuxNativeOperationException;
 
+    public static native long send(int sock, ByteBuffer buf, int offset, int len, int flags) throws LinuxNativeOperationException;
+
+    public static native long receive(int sock, ByteBuffer buf, int offset, int len, int flags) throws LinuxNativeOperationException;
+
     public static native int setFilters(int sock, ByteBuffer data) throws LinuxNativeOperationException;
 
     public static native ByteBuffer getFilters(int sock) throws LinuxNativeOperationException;
@@ -128,7 +132,7 @@ class SocketCAN {
 	 * @return
 	 * @throws LinuxNativeOperationException
 	 */
-	public static native int setJ1939Promisc(int sock, int promisc) throws LinuxNativeOperationException;
+	public static native int setJ1939PromiscuousMode(int sock, int promisc) throws LinuxNativeOperationException;
 
 	/**
 	 * When set, j1939 will receive all packets, not just those with a destination
@@ -138,7 +142,7 @@ class SocketCAN {
 	 * @return 0 if disabled, 1 if enabled
 	 * @throws LinuxNativeOperationException
 	 */
-	public static native int getJ1939Promisc(int sock) throws LinuxNativeOperationException;
+	public static native int getJ1939PromiscuousMode(int sock) throws LinuxNativeOperationException;
 
 	/**
 	 * To set the priority field for outgoing packets, the SO_J1939_SEND_PRIO can
@@ -155,7 +159,7 @@ class SocketCAN {
 	 * @return
 	 * @throws LinuxNativeOperationException
 	 */
-	public static native int setJ1939SendPrio(int sock, int sendprio) throws LinuxNativeOperationException;
+	public static native int setJ1939SendPriority(int sock, int sendprio) throws LinuxNativeOperationException;
 
 	/**
 	 * Get the priority field for outgoing packets. This int field specifies the priority that will be used.
@@ -165,9 +169,13 @@ class SocketCAN {
 	 * @return 0 to 7
 	 * @throws LinuxNativeOperationException
 	 */
-	public static native int getJ1939SendPrio(int sock) throws LinuxNativeOperationException;
+	public static native int getJ1939SendPriority(int sock) throws LinuxNativeOperationException;
 
 	public static native int setJ1939ErrQueue(int sock, int recvown) throws LinuxNativeOperationException;
 
 	public static native int getJ1939ErrQueue(int sock) throws LinuxNativeOperationException;
+
+    public static native J1939ReceivedMessageHeader receiveJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long source_ifindex, long source_name, int source_pgn, byte source_address) throws LinuxNativeOperationException;
+
+    public static native long sendJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long destination_ifindex, long destination_name, int destination_pgn, byte destination_address) throws LinuxNativeOperationException;
 }
