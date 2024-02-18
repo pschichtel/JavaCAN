@@ -27,6 +27,7 @@ import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.J1939Address;
 import tel.schich.javacan.J1939CanChannel;
 import tel.schich.javacan.J1939ReceivedMessageHeader;
+import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
 
@@ -105,5 +106,18 @@ class J1939CanSocketTest {
                 assertByteBufferEquals(inputBuffer, outputBuffer);
             }
         }
+    }
+
+    @Test
+    void testConnectingToNoAddrFailsWithPermissionError() {
+        J1939Address addr = new J1939Address(CAN_INTERFACE);
+        LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
+            try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
+                channel.bind(addr);
+                channel.connect(addr);
+            }
+        });
+
+        assertEquals(13, e.getErrorNumber());
     }
 }
