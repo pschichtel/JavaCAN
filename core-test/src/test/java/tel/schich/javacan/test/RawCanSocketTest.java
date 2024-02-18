@@ -294,4 +294,33 @@ class RawCanSocketTest {
 
         CanFrame.create(largeForReuse);
     }
+
+    @Test
+    void testSendReadWriteReceiveCrossOver() throws Exception {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
+            socket.bind(CAN_INTERFACE);
+            socket.configureBlocking(true);
+            socket.setOption(RECV_OWN_MSGS, true);
+
+
+            final CanFrame frame = CanFrame.create(0x7ED, FD_NO_FLAGS, new byte[] { 0x01 });
+            final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
+
+            socket.send(frame);
+            CanFrame received = socket.receive(readBuffer);
+            assertEquals(frame, received);
+
+            socket.write(frame);
+            received = socket.receive(readBuffer);
+            assertEquals(frame, received);
+
+            socket.send(frame);
+            received = socket.read(readBuffer);
+            assertEquals(frame, received);
+
+            socket.write(frame);
+            received = socket.read(readBuffer);
+            assertEquals(frame, received);
+        }
+    }
 }

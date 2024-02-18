@@ -75,8 +75,21 @@ final class RawCanChannelImpl extends RawCanChannel {
     }
 
     @Override
+    public CanFrame receive() throws IOException {
+        int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
+        ByteBuffer frameBuf = JavaCAN.allocateOrdered(length);
+        return receive(frameBuf);
+    }
+
+    @Override
     public CanFrame read(ByteBuffer buffer) throws IOException {
         readUnsafe(buffer);
+        return CanFrame.create(buffer);
+    }
+
+    @Override
+    public CanFrame receive(ByteBuffer buffer) throws IOException {
+        receiveUnsafe(buffer);
         return CanFrame.create(buffer);
     }
 
@@ -88,17 +101,41 @@ final class RawCanChannelImpl extends RawCanChannel {
     }
 
     @Override
+    public long receiveUnsafe(ByteBuffer buffer) throws IOException {
+        long bytesRead = receiveFromSocket(buffer, 0);
+        buffer.flip();
+        return bytesRead;
+    }
+
+    @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
         long written = writeUnsafe(frame.getBuffer());
-        if (written != frame.getSize()) {
-            throw new IOException("Frame written incompletely!");
-        }
+        verifyWrittenSize(frame, written);
 
         return this;
     }
 
     @Override
+    public RawCanChannel send(CanFrame frame) throws IOException {
+        long written = sendUnsafe(frame.getBuffer());
+        verifyWrittenSize(frame, written);
+
+        return this;
+    }
+
+    private static void verifyWrittenSize(CanFrame frame, long written) throws IOException {
+        if (written != frame.getSize()) {
+            throw new IOException("Frame written incompletely!");
+        }
+    }
+
+    @Override
     public long writeUnsafe(ByteBuffer buffer) throws IOException {
         return writeSocket(buffer);
+    }
+
+    @Override
+    public long sendUnsafe(ByteBuffer buffer) throws IOException {
+        return sendToSocket(buffer, 0);
     }
 }
