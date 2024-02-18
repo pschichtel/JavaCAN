@@ -31,7 +31,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
-#include <bits/types/struct_timespec.h>
+#include <time.h>
 
 #define GET_FILTERS_DEFAULT_AMOUNT 10
 

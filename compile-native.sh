@@ -13,7 +13,7 @@ if ! [ -e "$java_home/include/jni.h" ]; then
     java_home="$(dirname "$java_home")"
 fi
 
-cc_opts=('-std=c99' '-fPIC' '-D' "MVN_VERSION=$version")
+cc_opts=('-std=c11' '-fPIC' '-D' "MVN_VERSION=$version")
 
 if grep -Pq -- '-SNAPSHOT$' <<<"$version"; then
     cc_opts+=('-g3' '-Og')
