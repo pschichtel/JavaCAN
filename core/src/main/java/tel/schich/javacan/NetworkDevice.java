@@ -24,6 +24,7 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import tel.schich.javacan.platform.UnsupportedPlatformException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 import tel.schich.javacan.platform.Platform;
@@ -35,8 +36,9 @@ public interface NetworkDevice {
     /**
      * Gets the name of the device.
      *
-     * @return the device name
+     * @return the device name, which can be null
      */
+    @Nullable
     String getName();
 
     /**

@@ -139,7 +139,7 @@ class SocketCAN {
 
 	public static native int getJ1939ErrQueue(int sock) throws LinuxNativeOperationException;
 
-    public static native J1939ReceivedMessageHeader receiveJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long source_ifindex, long source_name, int source_pgn, byte source_address) throws LinuxNativeOperationException;
+    public static native J1939ReceivedMessageHeader receiveJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags) throws LinuxNativeOperationException;
 
     public static native long sendJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long destination_ifindex, long destination_name, int destination_pgn, byte destination_address) throws LinuxNativeOperationException;
 

@@ -152,36 +152,25 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPriority(JN
     return sendprio;
 }
 
-JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong source_ifindex, jlong source_name, jint source_pgn, jbyte source_address) {
+JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags) {
     void *raw_buf = (*env)->GetDirectBufferAddress(env, data);
     void *data_start = raw_buf + offset;
     char control[200];
+    struct sockaddr_can src = {0};
 
     struct iovec iov = {
             .iov_base = data_start,
             .iov_len = (size_t) len,
     };
     struct msghdr header = {
-            .msg_name = NULL,
-            .msg_namelen = 0,
+            .msg_name = &src,
+            .msg_namelen = sizeof(struct sockaddr_can),
             .msg_control = control,
             .msg_controllen = sizeof(control),
             .msg_flags = 0,
             .msg_iov = &iov,
             .msg_iovlen = 1,
     };
-
-    if (source_ifindex != 0) {
-        struct sockaddr_can src = {0};
-        src.can_ifindex = (int) source_ifindex;
-        src.can_family = AF_CAN;
-        src.can_addr.j1939.name = source_name;
-        src.can_addr.j1939.pgn = source_pgn;
-        src.can_addr.j1939.addr = source_address;
-
-        header.msg_name = &src;
-        header.msg_namelen = sizeof(struct sockaddr_can);
-    }
 
     ssize_t bytes_received = recvmsg(sock, &header, flags);
     if (bytes_received == -1) {
@@ -213,7 +202,8 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(
             parse_timestamp(cmsg, &timestamp_seconds, &timestamp_nanos);
         }
     }
-    return create_tel_schich_javacan_J1939ReceivedMessageHeader(env, bytes_received, timestamp_seconds, timestamp_nanos, dst_addr, dst_name, priority);
+
+    return create_tel_schich_javacan_J1939ReceivedMessageHeader(env, src.can_ifindex, (jlong)src.can_addr.j1939.name, (jint)src.can_addr.j1939.pgn, (jbyte)src.can_addr.j1939.addr, bytes_received, timestamp_seconds, timestamp_nanos, dst_addr, dst_name, priority);
 }
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_sendJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong destination_ifindex, jlong destination_name, jint destination_pgn, jbyte destination_address) {

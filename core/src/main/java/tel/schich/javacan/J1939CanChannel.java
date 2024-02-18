@@ -93,7 +93,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
-    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException;
+    public abstract J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer) throws IOException;
 
     /**
      * Sends data from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be

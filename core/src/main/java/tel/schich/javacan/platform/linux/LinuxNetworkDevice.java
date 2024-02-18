@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.platform.linux;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
 
@@ -34,14 +35,16 @@ public class LinuxNetworkDevice implements NetworkDevice {
         JavaCAN.initialize();
     }
 
+    @Nullable
     private final String name;
     private final long index;
 
-    private LinuxNetworkDevice(String name, long index) {
+    private LinuxNetworkDevice(@Nullable String name, long index) {
         this.name = name;
         this.index = index;
     }
 
+    @Nullable
     public String getName() {
         return name;
     }
@@ -56,7 +59,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
     }
 
     /**
-     * Looks up an network device by name and constructs a new {@link NetworkDevice} instance from the
+     * Looks up a network device by name and constructs a new {@link NetworkDevice} instance from the
      * result.
      *
      * @param name the device name
@@ -92,4 +95,8 @@ public class LinuxNetworkDevice implements NetworkDevice {
     }
 
     private static native long resolveInterfaceName(String interfaceName) throws LinuxNativeOperationException;
+
+    public static LinuxNetworkDevice fromLinuxDeviceIndex(long index) {
+        return new LinuxNetworkDevice(null, index);
+    }
 }

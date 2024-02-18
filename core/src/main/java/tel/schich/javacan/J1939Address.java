@@ -24,7 +24,9 @@ package tel.schich.javacan;
 
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
-public class J1939Address {
+import java.util.Objects;
+
+public final class J1939Address {
     public static final long NO_NAME = 0L;
     public static final int NO_PGN = 0x40000;
     public static final byte NO_ADDR = (byte) 0xFF;
@@ -32,16 +34,16 @@ public class J1939Address {
 
     private final LinuxNetworkDevice device;
     private final long name;
-    private final int parameterGroupName;
+    private final int parameterGroupNumber;
     private final byte address;
 
-    public J1939Address(NetworkDevice device, long name, int parameterGroupName, byte address) {
+    public J1939Address(NetworkDevice device, long name, int parameterGroupNumber, byte address) {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
         this.device = (LinuxNetworkDevice) device;
         this.name = name;
-        this.parameterGroupName = parameterGroupName;
+        this.parameterGroupNumber = parameterGroupNumber;
         this.address = address;
     }
 
@@ -61,11 +63,34 @@ public class J1939Address {
         return name;
     }
 
-    public int getParameterGroupName() {
-        return parameterGroupName;
+    public int getParameterGroupNumber() {
+        return parameterGroupNumber;
     }
 
     public byte getAddress() {
         return address;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        J1939Address that = (J1939Address) o;
+        return name == that.name && parameterGroupNumber == that.parameterGroupNumber && address == that.address && Objects.equals(device, that.device);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(device, name, parameterGroupNumber, address);
+    }
+
+    @Override
+    public String toString() {
+        return "J1939Address{" +
+                "device=" + device +
+                ", name=" + name +
+                ", parameterGroupNumber=" + parameterGroupNumber +
+                ", address=" + address +
+                '}';
     }
 }

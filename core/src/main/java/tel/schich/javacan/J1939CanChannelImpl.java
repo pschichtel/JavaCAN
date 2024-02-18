@@ -52,7 +52,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
 
 
         try {
-            SocketCAN.bindJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupName(), address.getAddress());
+            SocketCAN.bindJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupNumber(), address.getAddress());
 
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
@@ -64,7 +64,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     @Override
     public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
         try {
-            SocketCAN.connectJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupName(), address.getAddress());
+            SocketCAN.connectJ1939Address(getSocket(), address.getLinuxDevice().getIndex(), address.getName(), address.getParameterGroupNumber(), address.getAddress());
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
@@ -95,26 +95,11 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer, @Nullable J1939Address source) throws IOException {
+    public J1939ReceivedMessageHeader receiveMessage(@NonNull ByteBuffer buffer) throws IOException {
         ensureDirectBuffer(buffer);
-        final long deviceIndex;
-        final long name;
-        final int pgn;
-        final byte address;
-        if (source != null) {
-            deviceIndex = source.getLinuxDevice().getIndex();
-            name = source.getName();
-            pgn = source.getParameterGroupName();
-            address = source.getAddress();
-        } else {
-            deviceIndex = 0;
-            name = J1939Address.NO_NAME;
-            pgn = J1939Address.NO_PGN;
-            address = J1939Address.NO_ADDR;
-        }
 
         final int offset = buffer.position();
-        final J1939ReceivedMessageHeader header = SocketCAN.receiveJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        final J1939ReceivedMessageHeader header = SocketCAN.receiveJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0);
         buffer.position((int) (offset + header.getBytesReceived()));
         return header;
     }
@@ -136,7 +121,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         if (destination != null) {
             deviceIndex = destination.getLinuxDevice().getIndex();
             name = destination.getName();
-            pgn = destination.getParameterGroupName();
+            pgn = destination.getParameterGroupNumber();
             address = destination.getAddress();
         } else {
             deviceIndex = 0;

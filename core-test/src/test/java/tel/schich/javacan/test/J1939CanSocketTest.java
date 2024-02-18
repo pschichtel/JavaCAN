@@ -84,7 +84,8 @@ class J1939CanSocketTest {
 
     @Test
     void testReadMessage() throws Exception {
-        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, (byte) 0x20);
+        final byte sourceADdr = (byte) 0x20;
+        J1939Address source = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, sourceADdr);
         final byte destAddr = (byte) 0x30;
         J1939Address destination = new J1939Address(CAN_INTERFACE, J1939Address.NO_NAME, J1939Address.NO_PGN, destAddr);
 
@@ -100,9 +101,21 @@ class J1939CanSocketTest {
                 final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
                 final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
                 assertEquals(2, a.sendData(inputBuffer));
-                J1939ReceivedMessageHeader expected = new J1939ReceivedMessageHeader(2L, 0L, 0L, destAddr, 0L, (byte) 6);
+                J1939ReceivedMessageHeader expected = new J1939ReceivedMessageHeader(
+                    CAN_INTERFACE.getIndex(),
+                    source.getName(),
+                    // TODO why is the source PGN 0 ?
+                    0,
+                    source.getAddress(),
+                    2L,
+                    0L,
+                    0L,
+                    destination.getAddress(),
+                    destination.getName(),
+                    (byte) 6
+                );
                 // TODO the timestamp should not match...
-                assertEquals(expected, b.receiveMessage(outputBuffer, null));
+                assertEquals(expected, b.receiveMessage(outputBuffer));
                 inputBuffer.flip();
                 outputBuffer.flip();
                 assertByteBufferEquals(inputBuffer, outputBuffer);

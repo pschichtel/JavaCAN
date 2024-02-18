@@ -25,13 +25,14 @@ package tel.schich.javacan.test;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 
 public class CanTestHelper {
-    public static final NetworkDevice CAN_INTERFACE = lookupDev();
+    public static final LinuxNetworkDevice CAN_INTERFACE = (LinuxNetworkDevice) lookupDev();
 
     private static NetworkDevice lookupDev() {
         try {
