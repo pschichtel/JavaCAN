@@ -24,6 +24,10 @@
 #include <linux/can/bcm.h>
 #include <stddef.h>
 
+inline int create_can_bcm_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_BCM);
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createBcmSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_bcm_socket();
     if (fd == -1) {

@@ -23,6 +23,69 @@
 #include "common.h"
 #include <sys/socket.h>
 #include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <sys/time.h>
+
+short poll_single(int sock, short events, int timeout) {
+    struct pollfd fds;
+    fds.fd = sock;
+    fds.events = events;
+
+    int result = poll(&fds, 1, timeout);
+    if (result <= 0) {
+        return (short) result;
+    }
+
+    return fds.revents;
+}
+
+int set_blocking_mode(int sock, bool block) {
+    int old_flags = fcntl(sock, F_GETFL, 0);
+    if (old_flags == -1) {
+        return -1;
+    }
+
+    int new_flags;
+    if (block) {
+        new_flags = old_flags & ~O_NONBLOCK;
+    } else {
+        new_flags = old_flags | O_NONBLOCK;
+    }
+
+    return fcntl(sock, F_SETFL, new_flags);
+}
+
+int is_blocking(int sock) {
+    int flags = fcntl(sock, F_GETFL, 0);
+    if (flags == -1) {
+        return -1;
+    }
+
+    return (flags & O_NONBLOCK) == 0 ? 1 : 0;
+}
+
+int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {
+    socklen_t timeout_len = sizeof(struct timeval);
+    struct timeval timeout;
+    timeout.tv_sec = (time_t) seconds;
+    timeout.tv_usec = (suseconds_t) nanos / 1000;
+
+    return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
+}
+
+int get_timeout(int sock, int type, uint64_t *micros) {
+    socklen_t timeout_len = sizeof(struct timeval);
+    struct timeval timeout;
+
+    int result = getsockopt(sock, SOL_SOCKET, type, &timeout, &timeout_len);
+    if (result != 0) {
+        return result;
+    }
+
+    *micros = ((uint64_t) timeout.tv_sec) * MICROS_PER_SECOND + timeout.tv_usec;
+    return result;
+}
 
 JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass clazz, jint sock) {
     if (close(sock)) {

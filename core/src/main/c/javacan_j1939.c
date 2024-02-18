@@ -27,6 +27,32 @@
 #include <stddef.h>
 #include <string.h>
 
+inline int create_can_j1939_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_J1939);
+}
+
+int bind_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
+    struct sockaddr_can addr = {0};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = (int) interface;
+    addr.can_addr.j1939.name = name;
+    addr.can_addr.j1939.pgn = pgn;
+    addr.can_addr.j1939.addr = saddr;
+
+    return bind(sock, (const struct sockaddr *) &addr, sizeof(addr));
+}
+
+int connect_j1939_address(int sock, uint32_t interface, uint64_t name, uint32_t pgn, uint8_t saddr) {
+    struct sockaddr_can addr = {0};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = (int) interface;
+    addr.can_addr.j1939.name = name;
+    addr.can_addr.j1939.pgn = pgn;
+    addr.can_addr.j1939.addr = saddr;
+
+    return connect(sock, (const struct sockaddr *) &addr, sizeof(addr));
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createJ1939Socket(JNIEnv *env, jclass class) {
     jint fd = create_can_j1939_socket();
     if (fd == -1) {

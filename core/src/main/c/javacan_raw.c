@@ -30,6 +30,10 @@
 
 #define GET_FILTERS_DEFAULT_AMOUNT 10
 
+inline int create_can_raw_socket() {
+    return socket(PF_CAN, SOCK_RAW, CAN_RAW);
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_raw_socket();
     if (fd == -1) {

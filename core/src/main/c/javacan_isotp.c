@@ -26,6 +26,10 @@
 #include <linux/can/isotp.h>
 #include <sys/socket.h>
 
+inline int create_can_isotp_socket() {
+    return socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP);
+}
+
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createIsotpSocket(JNIEnv *env, jclass class) {
     jint fd = create_can_isotp_socket();
     if (fd == -1) {
