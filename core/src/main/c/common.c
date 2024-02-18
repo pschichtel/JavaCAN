@@ -92,7 +92,7 @@ int set_timeout(int sock, int type, uint64_t seconds, uint64_t nanos) {
     socklen_t timeout_len = sizeof(struct timeval);
     struct timeval timeout;
     timeout.tv_sec = (time_t) seconds;
-    timeout.tv_usec = (__suseconds_t) nanos / 1000;
+    timeout.tv_usec = (suseconds_t) nanos / 1000;
 
     return setsockopt(sock, SOL_SOCKET, type, &timeout, timeout_len);
 }
