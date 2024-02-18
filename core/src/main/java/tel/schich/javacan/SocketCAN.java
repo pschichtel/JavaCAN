@@ -148,4 +148,16 @@ class SocketCAN {
     public static native int setJ1939Filters(int sock, ByteBuffer buffer, int offset, int len) throws LinuxNativeOperationException;
 
     public static native int getJ1939Filters(int sock, ByteBuffer buffer, int offset, int len) throws LinuxNativeOperationException;
+
+    public static native int setTimestampingOption(int sock, int flags) throws LinuxNativeOperationException;
+
+    public static native int getTimestampingOption(int sock) throws LinuxNativeOperationException;
+
+    public static native int setTimestampOption(int sock, boolean enable) throws LinuxNativeOperationException;
+
+    public static native boolean getTimestampOption(int sock) throws LinuxNativeOperationException;
+
+    public static native int setTimestampNsOption(int sock, boolean enable) throws LinuxNativeOperationException;
+
+    public static native boolean getTimestampNsOption(int sock) throws LinuxNativeOperationException;
 }

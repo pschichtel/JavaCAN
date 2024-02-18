@@ -200,3 +200,53 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receive(JNIEnv *env, j
 JNIEXPORT jshort JNICALL Java_tel_schich_javacan_SocketCAN_poll(JNIEnv *env, jclass clazz, jint sock, jint events, jint timeout) {
     return poll_single(sock, (short) events, timeout);
 }
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setTimestampingOption(JNIEnv *env, jclass clazz, jint sock, jint flags) {
+    jint result = setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &flags, sizeof(flags));
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set timestamping support");
+    }
+    return result;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getTimestampingOption(JNIEnv *env, jclass clazz, jint sock) {
+    jint flags;
+    socklen_t size = sizeof(jint);
+    jint result = getsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &flags, &size);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set timestamping support");
+    }
+    return flags;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setTimestampOption(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
+    jint result = set_boolean_opt(sock, SOL_SOCKET, SO_TIMESTAMP, enable);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set timestamp support");
+    }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_getTimestampOption(JNIEnv *env, jclass clazz, jint sock) {
+    jint result = get_boolean_opt(sock, SOL_SOCKET, SO_TIMESTAMP);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to get timestamp support");
+    }
+    return result != 0;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setTimestampNsOption(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
+    jint result = set_boolean_opt(sock, SOL_SOCKET, SO_TIMESTAMPNS, enable);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set timestamp ns support");
+    }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_getTimestampNsOption(JNIEnv *env, jclass clazz, jint sock) {
+    jint result = get_boolean_opt(sock, SOL_SOCKET, SO_TIMESTAMPNS);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to get timestamp ns support");
+    }
+    return result != 0;
+}

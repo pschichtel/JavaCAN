@@ -21,7 +21,6 @@
  * THE SOFTWARE.
  */
 #include "common.h"
-#include <javacan-core/jni-c-to-java.h>
 #include <linux/can.h>
 #include <linux/can/j1939.h>
 #include <stddef.h>

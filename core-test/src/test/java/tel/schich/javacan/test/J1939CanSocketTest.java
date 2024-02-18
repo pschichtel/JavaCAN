@@ -36,7 +36,10 @@ import java.nio.ByteBuffer;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static tel.schich.javacan.CanSocketOptions.SO_BROADCAST;
+import static tel.schich.javacan.CanSocketOptions.*;
+import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RAW_HARDWARE;
+import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RX_SOFTWARE;
+import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.SOFTWARE;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
@@ -99,20 +102,23 @@ class J1939CanSocketTest {
                 b.bind(destination);
                 b.connect(source);
                 b.configureBlocking(true);
+                b.setOption(SO_TIMESTAMP, true);
+                //b.setOption(SO_TIMESTAMPING, TimestampingFlagSet.of(SOFTWARE, RX_SOFTWARE, RAW_HARDWARE));
 
                 final ByteBuffer inputBuffer = directBufferOf(new byte[]{0x20, 0x33});
                 final ByteBuffer outputBuffer = ByteBuffer.allocateDirect(inputBuffer.capacity() + 1);
                 assertEquals(2, a.send(inputBuffer));
                 J1939ReceiveMessageHeaderBuffer headerBuffer = new J1939ReceiveMessageHeaderBuffer();
                 assertEquals(2, b.receive(outputBuffer, headerBuffer));
+                // truncate the timestamp to the current second
+                headerBuffer.setTimestamp(Instant.ofEpochSecond(headerBuffer.getTimestamp().getEpochSecond(), 0));
                 ImmutableJ1939ReceiveMessageHeader expected = new ImmutableJ1939ReceiveMessageHeader(
                     source,
-                    Instant.ofEpochSecond(0, 0),
+                    Instant.ofEpochSecond(Instant.now().getEpochSecond(), 0),
                     destination.getAddress(),
                     destination.getName(),
                     (byte) 6
                 );
-                // TODO the timestamp should not match...
                 assertEquals(expected, headerBuffer.copy());
                 inputBuffer.flip();
                 outputBuffer.flip();
