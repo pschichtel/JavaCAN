@@ -39,14 +39,6 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createRawSocket(JNIEnv 
     return fd;
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createBcmSocket(JNIEnv *env, jclass class) {
-    jint fd = create_can_bcm_socket();
-    if (fd == -1) {
-        throw_native_exception(env, "Unable to create BCM socket");
-    }
-    return fd;
-}
-
 JNIEXPORT void JNICALL Java_tel_schich_javacan_SocketCAN_close(JNIEnv *env, jclass clazz, jint sock) {
     if (close(sock)) {
         throw_native_exception(env, "Unable to close epoll fd");

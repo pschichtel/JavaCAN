@@ -20,9 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <jni.h>
+#include "common.h"
 #include <linux/can/bcm.h>
 #include <stddef.h>
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_createBcmSocket(JNIEnv *env, jclass class) {
+    jint fd = create_can_bcm_socket();
+    if (fd == -1) {
+        throw_native_exception(env, "Unable to create BCM socket");
+    }
+    return fd;
+}
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_BcmMessage_getHeaderSize(JNIEnv *env, jclass class) {
     return sizeof(struct bcm_msg_head);
