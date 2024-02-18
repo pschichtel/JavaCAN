@@ -31,7 +31,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
-#include <time.h>
+#include <sys/time.h>
 
 #define GET_FILTERS_DEFAULT_AMOUNT 10
 
@@ -590,7 +590,6 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(
     jbyte priority = 0;
     jlong timestamp_seconds = 0;
     jlong timestamp_nanos = 0;
-    struct timespec* timestamp;
     for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&header); cmsg; cmsg = CMSG_NXTHDR(&header, cmsg)) {
         if (cmsg->cmsg_level == SOL_CAN_J1939) {
             switch (cmsg->cmsg_type) {
@@ -606,15 +605,8 @@ JNIEXPORT jobject JNICALL Java_tel_schich_javacan_SocketCAN_receiveJ1939Message(
                     priority = (jbyte) *CMSG_DATA(cmsg);
                     break;
             }
-        } else if (cmsg->cmsg_level == SOL_SOCKET) {
-            switch (cmsg->cmsg_type) {
-                case SO_TIMESTAMPNS:
-                case SO_TIMESTAMPING:
-                    timestamp = (struct timespec *) CMSG_DATA(cmsg);
-                    timestamp_seconds = timestamp->tv_sec;
-                    timestamp_nanos = timestamp->tv_nsec;
-                    break;
-            }
+        } else {
+            parse_timestamp(cmsg, &timestamp_seconds, &timestamp_nanos);
         }
     }
     return create_tel_schich_javacan_J1939ReceivedMessageHeader(env, bytes_received, timestamp_seconds, timestamp_nanos, dst_addr, dst_name, priority);

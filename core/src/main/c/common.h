@@ -26,6 +26,7 @@
 #include <jni.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/socket.h>
 
 #define MICROS_PER_SECOND 1000000
 
@@ -45,5 +46,6 @@ int set_boolean_opt(int sock, int level, int opt, bool enable);
 int get_boolean_opt(int sock, int level, int opt);
 short poll_single(int, short, int);
 void throw_native_exception(JNIEnv *env, char *msg);
+void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos);
 
 #endif

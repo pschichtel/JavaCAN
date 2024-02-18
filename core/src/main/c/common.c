@@ -29,6 +29,8 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <time.h>
+#include <linux/errqueue.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
@@ -172,4 +174,29 @@ void throw_native_exception(JNIEnv *env, char *msg) {
     int errorNumber = errno;
 
     throw_tel_schich_javacan_platform_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
+}
+
+void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos) {
+    struct timeval tv;
+    struct timespec ts;
+    struct scm_timestamping timestamping;
+    if (cmsg->cmsg_level == SOL_SOCKET) {
+        switch (cmsg->cmsg_type) {
+            case SO_TIMESTAMP:
+                memcpy(&tv, CMSG_DATA(cmsg), sizeof(tv));
+                *seconds = tv.tv_sec;
+                *nanos = tv.tv_usec * 1000;
+                break;
+            case SO_TIMESTAMPNS:
+                memcpy(&ts, CMSG_DATA(cmsg), sizeof(ts));
+                *seconds = ts.tv_sec;
+                *nanos = ts.tv_nsec;
+                break;
+            case SO_TIMESTAMPING:
+                memcpy(&timestamping, CMSG_DATA(cmsg), sizeof(timestamping));
+                *seconds = timestamping.ts[2].tv_sec;
+                *nanos = timestamping.ts[2].tv_nsec;
+                break;
+        }
+    }
 }
