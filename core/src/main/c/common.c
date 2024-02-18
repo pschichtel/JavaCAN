@@ -28,7 +28,7 @@
 #include <string.h>
 #include <poll.h>
 #include <sys/socket.h>
-#include <bits/types/struct_timeval.h>
+#include <sys/time.h>
 
 inline int create_can_raw_socket() {
     return socket(PF_CAN, SOCK_RAW, CAN_RAW);
