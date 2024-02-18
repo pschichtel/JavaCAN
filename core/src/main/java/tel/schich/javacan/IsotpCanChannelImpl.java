@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
 import java.nio.channels.NotYetBoundException;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -64,6 +65,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         return this.device != null;
     }
 
+    @NonNull
     @Override
     public synchronized NetworkDevice getDevice() {
         if (!isBound()) {

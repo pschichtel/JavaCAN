@@ -47,11 +47,7 @@ public final class ImmutableJ1939Address implements J1939Address {
     }
 
     @Override
-    public NetworkDevice getDevice() {
-        return device;
-    }
-
-    LinuxNetworkDevice getLinuxDevice() {
+    public LinuxNetworkDevice getDevice() {
         return device;
     }
 

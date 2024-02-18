@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -60,6 +61,7 @@ public class BcmCanChannel extends AbstractCanChannel {
         super(sock);
     }
 
+    @NonNull
     @Override
     public NetworkDevice getDevice() {
         if (!isBound()) {

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetBoundException;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -54,6 +55,7 @@ final class RawCanChannelImpl extends RawCanChannel {
         return this;
     }
 
+    @NonNull
     @Override
     public NetworkDevice getDevice() {
         if (!isBound()) {

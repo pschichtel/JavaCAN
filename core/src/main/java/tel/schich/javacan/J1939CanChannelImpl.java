@@ -52,7 +52,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
 
         ImmutableJ1939Address copy = address.copy();
         try {
-            SocketCAN.bindJ1939Address(getSocket(), copy.getLinuxDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
+            SocketCAN.bindJ1939Address(getSocket(), copy.getDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
 
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
@@ -65,7 +65,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
         ImmutableJ1939Address copy = address.copy();
         try {
-            SocketCAN.connectJ1939Address(getSocket(), copy.getLinuxDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
+            SocketCAN.connectJ1939Address(getSocket(), copy.getDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
         } catch (LinuxNativeOperationException e) {
             throw checkForClosedChannel(e);
         }
@@ -120,31 +120,28 @@ final class J1939CanChannelImpl extends J1939CanChannel {
 
     @Override
     public long send(@NonNull ByteBuffer buffer) throws IOException {
-        // TODO check for max message size
         return sendToSocket(buffer, 0);
     }
 
     @Override
-    public long send(@NonNull ByteBuffer buffer, @Nullable ImmutableJ1939Address destination) throws IOException {
-        ensureDirectBuffer(buffer);
-        // TODO check for max message size
-        final long deviceIndex;
-        final long name;
-        final int pgn;
-        final byte address;
-        if (destination != null) {
-            deviceIndex = destination.getLinuxDevice().getIndex();
-            name = destination.getName();
-            pgn = destination.getParameterGroupNumber();
-            address = destination.getAddress();
-        } else {
-            deviceIndex = 0;
-            name = ImmutableJ1939Address.NO_NAME;
-            pgn = ImmutableJ1939Address.NO_PGN;
-            address = ImmutableJ1939Address.NO_ADDR;
+    public long send(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
+        if (destination == null) {
+            return send(buffer);
         }
+        ensureDirectBuffer(buffer);
+
         final int offset = buffer.position();
-        final long bytesSent = SocketCAN.sendJ1939Message(getSocket(), buffer, offset, buffer.remaining(), 0, deviceIndex, name, pgn, address);
+        final long bytesSent = SocketCAN.sendJ1939Message(
+            getSocket(),
+            buffer,
+            offset,
+            buffer.remaining(),
+            0,
+            destination.getDevice().getIndex(),
+            destination.getName(),
+            destination.getParameterGroupNumber(),
+            destination.getAddress()
+        );
         buffer.position((int) (offset + bytesSent));
         return bytesSent;
     }

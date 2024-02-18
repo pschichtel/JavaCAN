@@ -60,7 +60,7 @@ public class J1939AddressBuffer implements J1939Address {
     }
 
     @Override
-    public NetworkDevice getDevice() {
+    public LinuxNetworkDevice getDevice() {
         return LinuxNetworkDevice.fromLinuxDeviceIndex(buffer.getInt(offset + DEVICE_INDEX_OFFSET));
     }
 

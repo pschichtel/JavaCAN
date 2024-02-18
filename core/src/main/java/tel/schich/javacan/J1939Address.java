@@ -22,13 +22,15 @@
  */
 package tel.schich.javacan;
 
+import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
+
 public interface J1939Address {
     long NO_NAME = 0L;
     int NO_PGN = 0x40000;
     byte NO_ADDR = (byte) 0xFF;
     byte IDLE_ADDR = (byte) 0xFE;
 
-    NetworkDevice getDevice();
+    LinuxNetworkDevice getDevice();
     long getName();
     int getParameterGroupNumber();
     byte getAddress();

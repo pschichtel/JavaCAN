@@ -117,5 +117,5 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract long send(@NonNull ByteBuffer buffer, @Nullable ImmutableJ1939Address destination) throws IOException;
+    public abstract long send(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;
 }
