@@ -27,6 +27,7 @@ import tel.schich.javacan.platform.linux.LinuxSocketOptionHandler;
 
 import java.io.IOException;
 import java.net.SocketOption;
+import java.nio.ByteBuffer;
 
 /**
  * This class provides ISOTP specific socket options supported by CAN sockets. This class is similar to
@@ -34,13 +35,14 @@ import java.net.SocketOption;
  */
 public class J1939CanSocketOptions {
 
+    public static final int MAX_FILTERS = SocketCAN.getJ1939MaxFilters();
+
     private J1939CanSocketOptions() {}
 
     /**
-     * J1939 Option
      * When set, j1939 will receive all packets, not just those with a destination
      * on the local system.
-     * default off. (0 is off, 1 is on)
+     * It is off by default.
      */
     public static final SocketOption<Boolean> SO_J1939_PROMISC = new CanSocketOption<>("SO_J1939_PROMISC", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
@@ -55,7 +57,7 @@ public class J1939CanSocketOptions {
     });
 
     /**
-     * J1939 Option
+     * TODO this is currently the only place where we support ERRQUEUE. drop it until demand exists?
      */
     public static final SocketOption<Boolean> SO_J1939_ERRQUEUE = new CanSocketOption<>("SO_J1939_ERRQUEUE", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
         @Override
@@ -70,15 +72,13 @@ public class J1939CanSocketOptions {
     });
 
     /**
-     * J1939 Option
      * To set the priority field for outgoing packets, the SO_J1939_SEND_PRIO can
      * be changed. This int field specifies the priority that will be used.
-     * j1939 defines a priority between 0 and 7 inclusive, 	 * with 7 the lowest priority.
+     * j1939 defines a priority between 0 and 7 inclusive, with 7 the lowest priority.
      * Per default, the priority is set to 6 (conforming J1939).
      * This priority socket option operates on the same value that is modified
      * with the SOL_SOCKET, SO_PRIORITY socket option, with a difference that SOL_SOCKET/SO_PRIORITY is defined with
-     * 0 the lowest priority. SOL_CAN_J1939/SO_J1939_SEND_PRIO inverts this value
-     * for you.
+     * 0 the lowest priority. SOL_CAN_J1939/SO_J1939_SEND_PRIO inverts this value for you.
      */
     public static final SocketOption<Integer> SO_J1939_SEND_PRIO = new CanSocketOption<>("SO_J1939_SEND_PRIO", Integer.class, new LinuxSocketOptionHandler<Integer>() {
         @Override
@@ -101,17 +101,36 @@ public class J1939CanSocketOptions {
     });
 
     /**
-     * TODO document
+     * Sets the filters for J1939 sockets.
      */
-    public static final SocketOption<Integer> SO_J1939_FILTER = new CanSocketOption<>("SO_J1939_FILTER", Integer.class, new LinuxSocketOptionHandler<Integer>() {
+    public static final SocketOption<J1939Filter[]> SO_J1939_FILTER = new CanSocketOption<>("SO_J1939_FILTER", J1939Filter[].class, new LinuxSocketOptionHandler<J1939Filter[]>() {
         @Override
-        public void set(int sock, Integer val, boolean validate) throws IOException {
-            throw new UnsupportedOperationException("TODO implement J1939 filters!");
+        public void set(int sock, J1939Filter[] val, boolean validate) throws IOException {
+            if (validate && val.length > MAX_FILTERS) {
+                throw new IllegalArgumentException("Only " + MAX_FILTERS + " filters are allowed for J1939!");
+            }
+
+            int bufferSize = val.length * J1939Filter.BYTES;
+            ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+            for (J1939Filter f : val) {
+                f.writeTo(buffer);
+            }
+            buffer.flip();
+            SocketCAN.setJ1939Filters(sock, buffer, buffer.position(), buffer.remaining());
         }
 
         @Override
-        public Integer get(int sock) throws IOException {
-            throw new UnsupportedOperationException("TODO implement J1939 filters!");
+        public J1939Filter[] get(int sock) throws IOException {
+            int bufferSize = MAX_FILTERS * J1939Filter.BYTES;
+            ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+            int bytesWritten = SocketCAN.getJ1939Filters(sock, buffer, buffer.position(), buffer.remaining());
+            buffer.position(bytesWritten);
+            buffer.flip();
+            J1939Filter[] output = new J1939Filter[bytesWritten / J1939Filter.BYTES];
+            for (int i = 0; i < output.length; ++i) {
+                output[i] = J1939Filter.readFrom(buffer);
+            }
+            return output;
         }
     });
 }

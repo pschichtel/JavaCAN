@@ -26,6 +26,11 @@ import java.nio.ByteBuffer;
 
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
+/**
+ * This class is the central interface to the native world.
+ * While its methods are public, the class itself is package private as this is only meant for internal consumption.
+ * This is not a stable interface and can change at any point!
+ */
 class SocketCAN {
 
     static {
@@ -122,53 +127,12 @@ class SocketCAN {
 
     public static native IsotpLinkLayerOptions getIsotpLlOpts(int sock) throws LinuxNativeOperationException;
 
-	/**
-	 * When set, j1939 will receive all packets, not just those with a destination
-	 * on the local system.
-	 * default off.
-	 *
-	 * @param sock
-	 * @param promisc 0 to disable, 1 to enable
-	 * @return
-	 * @throws LinuxNativeOperationException
-	 */
 	public static native int setJ1939PromiscuousMode(int sock, int promisc) throws LinuxNativeOperationException;
 
-	/**
-	 * When set, j1939 will receive all packets, not just those with a destination
-	 * on the local system.
-	 *
-	 * @param sock
-	 * @return 0 if disabled, 1 if enabled
-	 * @throws LinuxNativeOperationException
-	 */
 	public static native int getJ1939PromiscuousMode(int sock) throws LinuxNativeOperationException;
 
-	/**
-	 * To set the priority field for outgoing packets, the SO_J1939_SEND_PRIO can
-	 * be changed. This int field specifies the priority that will be used.
-	 * j1939 defines a priority between 0 and 7 inclusive, 	 * with 7 the lowest priority.
-	 * Per default, the priority is set to 6 (conforming J1939).
-	 * This priority socket option operates on the same value that is modified
-	 * with the SOL_SOCKET, SO_PRIORITY socket option, with a difference that SOL_SOCKET/SO_PRIORITY is defined with
-	 * 0 the lowest priority. SOL_CAN_J1939/SO_J1939_SEND_PRIO inverts this value
-	 * for you.
-	 *
-	 * @param sock
-	 * @param sendprio Priority, 0 to 7
-	 * @return
-	 * @throws LinuxNativeOperationException
-	 */
 	public static native int setJ1939SendPriority(int sock, int sendprio) throws LinuxNativeOperationException;
 
-	/**
-	 * Get the priority field for outgoing packets. This int field specifies the priority that will be used.
-	 * j1939 defines a priority between 0 and 7 inclusive, with 7 the lowest priority.
-	 *
-	 * @param sock
-	 * @return 0 to 7
-	 * @throws LinuxNativeOperationException
-	 */
 	public static native int getJ1939SendPriority(int sock) throws LinuxNativeOperationException;
 
 	public static native int setJ1939ErrQueue(int sock, int recvown) throws LinuxNativeOperationException;
@@ -178,4 +142,10 @@ class SocketCAN {
     public static native J1939ReceivedMessageHeader receiveJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long source_ifindex, long source_name, int source_pgn, byte source_address) throws LinuxNativeOperationException;
 
     public static native long sendJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long destination_ifindex, long destination_name, int destination_pgn, byte destination_address) throws LinuxNativeOperationException;
+
+    public static native int getJ1939MaxFilters();
+
+    public static native int setJ1939Filters(int sock, ByteBuffer buffer, int offset, int len) throws LinuxNativeOperationException;
+
+    public static native int getJ1939Filters(int sock, ByteBuffer buffer, int offset, int len) throws LinuxNativeOperationException;
 }

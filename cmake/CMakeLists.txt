@@ -15,7 +15,8 @@ add_library(javacan-core
         ../core/src/main/c/javacan_bcmmessage.c
         ../core/src/main/c/javacan_bufferhelper.c
         ../core/src/main/c/javacan_networkdevice.c
-        ../core/src/main/c/javacan_socketcan.c)
+        ../core/src/main/c/javacan_socketcan.c
+        ../core/src/main/c/javacan_j1939.c)
 
 add_library(javacan-epoll
         ../epoll/src/main/c/javacan_epoll.c)

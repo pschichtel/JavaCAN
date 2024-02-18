@@ -134,7 +134,6 @@ public class CanSocketOptions {
 
         @Override
         public void set(int sock, CanFilter[] val, boolean validate) throws IOException {
-
             if (validate) {
 
                 if (val.length > MAX_FILTERS) {

@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.J1939Address;
 import tel.schich.javacan.J1939CanChannel;
+import tel.schich.javacan.J1939CanSocketOptions;
+import tel.schich.javacan.J1939Filter;
 import tel.schich.javacan.J1939ReceivedMessageHeader;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
@@ -119,5 +121,22 @@ class J1939CanSocketTest {
         });
 
         assertEquals(13, e.getErrorNumber());
+    }
+
+    @Test
+    void testFilters() throws Exception {
+        J1939Address addr = new J1939Address(CAN_INTERFACE);
+        try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
+            channel.bind(addr);
+
+            final J1939Filter[] filters = {
+                new J1939Filter(0L, 0L, 0, 0, (byte) 0, (byte) 0),
+            };
+            channel.setOption(J1939CanSocketOptions.SO_J1939_FILTER, filters);
+
+            // getsockopt is not currently implemented for SO_J1939_FILTER
+            // assertArrayEquals(filters, channel.getOption(J1939CanSocketOptions.SO_J1939_FILTER));
+        }
+
     }
 }
