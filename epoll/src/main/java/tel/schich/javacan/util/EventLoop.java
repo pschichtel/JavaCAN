@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.util;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tel.schich.javacan.select.IOEvent;
@@ -60,7 +61,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     private PollingThread poller;
     private final Object pollerLock = new Object();
 
-    public EventLoop(String name, ThreadFactory threadFactory, IOSelector<HandleType> selector, Duration timeout) {
+    public EventLoop(String name, @NonNull ThreadFactory threadFactory, IOSelector<HandleType> selector, @NonNull Duration timeout) {
         this.name = name;
         this.threadFactory = threadFactory;
         this.selector = selector;
@@ -73,6 +74,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      *
      * @return the thread factory
      */
+    @NonNull
     public ThreadFactory getThreadFactory() {
         return threadFactory;
     }
@@ -82,6 +84,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      *
      * @return the timeout as a {@link java.time.Duration}
      */
+    @NonNull
     public Duration getTimeout() {
         return timeout;
     }
@@ -116,7 +119,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      * Passes the call through to the underlying {@link java.nio.channels.Selector}.
      *
      * @param timeout the timeout in milliseconds
-     * @return the number of events
+     * @return the list of events
      * @throws IOException if the native call fails
      */
     protected final List<IOEvent<HandleType>> select(Duration timeout) throws IOException {
@@ -141,9 +144,12 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     }
 
     /**
+     * <p>
      * Starts the polling loop of this event loop.
-     *
+     * </p>
+     * <p>
      * A direct call is not necessary, as implementations should start the loop upon adding a channel.
+     * </p>
      */
     public final void start() {
         if (!selector.isOpen()) {
@@ -161,9 +167,12 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     }
 
     /**
+     * <p>
      * Shuts down this event loop, even if currently blocking in a poll call.
-     *
+     * </p>
+     * <p>
      * The event loop is automatically shutdown when no channels are registered.
+     * </p>
      *
      * @throws InterruptedException if the joining the polling thread gets interrupted
      */
@@ -196,7 +205,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      */
     protected final boolean poll(Duration timeout) throws IOException {
         if (lazyShutdown()) {
-            return true;
+            return false;
         }
         List<IOEvent<HandleType>> events = select(timeout);
         if (!events.isEmpty()) {
@@ -234,10 +243,13 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     protected abstract boolean isEmpty();
 
     /**
+     * <p>
      * Processes the events for the provided {@link java.nio.channels.SelectionKey}s.
-     *
+     * </p>
+     * <p>
      * The provided iterator can be iterated once to retrieve the keys. Processed events should be removed while
      * iterating.
+     * </p>
      *
      * @param selectedKeys the keys
      * @throws IOException if the implementation has IO failures

@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 public interface J1939Address {
@@ -30,10 +31,12 @@ public interface J1939Address {
     byte NO_ADDR = (byte) 0xFF;
     byte IDLE_ADDR = (byte) 0xFE;
 
+    @NonNull
     LinuxNetworkDevice getDevice();
     long getName();
     int getParameterGroupNumber();
     byte getAddress();
 
+    @NonNull
     ImmutableJ1939Address copy();
 }

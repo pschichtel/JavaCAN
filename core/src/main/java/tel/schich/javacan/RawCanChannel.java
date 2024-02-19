@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -62,6 +64,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed or invalid data was read.
      * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      */
+    @NonNull
     public abstract CanFrame read() throws IOException;
 
     /**
@@ -71,6 +74,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed or invalid data was read.
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
      */
+    @NonNull
     public abstract CanFrame receive() throws IOException;
 
     /**
@@ -82,6 +86,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed, the supplied buffer was insufficient or invalid data was read.
      * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      */
+    @NonNull
     public abstract CanFrame read(ByteBuffer buffer) throws IOException;
 
     /**
@@ -93,6 +98,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed, the supplied buffer was insufficient or invalid data was read.
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
      */
+    @NonNull
     public abstract CanFrame receive(ByteBuffer buffer) throws IOException;
 
     /**
@@ -137,6 +143,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed.
      * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      */
+    @NonNull
     public abstract RawCanChannel write(CanFrame frame) throws IOException;
 
     /**
@@ -147,6 +154,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @throws IOException if the IO operations failed.
      * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">write man page</a>
      */
+    @NonNull
     public abstract RawCanChannel send(CanFrame frame) throws IOException;
 
     /**
@@ -186,6 +194,7 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      *
      * @return a new buffer ready to be used.
      */
+    @NonNull
     public static ByteBuffer allocateSufficientMemory() {
         return JavaCAN.allocateOrdered(FD_MTU + 1);
     }

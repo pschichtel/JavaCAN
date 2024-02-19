@@ -44,6 +44,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         super(sock);
     }
 
+    @NonNull
     @Override
     public J1939CanChannel bind(@NonNull J1939Address address) throws IOException {
         if (isBound()) {
@@ -61,6 +62,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         return this;
     }
 
+    @NonNull
     @Override
     public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
         ImmutableJ1939Address copy = address.copy();
@@ -73,6 +75,7 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         return this;
     }
 
+    @NonNull
     @Override
     public NetworkDevice getDevice() {
         if (!isBound()) {

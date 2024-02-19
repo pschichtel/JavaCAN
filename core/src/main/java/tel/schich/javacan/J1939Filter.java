@@ -22,9 +22,6 @@
  */
 package tel.schich.javacan;
 
-
-import tel.schich.jniaccess.JNIAccess;
-
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -55,7 +52,6 @@ public final class J1939Filter {
     private final byte addr;
     private final byte addrMask;
 
-    @JNIAccess
     public J1939Filter(long name, long nameMask, int parameterGroupNumber, int parameterGroupNumberMask, byte addr, byte addrMask) {
         this.name = name;
         this.nameMask = nameMask;

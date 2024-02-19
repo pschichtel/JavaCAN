@@ -87,6 +87,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return this channel
      * @throws IOException if the device is no {@link LinuxNetworkDevice} or the operation faild
      */
+    @NonNull
     public BcmCanChannel connect(NetworkDevice device) throws IOException {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
@@ -107,6 +108,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return the message
      * @throws IOException if the socket is not readable
      */
+    @NonNull
     public BcmMessage read() throws IOException {
         ByteBuffer frameBuf = JavaCAN.allocateOrdered(MTU);
         return read(frameBuf);
@@ -123,6 +125,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @throws IOException              if the socket is not readable
      * @throws BufferUnderflowException if the buffer capacity is to small to hold the message
      */
+    @NonNull
     public BcmMessage read(ByteBuffer buffer) throws IOException {
         buffer.order(ByteOrder.nativeOrder());
         readSocket(buffer);
@@ -138,6 +141,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return this channel
      * @throws IOException if the message was not completely written
      */
+    @NonNull
     public BcmCanChannel write(BcmMessage message) throws IOException {
         ByteBuffer buffer = message.getBuffer();
         int bytesToWrite = buffer.remaining();

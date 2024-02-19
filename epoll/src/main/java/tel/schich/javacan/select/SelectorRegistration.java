@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan.select;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.nio.channels.Channel;
 import java.util.Set;
 
@@ -37,6 +39,7 @@ public interface SelectorRegistration<HandleType, ChannelType extends Channel> e
      *
      * @return the handle
      */
+    @NonNull
     HandleType getHandle();
 
     /**
@@ -44,6 +47,7 @@ public interface SelectorRegistration<HandleType, ChannelType extends Channel> e
      *
      * @return the selector
      */
+    @NonNull
     IOSelector<HandleType> getSelector();
 
     /**
@@ -51,6 +55,7 @@ public interface SelectorRegistration<HandleType, ChannelType extends Channel> e
      *
      * @return the channel
      */
+    @NonNull
     ChannelType getChannel();
 
     /**
@@ -59,6 +64,7 @@ public interface SelectorRegistration<HandleType, ChannelType extends Channel> e
      *
      * @return the set of operations this registration is interested in
      */
+    @NonNull
     Set<Operation> getOperations();
 
     /**

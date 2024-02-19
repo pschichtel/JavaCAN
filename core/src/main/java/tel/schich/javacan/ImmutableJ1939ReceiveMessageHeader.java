@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -45,11 +47,13 @@ public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMes
         this.priority = priority;
     }
 
+    @NonNull
     @Override
     public ImmutableJ1939Address getSourceAddress() {
         return sourceAddress;
     }
 
+    @NonNull
     @Override
     public Instant getTimestamp() {
         return timestamp;
@@ -70,6 +74,7 @@ public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMes
         return priority;
     }
 
+    @NonNull
     @Override
     public ImmutableJ1939ReceiveMessageHeader copy() {
         return this;

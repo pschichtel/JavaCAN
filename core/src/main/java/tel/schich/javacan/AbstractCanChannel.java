@@ -80,6 +80,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         return sock;
     }
 
+    @NonNull
     @Override
     public UnixFileDescriptor getHandle() {
         return fileDescriptor;

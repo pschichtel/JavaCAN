@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan.platform.linux.epoll;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.UnixFileDescriptor;
 import tel.schich.javacan.select.IOEvent;
@@ -40,11 +41,14 @@ import java.util.*;
 import static java.util.Collections.newSetFromMap;
 
 /**
+ * <p>
  * This is an implementation of the {@link IOSelector} API relying on Linux' epoll API to poll for
  * IO events from an arbitrary amount of file descriptors. The implementation is inspired by Java's
  * own epoll-based {@link java.nio.channels.Selector} implementation.
- *
+ * </p>
+ * <p>
  * This implementation does not expose any more public APIs.
+ * </p>
  *
  * @see <a href="https://man7.org/linux/man-pages/man7/epoll.7.html">epoll man page</a>
  */
@@ -116,6 +120,7 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
             throw new ClosedSelectorException();
     }
 
+    @NonNull
     public <ChannelType extends Channel> EPollRegistration<ChannelType> updateRegistration(SelectorRegistration<UnixFileDescriptor, ChannelType> key, Set<SelectorRegistration.Operation> newOps) throws IOException {
         ensureOpen();
         if (key.getSelector() != this) {
@@ -144,6 +149,7 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         }
     }
 
+    @NonNull
     public <ChannelType extends Channel> EPollRegistration<ChannelType> register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws IOException {
         ensureOpen();
         if (!ch.isOpen()) {
@@ -186,6 +192,7 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         return newOps;
     }
 
+    @NonNull
     private static Set<SelectorRegistration.Operation> translateInterestsFromEPoll(int ops) {
         Set<SelectorRegistration.Operation> newOps = EnumSet.noneOf(SelectorRegistration.Operation.class);
         if ((ops & EPoll.EPOLLIN) != 0)
@@ -220,6 +227,7 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         return true;
     }
 
+    @NonNull
     private List<IOEvent<UnixFileDescriptor>> poll(long timeout) throws IOException {
         ensureOpen();
 
@@ -252,16 +260,19 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         return ioEvents;
     }
 
+    @NonNull
     @Override
     public List<IOEvent<UnixFileDescriptor>> selectNow() throws IOException {
         return poll(SELECT_NO_BLOCKING);
     }
 
+    @NonNull
     @Override
     public List<IOEvent<UnixFileDescriptor>> select(Duration timeout) throws IOException {
         return poll(timeout == null ? SELECT_BLOCK_INDEFINITELY : timeout.toMillis());
     }
 
+    @NonNull
     @Override
     public List<IOEvent<UnixFileDescriptor>> select() throws IOException {
         return poll(SELECT_BLOCK_INDEFINITELY);
@@ -277,10 +288,12 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         }
     }
 
+    @NonNull
     public static EPollSelector open() throws IOException {
         return new EPollSelector();
     }
 
+    @NonNull
     public static EPollSelector open(int maxEvents) throws IOException {
         return new EPollSelector(maxEvents);
     }

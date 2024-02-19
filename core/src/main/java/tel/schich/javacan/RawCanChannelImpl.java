@@ -69,6 +69,7 @@ final class RawCanChannelImpl extends RawCanChannel {
         return this.device != null;
     }
 
+    @NonNull
     @Override
     public CanFrame read() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
@@ -76,6 +77,7 @@ final class RawCanChannelImpl extends RawCanChannel {
         return read(frameBuf);
     }
 
+    @NonNull
     @Override
     public CanFrame receive() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
@@ -83,12 +85,14 @@ final class RawCanChannelImpl extends RawCanChannel {
         return receive(frameBuf);
     }
 
+    @NonNull
     @Override
     public CanFrame read(ByteBuffer buffer) throws IOException {
         readUnsafe(buffer);
         return CanFrame.create(buffer);
     }
 
+    @NonNull
     @Override
     public CanFrame receive(ByteBuffer buffer) throws IOException {
         receiveUnsafe(buffer);
@@ -109,6 +113,7 @@ final class RawCanChannelImpl extends RawCanChannel {
         return bytesRead;
     }
 
+    @NonNull
     @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
         long written = writeUnsafe(frame.getBuffer());
@@ -117,6 +122,7 @@ final class RawCanChannelImpl extends RawCanChannel {
         return this;
     }
 
+    @NonNull
     @Override
     public RawCanChannel send(CanFrame frame) throws IOException {
         long written = sendUnsafe(frame.getBuffer());

@@ -41,6 +41,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         super(sock);
     }
 
+    @NonNull
     @Override
     public synchronized IsotpCanChannel bind(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (isBound()) {
@@ -74,6 +75,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         return this.device;
     }
 
+    @NonNull
     @Override
     public synchronized IsotpSocketAddress getRxAddress() {
         if (!isBound()) {
@@ -82,6 +84,7 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         return this.rx;
     }
 
+    @NonNull
     @Override
     public synchronized IsotpSocketAddress getTxAddress() {
         if (!isBound()) {

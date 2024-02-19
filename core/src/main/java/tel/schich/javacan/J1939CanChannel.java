@@ -55,6 +55,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
+    @NonNull
     public abstract J1939CanChannel bind(@NonNull J1939Address address) throws IOException;
 
     /**
@@ -69,6 +70,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/connect.2.html">connect man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
+    @NonNull
     public abstract J1939CanChannel connect(@NonNull J1939Address address) throws IOException;
 
     /**

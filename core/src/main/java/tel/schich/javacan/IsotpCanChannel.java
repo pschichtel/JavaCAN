@@ -22,9 +22,10 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.spi.SelectorProvider;
 
 /**
  * This is the base class for ISOTP channels providing a minimal interface to send and receive messages.
@@ -58,6 +59,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * @throws IOException if the native calls fail
      * @throws java.nio.channels.AlreadyBoundException if this channel has already been bound
      */
+    @NonNull
     public abstract IsotpCanChannel bind(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException;
 
     /**
@@ -66,6 +68,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * @return the receiving address
      * @throws java.nio.channels.NotYetBoundException if the channel has not been bound yet
      */
+    @NonNull
     public abstract IsotpSocketAddress getRxAddress();
 
     /**
@@ -74,6 +77,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      * @return the transmitting address
      * @throws java.nio.channels.NotYetBoundException if the channel has not been bound yet
      */
+    @NonNull
     public abstract IsotpSocketAddress getTxAddress();
 
     /**
@@ -105,6 +109,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      *
      * @return the newly allocated buffer
      */
+    @NonNull
     public static ByteBuffer allocateSufficientMemory() {
         return JavaCAN.allocateUnordered(MAX_MESSAGE_LENGTH + 1);
     }

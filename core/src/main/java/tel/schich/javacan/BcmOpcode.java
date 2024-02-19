@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 /**
  * The BcmOpcode defines the operation for the broadcast manager to carry out, or details the
  * broadcast managers response to several events, including user requests.
@@ -109,6 +111,7 @@ public enum BcmOpcode {
      * @return the opcode
      * @throws IllegalArgumentException on an unknown op-code
      */
+    @NonNull
     public static BcmOpcode fromNative(int nativeOpcode) {
         for (BcmOpcode opcode : values()) {
             if (nativeOpcode == opcode.nativeOpcode) {

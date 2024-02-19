@@ -22,6 +22,7 @@
  */
 package tel.schich.javacan;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.util.BufferHelper;
 
 import java.nio.ByteBuffer;
@@ -120,6 +121,7 @@ public class CanFrame {
      *
      * @return the backing buffer
      */
+    @NonNull
     public ByteBuffer getBuffer() {
         this.buffer.clear()
                    .position(base)
@@ -257,6 +259,7 @@ public class CanFrame {
      *
      * @return a deep copy of this frame
      */
+    @NonNull
     public CanFrame copy() {
         ByteBuffer view = buffer.duplicate();
         ByteBuffer copy = ByteBuffer.allocate(size);
@@ -320,17 +323,21 @@ public class CanFrame {
     }
 
     /**
+     * <p>
      * Creates a new frame from the given ID (full 32 bit as the kernel expects it), flags (ignored for non-FD frames)
      * and data. The given data buffer will be copied into a direct {@link java.nio.ByteBuffer} which will then be used
      * as the backing buffer for the frame.
-     *
+     * </p>
+     * <p>
      * This overload uses the entire data buffer.
+     * </p>
      *
      * @param id the CAN ID
      * @param flags the CAN FD flags, ignored for non-FD frames
      * @param data the data
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame create(int id, byte flags, byte[] data) {
         return create(id, flags, data, 0, data.length);
     }
@@ -347,6 +354,7 @@ public class CanFrame {
      * @param length amount of bytes to use from data
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame create(int id, byte flags, byte[] data, int offset, int length) {
         return create(id, false, flags, data, offset, length);
     }
@@ -361,6 +369,7 @@ public class CanFrame {
      * @param data the data
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame createExtended(int id, byte flags, byte[] data) {
         return createExtended(id, flags, data, 0, data.length);
     }
@@ -377,10 +386,12 @@ public class CanFrame {
      * @param length amount of bytes to use from data
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame createExtended(int id, byte flags, byte[] data, int offset, int length) {
         return create(id, true, flags, data, offset, length);
     }
 
+    @NonNull
     private static CanFrame create(int id, boolean extended, byte flags, byte[] data, int offset, int length) {
         final int preparedId;
         if (extended) {
@@ -403,6 +414,7 @@ public class CanFrame {
      * @param length amount of bytes to use from data
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame createRaw(int id, byte flags, byte[] data, int offset, int length) {
         int bufSize;
         if (isFDFrame(flags, data.length)) {
@@ -427,6 +439,7 @@ public class CanFrame {
      * @param buffer the backing buffer for the frame
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame create(ByteBuffer buffer) {
         CanFrame frame = createUnsafe(buffer);
         int maxDlen = frame.getMaxDataLength();
@@ -439,15 +452,18 @@ public class CanFrame {
     }
 
     /**
+     * <p>
      * Create a new frame from the given {@link java.nio.ByteBuffer} expecting a valid CAN frame at the buffer's
      * position and a correct amount of remaining bytes.
-     *
+     * </p>
+     * <p>
      * This method is unsafe, because it does not verify the data length field, which may in rare cases not fit into
      * the buffer.
-     *
+     * </p>
      * @param buffer the backing buffer for the frame
      * @return the newly created frame
      */
+    @NonNull
     public static CanFrame createUnsafe(ByteBuffer buffer) {
         if (buffer.order() != ByteOrder.nativeOrder()) {
             throw new IllegalArgumentException("byte order (" + buffer.order() + ") of the given buffer must be the native order (" + ByteOrder.nativeOrder() + ")!");

@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import tel.schich.javacan.util.BufferHelper;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -141,8 +143,7 @@ public class BcmMessage {
      * @param canId see {@link #getCanId()}
      * @param frames see {@link #getFrames()}
      */
-    public BcmMessage(BcmOpcode opcode, Set<BcmFlag> flags, int count, Duration interval1, Duration interval2,
-                      int canId, List<CanFrame> frames) {
+    public BcmMessage(@NonNull BcmOpcode opcode, @NonNull Set<BcmFlag> flags, int count, @Nullable Duration interval1, @Nullable Duration interval2, int canId, @NonNull List<CanFrame> frames) {
         boolean fdFrames = frames.stream().anyMatch(CanFrame::isFDFrame);
         if (fdFrames && !flags.contains(BcmFlag.CAN_FD_FRAME)) {
             flags = new HashSet<>(flags); // the set might not be mutable
@@ -178,6 +179,7 @@ public class BcmMessage {
      *
      * @return the opcode
      */
+    @NonNull
     public BcmOpcode getOpcode() {
         return BcmOpcode.fromNative(buffer.getInt(base + OFFSET_OPCODE));
     }
@@ -187,6 +189,7 @@ public class BcmMessage {
      *
      * @return the flags
      */
+    @NonNull
     public Set<BcmFlag> getFlags() {
         return BcmFlag.fromNative(buffer.getInt(base + OFFSET_FLAGS));
     }
@@ -200,15 +203,14 @@ public class BcmMessage {
         return buffer.getInt(base + OFFSET_COUNT);
     }
 
-    /*
+    /**
      * The {@code interval1} has different meanings depending on the {@link #getOpcode()} of the
      * message:
      * <ul>
      * <li><strong>When used with {@link BcmOpcode#TX_SETUP}</strong>:<br>
-     * The broadcast manager sends {@link #getCount()} messages with this interval, then continue to
+     * The broadcast manager sends {@link #getCount()} messages with this interval, then continues to
      * send at {@link #getInterval2()}. If only one timer is needed set
-     * {@link BcmMessageBuilder#count(int) count} to {@code 0} and {@link BcmMessageBuilder#ival1
-     * interval1} to {@code null}.</li>
+     * {@link BcmMessage.Builder#count(int) count} to {@code 0} and {@link BcmMessage.Builder#interval1(Duration)} to {@code null}.</li>
      * <li><strong>When used with {@link BcmOpcode#RX_SETUP}</strong>:<br>
      * Send {@link BcmOpcode#RX_TIMEOUT} when a received message is not received again within the given
      * interval. When {@link BcmFlag#STARTTIMER} is set, the timeout detection is activated directly -
@@ -217,6 +219,7 @@ public class BcmMessage {
      *
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
+    @NonNull
     public Duration getInterval1() {
         return getIntervalAt(OFFSET_IVAL1_TV_SEC, OFFSET_IVAL1_TV_USEC);
     }
@@ -235,10 +238,12 @@ public class BcmMessage {
      *
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
+    @NonNull
     public Duration getInterval2() {
         return getIntervalAt(OFFSET_IVAL2_TV_SEC, OFFSET_IVAL2_TV_USEC);
     }
 
+    @NonNull
     private Duration getIntervalAt(int secOffset, int usecOffset) {
         long sec = getPlatformLong(buffer, base + secOffset);
         long usec = getPlatformLong(buffer, base + usecOffset);
@@ -273,6 +278,7 @@ public class BcmMessage {
      * @return the frame
      * @throws IllegalArgumentException if the message buffer contains no frame for that index
      */
+    @NonNull
     public CanFrame getFrame(int index) {
         int frameLength = frameLength(getFlags());
         return CanFrame.create(createFrameBuffer(index, frameLength));
@@ -283,6 +289,7 @@ public class BcmMessage {
      *
      * @return all frames of this message
      */
+    @NonNull
     public List<CanFrame> getFrames() {
         int nFrames = getFrameCount();
         if (nFrames == 0) {
@@ -302,11 +309,13 @@ public class BcmMessage {
      *
      * @return the backing buffer
      */
+    @NonNull
     public ByteBuffer getBuffer() {
         this.buffer.clear().position(base).limit(base + size);
         return this.buffer;
     }
 
+    @NonNull
     private ByteBuffer createFrameBuffer(int frameIndex, int frameLength) {
         ByteBuffer frameBuffer = buffer.duplicate().order(buffer.order());
         frameBuffer.position(base + OFFSET_FRAMES + frameIndex * frameLength)
@@ -417,12 +426,12 @@ public class BcmMessage {
             return this;
         }
 
-        public Builder interval1(Duration interval) {
+        public Builder interval1(@Nullable Duration interval) {
             this.interval1 = interval;
             return this;
         }
 
-        public Builder interval2(Duration interval) {
+        public Builder interval2(@Nullable Duration interval) {
             this.interval2 = interval;
             return this;
         }
