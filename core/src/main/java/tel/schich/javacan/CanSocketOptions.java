@@ -358,5 +358,9 @@ public class CanSocketOptions {
             Collections.addAll(set, flags);
             return new TimestampingFlagSet(set);
         }
+
+        public static TimestampingFlagSet all() {
+            return new TimestampingFlagSet(EnumSet.allOf(TimestampingFlag.class));
+        }
     }
 }

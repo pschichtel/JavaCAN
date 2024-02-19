@@ -26,13 +26,11 @@ import org.junit.jupiter.api.Test;
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.ImmutableJ1939Address;
 import tel.schich.javacan.J1939Address;
-import tel.schich.javacan.J1939AddressBuffer;
 import tel.schich.javacan.J1939CanChannel;
 import tel.schich.javacan.J1939CanSocketOptions;
 import tel.schich.javacan.J1939Filter;
 import tel.schich.javacan.ImmutableJ1939ReceiveMessageHeader;
 import tel.schich.javacan.J1939ReceiveMessageHeaderBuffer;
-import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -41,9 +39,7 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanSocketOptions.*;
-import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RAW_HARDWARE;
-import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.RX_SOFTWARE;
-import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.SOFTWARE;
+import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.*;
 import static tel.schich.javacan.J1939Address.NO_ADDR;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
@@ -132,6 +128,48 @@ class J1939CanSocketTest {
         }
     }
 
+    private static void testTimestamp(Configurer<J1939CanChannel> senderConfigurer, Configurer<J1939CanChannel> receiverConfigurer) throws Exception{
+        ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, 0, (byte) 0x20);
+        ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, (byte) 0x30);
+        J1939ReceiveMessageHeaderBuffer headerBuffer = new J1939ReceiveMessageHeaderBuffer();
+        final ByteBuffer buffer = directBufferOf(new byte[]{0x20, 0x33});
+
+        try (final J1939CanChannel a = CanChannels.newJ1939Channel()) {
+            a.bind(source);
+            a.connect(destination);
+            senderConfigurer.configure(a);
+
+            try (final J1939CanChannel b = CanChannels.newJ1939Channel()) {
+                b.bind(destination);
+                b.connect(source);
+                b.configureBlocking(true);
+                receiverConfigurer.configure(b);
+
+                a.send(buffer);
+                buffer.clear();
+                b.receive(buffer, headerBuffer);
+                assertEquals(Instant.now().getEpochSecond(), headerBuffer.getTimestamp().getEpochSecond());
+            }
+        }
+    }
+
+    @Test
+    void testTimestamp() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMP, true));
+    }
+
+    @Test
+    void testTimestampNs() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMPNS, true));
+    }
+
+    @Test
+    void testTimestamping() throws Exception {
+        final TimestampingFlagSet sendFlags = TimestampingFlagSet.of(SOFTWARE, RAW_HARDWARE, TX_SOFTWARE, TX_HARDWARE, TX_SCHED, OPT_TSONLY, OPT_ID);
+        final TimestampingFlagSet receiveFlags = TimestampingFlagSet.of(SOFTWARE, RAW_HARDWARE, RX_SOFTWARE, RX_HARDWARE, OPT_TSONLY, OPT_ID);
+        testTimestamp(ch -> ch.setOption(SO_TIMESTAMPING, sendFlags), ch -> ch.setOption(SO_TIMESTAMPING, receiveFlags));
+    }
+
     @Test
     void testConnectingToNoAddrFailsWithPermissionError() {
         ImmutableJ1939Address addr = new ImmutableJ1939Address(CAN_INTERFACE);
@@ -203,5 +241,9 @@ class J1939CanSocketTest {
         });
 
         assertEquals(77, e.getErrorNumber());
+    }
+
+    private interface Configurer<T> {
+        void configure(T subject) throws Exception;
     }
 }

@@ -95,8 +95,13 @@ void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos) {
                 break;
             case SO_TIMESTAMPING:
                 memcpy(&timestamping, CMSG_DATA(cmsg), sizeof(timestamping));
-                *seconds = timestamping.ts[2].tv_sec;
-                *nanos = timestamping.ts[2].tv_nsec;
+                if (timestamping.ts[2].tv_sec || timestamping.ts[2].tv_nsec) {
+                    *seconds = timestamping.ts[2].tv_sec;
+                    *nanos = timestamping.ts[2].tv_nsec;
+                } else if (timestamping.ts[0].tv_sec || timestamping.ts[0].tv_nsec) {
+                    *seconds = timestamping.ts[0].tv_sec;
+                    *nanos = timestamping.ts[0].tv_nsec;
+                }
                 break;
         }
     }
