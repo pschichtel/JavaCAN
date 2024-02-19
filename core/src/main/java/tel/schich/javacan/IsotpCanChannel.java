@@ -33,9 +33,8 @@ import java.nio.ByteBuffer;
 public abstract class IsotpCanChannel extends AbstractCanChannel {
     /**
      * The maximum message length.
-     *
-     * TODO this might actually depend on whether FD or non-FD frames are being used
      */
+    // TODO this might actually depend on whether FD or non-FD frames are being used
     public static final int MAX_MESSAGE_LENGTH = 4095;
 
     /**

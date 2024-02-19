@@ -36,7 +36,7 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
     private static final int DST_NAME_OFFSET = getStructDstNameOffset();
     private static final int PRIORITY_OFFSET = getStructPriorityOffset();
 
-    public static int BYTES = getStructSize();
+    public static final int BYTES = getStructSize();
 
     private final ByteBuffer buffer;
     private final int offset;

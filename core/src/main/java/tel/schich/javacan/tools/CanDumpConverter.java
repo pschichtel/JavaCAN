@@ -50,7 +50,7 @@ public class CanDumpConverter {
 
     private static final Pattern LINEPATTERN = Pattern.compile(
             " \\((\\d+-\\d+-\\d+ \\d+:\\d+:\\d+)(\\.\\d+)\\)\\s+(\\w+)\\s+(\\w+)\\s+\\[\\d\\]\\s+(.+)");
-    private static final DateFormat DATEFORMAT = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+    private static final DateFormat DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws IOException, ParseException {
         if (args.length < 2) {

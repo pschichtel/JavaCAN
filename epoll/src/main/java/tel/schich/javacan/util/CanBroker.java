@@ -74,11 +74,11 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
 
     private volatile boolean loopback = true;
 
-    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector) throws IOException {
+    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector) {
         this(threadFactory, selector, DEFAULT_TIMEOUT);
     }
 
-    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector, Duration timeout) throws IOException {
+    public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector, Duration timeout) {
         super("CAN", threadFactory, selector, timeout);
     }
 
