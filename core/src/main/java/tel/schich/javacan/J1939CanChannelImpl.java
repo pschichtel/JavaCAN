@@ -103,20 +103,24 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         }
         ensureDirectBuffer(buffer);
 
-        final int offset = buffer.position();
-        final ByteBuffer headerBuffer = messageHeaderBuffer.getBuffer();
-        final int headerOffset = messageHeaderBuffer.getOffset();
-        final long bytesReceived = SocketCAN.receiveWithJ1939Headers(
-            getSocket(),
-            buffer,
-            offset,
-            buffer.remaining(),
-            0,
-            headerBuffer,
-            headerOffset
-        );
-        buffer.position((int) (offset + bytesReceived));
-        return bytesReceived;
+        try {
+            final int offset = buffer.position();
+            final ByteBuffer headerBuffer = messageHeaderBuffer.getBuffer();
+            final int headerOffset = messageHeaderBuffer.getOffset();
+            final long bytesReceived = SocketCAN.receiveWithJ1939Headers(
+                getSocket(),
+                buffer,
+                offset,
+                buffer.remaining(),
+                0,
+                headerBuffer,
+                headerOffset
+            );
+            buffer.position((int) (offset + bytesReceived));
+            return bytesReceived;
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
     }
 
     @Override
@@ -131,19 +135,23 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         }
         ensureDirectBuffer(buffer);
 
-        final int offset = buffer.position();
-        final long bytesSent = SocketCAN.sendJ1939Message(
-            getSocket(),
-            buffer,
-            offset,
-            buffer.remaining(),
-            0,
-            destination.getDevice().getIndex(),
-            destination.getName(),
-            destination.getParameterGroupNumber(),
-            destination.getAddress()
-        );
-        buffer.position((int) (offset + bytesSent));
-        return bytesSent;
+        try {
+            final int offset = buffer.position();
+            final long bytesSent = SocketCAN.sendJ1939Message(
+                getSocket(),
+                buffer,
+                offset,
+                buffer.remaining(),
+                0,
+                destination.getDevice().getIndex(),
+                destination.getName(),
+                destination.getParameterGroupNumber(),
+                destination.getAddress()
+            );
+            buffer.position((int) (offset + bytesSent));
+            return bytesSent;
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
     }
 }
