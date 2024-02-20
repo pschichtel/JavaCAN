@@ -216,23 +216,18 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithJ1939Header
     return bytes_received;
 }
 
-JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_sendJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jlong destination_ifindex, jlong destination_name, jint destination_pgn, jbyte destination_address) {
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_sendJ1939Message(JNIEnv *env, jclass clazz, jint sock, jobject data, jint offset, jint len, jint flags, jint destination_ifindex, jlong destination_name, jint destination_pgn, jbyte destination_address) {
     void *raw_buf = (*env)->GetDirectBufferAddress(env, data);
     void *data_start = raw_buf + offset;
 
-    ssize_t bytes_sent;
-    if (destination_ifindex != 0) {
-        struct sockaddr_can src = {};
-        src.can_ifindex = (int) destination_ifindex;
-        src.can_family = AF_CAN;
-        src.can_addr.j1939.name = destination_name;
-        src.can_addr.j1939.pgn = destination_pgn;
-        src.can_addr.j1939.addr = destination_address;
-
-        bytes_sent = sendto(sock, data_start, len, flags, (const struct sockaddr *) &src, sizeof(src));
-    } else {
-        bytes_sent = sendto(sock, data_start, len, flags, NULL, 0);
-    }
+    struct sockaddr_can src = {
+        .can_ifindex = destination_ifindex,
+        .can_family = AF_CAN,
+        .can_addr.j1939.name = destination_name,
+        .can_addr.j1939.pgn = destination_pgn,
+        .can_addr.j1939.addr = destination_address,
+    };
+    ssize_t bytes_sent = sendto(sock, data_start, len, flags, (const struct sockaddr *) &src, sizeof(src));
 
     if (bytes_sent == -1) {
         throw_native_exception(env, "Unable to sendto to the socket");

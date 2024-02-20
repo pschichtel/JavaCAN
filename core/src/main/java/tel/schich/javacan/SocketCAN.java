@@ -141,7 +141,7 @@ class SocketCAN {
 
     public static native long receiveWithJ1939Headers(int sock, ByteBuffer buffer, int offset, int len, int flags, ByteBuffer headerBuffer, int headerOffset) throws LinuxNativeOperationException;
 
-    public static native long sendJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, long destination_ifindex, long destination_name, int destination_pgn, byte destination_address) throws LinuxNativeOperationException;
+    public static native long sendJ1939Message(int sock, ByteBuffer data, int offset, int len, int flags, int destination_ifindex, long destination_name, int destination_pgn, byte destination_address) throws LinuxNativeOperationException;
 
     public static native int getJ1939MaxFilters();
 
