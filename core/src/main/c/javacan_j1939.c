@@ -297,15 +297,15 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructDevic
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructNameOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct sockaddr_can, can_addr);
+    return offsetof(struct sockaddr_can, can_addr.j1939.name);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructPgnOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct sockaddr_can, can_addr) + sizeof(uint64_t);
+    return offsetof(struct sockaddr_can, can_addr.j1939.pgn);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939AddressBuffer_getStructAddrOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct sockaddr_can, can_addr) + sizeof(uint64_t) + sizeof(uint32_t);
+    return offsetof(struct sockaddr_can, can_addr.j1939.addr);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructSize(JNIEnv *env, jclass clazz) {
