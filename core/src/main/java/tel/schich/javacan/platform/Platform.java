@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan.platform;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,12 +71,10 @@ public class Platform {
         }
     }
 
-    @NonNull
     public static String classPathPropertyNameForLibrary(String name) {
         return PATH_PROP_PREFIX + name.toLowerCase() + PATH_PROP_CLASS_PATH;
     }
 
-    @NonNull
     public static String detectCpuArch() {
         String arch = System.getProperty("os.arch").toLowerCase();
         if (arch.contains("arm")) {

@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.jniaccess.JNIAccess;
 
 import java.util.Objects;
@@ -53,7 +52,6 @@ public class IsotpLinkLayerOptions {
         return maximumTransmissionUnit;
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withMaximumTransmissionUnit(byte maximumTransmissionUnit) {
         return new IsotpLinkLayerOptions(
                 maximumTransmissionUnit,
@@ -62,7 +60,6 @@ public class IsotpLinkLayerOptions {
         );
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withMaximumTransmissionUnit(int maximumTransmissionUnit) {
         return withMaximumTransmissionUnit((byte) maximumTransmissionUnit);
     }
@@ -71,7 +68,6 @@ public class IsotpLinkLayerOptions {
         return transmissionDataLength;
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withTransmissionDataLength(byte transmissionDataLength) {
         return new IsotpLinkLayerOptions(
                 maximumTransmissionUnit,
@@ -80,7 +76,6 @@ public class IsotpLinkLayerOptions {
         );
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withTransmissionDataLength(int transmissionDataLength) {
         return withTransmissionDataLength((byte) transmissionDataLength);
     }
@@ -89,7 +84,6 @@ public class IsotpLinkLayerOptions {
         return transmissionFlags;
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withTransmissionFlags(byte transmissionFlags) {
         return new IsotpLinkLayerOptions(
                 maximumTransmissionUnit,
@@ -98,7 +92,6 @@ public class IsotpLinkLayerOptions {
         );
     }
 
-    @NonNull
     public IsotpLinkLayerOptions withTransmissionFlags(int transmissionFlags) {
         return withTransmissionFlags((byte) transmissionFlags);
     }

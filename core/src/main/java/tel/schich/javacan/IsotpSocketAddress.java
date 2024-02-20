@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.net.SocketAddress;
 import java.util.Objects;
 
@@ -51,7 +49,6 @@ public class IsotpSocketAddress extends SocketAddress {
      *
      * @return the return address
      */
-    @NonNull
     public IsotpSocketAddress returnAddress() {
         return new IsotpSocketAddress(IsotpAddress.returnAddress(id));
     }
@@ -100,7 +97,6 @@ public class IsotpSocketAddress extends SocketAddress {
      * @param id the CAN ID
      * @return the new address instance
      */
-    @NonNull
     public static IsotpSocketAddress isotpAddress(int id) {
         return new IsotpSocketAddress(id);
     }

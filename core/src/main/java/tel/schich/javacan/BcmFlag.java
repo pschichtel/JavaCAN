@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -116,7 +114,6 @@ public enum BcmFlag {
      * @param nativeFlags from CAN socket
      * @return the set of flags
      */
-    @NonNull
     public static Set<BcmFlag> fromNative(int nativeFlags) {
         EnumSet<BcmFlag> flags = EnumSet.noneOf(BcmFlag.class);
         for (BcmFlag flag : values()) {

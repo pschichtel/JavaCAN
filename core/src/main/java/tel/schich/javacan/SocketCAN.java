@@ -24,7 +24,6 @@ package tel.schich.javacan;
 
 import java.nio.ByteBuffer;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 /**
@@ -86,7 +85,6 @@ class SocketCAN {
 
     public static native int setFilters(int sock, ByteBuffer data) throws LinuxNativeOperationException;
 
-    @NonNull
     public static native ByteBuffer getFilters(int sock) throws LinuxNativeOperationException;
 
     public static native int setLoopback(int sock, boolean enable) throws LinuxNativeOperationException;
@@ -111,12 +109,10 @@ class SocketCAN {
 
     public static native int setIsotpOpts(int sock, int flags, int frameTxTime, byte extAddress, byte txpadContent, byte rxpadContent, byte rxExtAddress) throws LinuxNativeOperationException;
 
-    @NonNull
     public static native IsotpOptions getIsotpOpts(int sock) throws LinuxNativeOperationException;
 
     public static native int setIsotpRecvFc(int sock, byte bs, byte stmin, byte wftmax) throws LinuxNativeOperationException;
 
-    @NonNull
     public static native IsotpFlowControlOptions getIsotpRecvFc(int sock) throws LinuxNativeOperationException;
 
     public static native int setIsotpTxStmin(int sock, int txStmin) throws LinuxNativeOperationException;

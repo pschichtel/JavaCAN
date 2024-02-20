@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.jniaccess.JNIAccess;
 
 import java.util.EnumSet;
@@ -89,7 +88,6 @@ public class IsotpOptions {
         return flags;
     }
 
-    @NonNull
     public IsotpOptions withRawFlags(int rawFlags) {
         return new IsotpOptions(
                 rawFlags,
@@ -101,7 +99,6 @@ public class IsotpOptions {
         );
     }
 
-    @NonNull
     public IsotpOptions withFlags(Set<Flag> flags) {
         return new IsotpOptions(
                 flags,
@@ -113,7 +110,6 @@ public class IsotpOptions {
         );
     }
 
-    @NonNull
     public IsotpOptions withFlag(Flag flag) {
         EnumSet<Flag> flags = EnumSet.copyOf(this.flags);
         flags.add(flag);
@@ -124,7 +120,6 @@ public class IsotpOptions {
         return frameTransmissionTime;
     }
 
-    @NonNull
     public IsotpOptions withFrameTransmissionTime(int frameTransmissionTime) {
         return new IsotpOptions(
                 rawFlags,
@@ -141,7 +136,6 @@ public class IsotpOptions {
         return extendedTransmissionAddress;
     }
 
-    @NonNull
     public IsotpOptions ExtendedTransmissionAddress(byte extendedTransmissionAddress) {
         return new IsotpOptions(
                 rawFlags,
@@ -158,7 +152,6 @@ public class IsotpOptions {
         return transmissionPadding;
     }
 
-    @NonNull
     public IsotpOptions withTransmissionPadding(byte transmissionPadding) {
         return new IsotpOptions(
                 rawFlags,
@@ -175,7 +168,6 @@ public class IsotpOptions {
         return receivePadding;
     }
 
-    @NonNull
     public IsotpOptions withReceivePadding(byte receivePadding) {
         return new IsotpOptions(
                 rawFlags,
@@ -188,7 +180,6 @@ public class IsotpOptions {
         );
     }
 
-    @NonNull
     public IsotpOptions withPadding(byte transmissionPadding, byte receivePadding) {
         return new IsotpOptions(
                 rawFlags,
@@ -201,12 +192,10 @@ public class IsotpOptions {
         );
     }
 
-    @NonNull
     public IsotpOptions withPadding(byte padding) {
         return withPadding(padding, padding);
     }
 
-    @NonNull
     public IsotpOptions withPadding(int padding) {
         return withPadding((byte) padding);
     }
@@ -215,7 +204,6 @@ public class IsotpOptions {
         return extendedReceiveAddress;
     }
 
-    @NonNull
     public IsotpOptions withExtendedReceiveAddress(byte extendedReceiveAddress) {
         return new IsotpOptions(
                 rawFlags,
@@ -228,7 +216,6 @@ public class IsotpOptions {
         );
     }
 
-    @NonNull
     public IsotpOptions withExtendedAddresses(byte extendedTransmissionAddress, byte extendedReceiveAddress) {
         return new IsotpOptions(
                 rawFlags,
@@ -300,7 +287,6 @@ public class IsotpOptions {
             return description;
         }
 
-        @NonNull
         public static Set<Flag> fromBits(int bits) {
             EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
             for (Flag flag : values()) {

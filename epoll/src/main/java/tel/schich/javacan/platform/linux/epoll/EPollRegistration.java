@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan.platform.linux.epoll;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.UnixFileDescriptor;
 import tel.schich.javacan.select.SelectorRegistration;
 
@@ -62,23 +61,19 @@ final public class EPollRegistration<ChannelType extends Channel> implements Sel
      *
      * @return the underlying file descriptor
      */
-    @NonNull
     public UnixFileDescriptor getHandle() {
         return handle;
     }
 
-    @NonNull
     public ChannelType getChannel() {
         return channel;
     }
 
-    @NonNull
     @Override
     public EPollSelector getSelector() {
         return selector;
     }
 
-    @NonNull
     public synchronized Set<Operation> getOperations() {
         return operations;
     }

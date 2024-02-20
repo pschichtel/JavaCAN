@@ -24,4 +24,7 @@
 /**
  * This package contains standalone runnable CAN related tools, mostly for development purposes.
  */
+@NonNullByDefault
 package tel.schich.javacan.tools;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;

@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.jniaccess.JNIAccess;
 
 import java.util.Objects;
@@ -53,7 +52,6 @@ public class IsotpFlowControlOptions {
         return blockSize;
     }
 
-    @NonNull
     public IsotpFlowControlOptions withBlockSize(byte blockSize) {
         return new IsotpFlowControlOptions(
                 blockSize,
@@ -70,7 +68,6 @@ public class IsotpFlowControlOptions {
         return minimumSeparationTime;
     }
 
-    @NonNull
     public IsotpFlowControlOptions withMinimumSeparationTime(byte minimumSeparationTime) {
         return new IsotpFlowControlOptions(
                 blockSize,
@@ -79,7 +76,6 @@ public class IsotpFlowControlOptions {
         );
     }
 
-    @NonNull
     public IsotpFlowControlOptions withMinimumSeparationTime(int minimumSeparationTime) {
         return withMinimumSeparationTime((byte) minimumSeparationTime);
     }
@@ -88,7 +84,6 @@ public class IsotpFlowControlOptions {
         return maximumWaitFrameTransmission;
     }
 
-    @NonNull
     public IsotpFlowControlOptions withMaximumWaitFrameTransmission(byte maximumWaitFrameTransmission) {
         return new IsotpFlowControlOptions(
                 blockSize,
@@ -97,7 +92,6 @@ public class IsotpFlowControlOptions {
         );
     }
 
-    @NonNull
     public IsotpFlowControlOptions withMaximumWaitFrameTransmission(int maximumWaitFrameTransmission) {
         return withMaximumWaitFrameTransmission((byte) maximumWaitFrameTransmission);
     }

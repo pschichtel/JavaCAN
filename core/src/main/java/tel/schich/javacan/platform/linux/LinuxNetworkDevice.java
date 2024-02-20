@@ -22,8 +22,7 @@
  */
 package tel.schich.javacan.platform.linux;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.NetworkDevice;
 
@@ -74,11 +73,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
      * @return the device wrapper
      * @throws java.io.IOException if the native calls fail
      */
-    @NonNull
     public static NetworkDevice lookup(String name) throws IOException {
-        if (name == null) {
-            throw new IllegalArgumentException("The device name may not be null!");
-        }
         int index = findDeviceIndexByName(name);
         return new LinuxNetworkDevice(name, index);
     }
@@ -105,6 +100,7 @@ public class LinuxNetworkDevice implements NetworkDevice {
 
     private static native int findDeviceIndexByName(String interfaceName) throws LinuxNativeOperationException;
 
+    @Nullable
     private static native String findDeviceNameByIndex(int index) throws LinuxNativeOperationException;
 
     public static LinuxNetworkDevice fromDeviceIndex(int index) {

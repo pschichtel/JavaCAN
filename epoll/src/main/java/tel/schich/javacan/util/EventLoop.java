@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan.util;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tel.schich.javacan.select.IOEvent;
@@ -58,10 +58,11 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     private final Duration timeout;
     private final Map<ChannelType, SelectorRegistration<HandleType, ChannelType>> registrations;
 
+    @Nullable
     private PollingThread poller;
     private final Object pollerLock = new Object();
 
-    public EventLoop(String name, @NonNull ThreadFactory threadFactory, IOSelector<HandleType> selector, @NonNull Duration timeout) {
+    public EventLoop(String name, ThreadFactory threadFactory, IOSelector<HandleType> selector, Duration timeout) {
         this.name = name;
         this.threadFactory = threadFactory;
         this.selector = selector;
@@ -74,7 +75,6 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      *
      * @return the thread factory
      */
-    @NonNull
     public ThreadFactory getThreadFactory() {
         return threadFactory;
     }
@@ -84,7 +84,6 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      *
      * @return the timeout as a {@link java.time.Duration}
      */
-    @NonNull
     public Duration getTimeout() {
         return timeout;
     }

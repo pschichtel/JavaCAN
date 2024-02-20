@@ -22,19 +22,14 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.time.Instant;
 
 public interface J1939ReceiveMessageHeader {
-    @NonNull
     ImmutableJ1939Address getSourceAddress();
-    @NonNull
     Instant getTimestamp();
     byte getDestinationAddress();
     long getDestinationName();
     byte getPriority();
 
-    @NonNull
     ImmutableJ1939ReceiveMessageHeader copy();
 }

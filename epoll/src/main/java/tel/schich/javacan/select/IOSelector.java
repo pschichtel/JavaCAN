@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan.select;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.io.IOException;
 import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
@@ -62,7 +60,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @throws ClosedChannelException if the channel is already closed
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     default <ChannelType extends Channel> SelectorRegistration<HandleType, ChannelType> register(ChannelType ch, SelectorRegistration.Operation... ops) throws IOException {
         return register(ch, EnumSet.copyOf(Arrays.asList(ops)));
     }
@@ -77,7 +74,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @throws ClosedChannelException if the channel is already closed
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     <ChannelType extends Channel> SelectorRegistration<HandleType, ChannelType> register(ChannelType ch, Set<SelectorRegistration.Operation> ops) throws IOException;
 
     /**
@@ -107,7 +103,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @throws ClosedChannelException if the channel is already closed
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     <ChannelType extends Channel> SelectorRegistration<HandleType, ChannelType> updateRegistration(SelectorRegistration<HandleType, ChannelType> registration, Set<SelectorRegistration.Operation> ops) throws IOException;
 
     /**
@@ -118,7 +113,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @return the events that occurred on channels registered to this selector since the last selection.
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     List<IOEvent<HandleType>> select() throws IOException;
 
     /**
@@ -130,7 +124,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @return the events that occurred on channels registered to this selector since the last selection.
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     List<IOEvent<HandleType>> select(Duration timeout) throws IOException;
 
     /**
@@ -139,7 +132,6 @@ public interface IOSelector<HandleType> extends AutoCloseable {
      * @return the events that occurred on channels registered to this selector since the last selection.
      * @throws IOException if any low level IO operation failed
      */
-    @NonNull
     List<IOEvent<HandleType>> selectNow() throws IOException;
 
     /**

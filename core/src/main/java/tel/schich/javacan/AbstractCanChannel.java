@@ -29,7 +29,6 @@ import java.nio.channels.Channel;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.NativeChannel;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.UnixFileDescriptor;
@@ -59,7 +58,6 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      * @return The CAN device.
      * @throws java.nio.channels.NotYetBoundException if not yet bound
      */
-    @NonNull
     public abstract NetworkDevice getDevice();
 
     /**
@@ -80,7 +78,6 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
         return sock;
     }
 
-    @NonNull
     @Override
     public UnixFileDescriptor getHandle() {
         return fileDescriptor;

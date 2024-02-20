@@ -31,7 +31,7 @@ public class UnixFileDescriptor {
     private final int fd;
 
     /**
-     * Creates a instance from the given file descriptor ID.
+     * Creates an instance from the given file descriptor ID.
      *
      * @param fd the file descriptor ID
      */

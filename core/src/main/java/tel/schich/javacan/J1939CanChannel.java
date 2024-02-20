@@ -22,8 +22,7 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -55,8 +54,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
-    @NonNull
-    public abstract J1939CanChannel bind(@NonNull J1939Address address) throws IOException;
+    public abstract J1939CanChannel bind(J1939Address address) throws IOException;
 
     /**
      * connect(2) assigns the remote address, i.e. the destination address. The PGN from connect(2) is used as the
@@ -70,8 +68,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/connect.2.html">connect man page</a>
      * @see <a href="https://docs.kernel.org/networking/j1939.html">J1939 Documentation</a>
      */
-    @NonNull
-    public abstract J1939CanChannel connect(@NonNull J1939Address address) throws IOException;
+    public abstract J1939CanChannel connect(J1939Address address) throws IOException;
 
     /**
      * Receives data from the socket into the given {@link java.nio.ByteBuffer}. Buffer position and limit will be
@@ -83,7 +80,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been received
      * @throws IOException if the native calls fail
      */
-    public abstract long receive(@NonNull ByteBuffer buffer) throws IOException;
+    public abstract long receive(ByteBuffer buffer) throws IOException;
 
     /**
      * Receives a message from the socket into the given {@link java.nio.ByteBuffer} and returns its extended message headers.
@@ -95,7 +92,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
-    public abstract long receive(@NonNull ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
+    public abstract long receive(ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
 
     /**
      * Sends data from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
@@ -107,7 +104,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract long send(@NonNull ByteBuffer buffer) throws IOException;
+    public abstract long send(ByteBuffer buffer) throws IOException;
 
     /**
      * Sends a message from the given {@link java.nio.ByteBuffer} into this socket. Buffer position and limit will be
@@ -119,5 +116,5 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
-    public abstract long send(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;
+    public abstract long send(ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;
 }

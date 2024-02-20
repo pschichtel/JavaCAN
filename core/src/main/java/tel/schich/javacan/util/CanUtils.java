@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan.util;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.nio.ByteBuffer;
 
 public class CanUtils {
@@ -31,12 +29,10 @@ public class CanUtils {
     private CanUtils() {
     }
 
-    @NonNull
     public static String hexDump(ByteBuffer data) {
         return hexDump(data, data.position(), data.remaining());
     }
 
-    @NonNull
     public static String hexDump(ByteBuffer data, int offset, int length) {
         StringBuilder s = new StringBuilder(length * 2);
         if (length > 0) {

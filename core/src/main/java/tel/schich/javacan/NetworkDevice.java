@@ -24,8 +24,7 @@ package tel.schich.javacan;
 
 import java.io.IOException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.platform.UnsupportedPlatformException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 import tel.schich.javacan.platform.Platform;
@@ -50,7 +49,6 @@ public interface NetworkDevice {
      * @return the network device.
      * @throws IOException if the underlying operation failed. The obvious example would be, that the device was not found.
      */
-    @NonNull
     static NetworkDevice lookup(String name) throws IOException {
         switch (Platform.getOS()) {
             case LINUX:

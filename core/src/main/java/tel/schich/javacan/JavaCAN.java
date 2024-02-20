@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.Platform;
 
 import java.nio.ByteBuffer;
@@ -53,7 +52,6 @@ public class JavaCAN {
      * @param capacity the capacity of the buffer.
      * @return the buffer in native byte order with the given capacity.
      */
-    @NonNull
     public static ByteBuffer allocateOrdered(int capacity) {
         return allocateUnordered(capacity).order(ByteOrder.nativeOrder());
     }
@@ -64,7 +62,6 @@ public class JavaCAN {
      * @param capacity the capacity of the buffer.
      * @return the buffer in default (unspecified) byte order with the given capacity.
      */
-    @NonNull
     public static ByteBuffer allocateUnordered(int capacity) {
         return ByteBuffer.allocateDirect(capacity);
     }

@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.io.IOException;
 
 /**
@@ -43,7 +41,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static RawCanChannel newRawChannel() throws IOException {
         int fd = SocketCAN.createRawSocket();
         return new RawCanChannelImpl(fd);
@@ -58,7 +55,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static RawCanChannel newRawChannel(NetworkDevice device) throws IOException {
         RawCanChannel ch = newRawChannel();
         try {
@@ -82,7 +78,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static RawCanChannel newRawChannel(String device) throws IOException {
         return newRawChannel(NetworkDevice.lookup(device));
     }
@@ -94,7 +89,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static J1939CanChannel newJ1939Channel() throws IOException {
         int fd = SocketCAN.createJ1939Socket();
         return new J1939CanChannelImpl(fd);
@@ -110,8 +104,7 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created  be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
-    public static J1939CanChannel newJ1939Channel(@NonNull J1939Address source, @NonNull J1939Address destination) throws IOException {
+    public static J1939CanChannel newJ1939Channel(J1939Address source, J1939Address destination) throws IOException {
         J1939CanChannel ch = newJ1939Channel();
         try {
             ch.bind(source);
@@ -134,7 +127,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static BcmCanChannel newBcmChannel() throws IOException {
         int fd = SocketCAN.createBcmSocket();
         return new BcmCanChannel(fd);
@@ -148,7 +140,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static BcmCanChannel newBcmChannel(NetworkDevice device) throws IOException {
         BcmCanChannel ch = newBcmChannel();
         try {
@@ -172,7 +163,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static BcmCanChannel newBcmChannel(String device) throws IOException {
         return newBcmChannel(NetworkDevice.lookup(device));
     }
@@ -184,7 +174,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static IsotpCanChannel newIsotpChannel() throws IOException {
         int fd = SocketCAN.createIsotpSocket();
 
@@ -202,7 +191,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static IsotpCanChannel newIsotpChannel(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx)
             throws IOException {
         IsotpCanChannel ch = newIsotpChannel();
@@ -230,7 +218,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static IsotpCanChannel newIsotpChannel(String device, IsotpSocketAddress rx, IsotpSocketAddress tx)
             throws IOException {
         return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
@@ -247,7 +234,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static IsotpCanChannel newIsotpChannel(NetworkDevice device, int rx, int tx) throws IOException {
         return newIsotpChannel(device, IsotpSocketAddress.isotpAddress(rx), IsotpSocketAddress.isotpAddress(tx));
     }
@@ -262,7 +248,6 @@ public class CanChannels {
      * @throws IOException if the native socket could not be created or not be bound
      * @see <a href="https://man7.org/linux/man-pages/man2/socket.2.html">socket man page</a>
      */
-    @NonNull
     public static IsotpCanChannel newIsotpChannel(String device, int rx, int tx) throws IOException {
         return newIsotpChannel(NetworkDevice.lookup(device), rx, tx);
     }

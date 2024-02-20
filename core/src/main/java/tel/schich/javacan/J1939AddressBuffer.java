@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.nio.ByteBuffer;
@@ -60,13 +59,11 @@ public class J1939AddressBuffer implements J1939Address {
         this.offset = offset;
     }
 
-    @NonNull
     @Override
     public LinuxNetworkDevice getDevice() {
         return LinuxNetworkDevice.fromDeviceIndex(buffer.getInt(offset + DEVICE_INDEX_OFFSET));
     }
 
-    @NonNull
     public J1939AddressBuffer setDevice(LinuxNetworkDevice device) {
         buffer.putInt(offset + DEVICE_INDEX_OFFSET, device.getIndex());
         return this;
@@ -77,7 +74,6 @@ public class J1939AddressBuffer implements J1939Address {
         return buffer.getLong(offset + NAME_OFFSET);
     }
 
-    @NonNull
     public J1939AddressBuffer setName(long name) {
         buffer.putLong(offset + NAME_OFFSET, name);
         return this;
@@ -88,7 +84,6 @@ public class J1939AddressBuffer implements J1939Address {
         return buffer.getInt(offset + PGN_OFFSET);
     }
 
-    @NonNull
     public J1939AddressBuffer setParameterGroupNumber(int parameterGroupNumber) {
         buffer.putInt(offset + PGN_OFFSET, parameterGroupNumber);
         return this;
@@ -104,7 +99,6 @@ public class J1939AddressBuffer implements J1939Address {
         return this;
     }
 
-    @NonNull
     public J1939AddressBuffer set(J1939Address other) {
         setDevice(other.getDevice());
         setName(other.getName());
@@ -113,7 +107,6 @@ public class J1939AddressBuffer implements J1939Address {
         return this;
     }
 
-    @NonNull
     @Override
     public ImmutableJ1939Address copy() {
         return new ImmutableJ1939Address(

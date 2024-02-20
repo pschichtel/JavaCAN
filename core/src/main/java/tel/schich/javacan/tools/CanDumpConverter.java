@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 public class CanDumpConverter {
 
     private static final Pattern LINEPATTERN = Pattern.compile(
-            " \\((\\d+-\\d+-\\d+ \\d+:\\d+:\\d+)(\\.\\d+)\\)\\s+(\\w+)\\s+(\\w+)\\s+\\[\\d\\]\\s+(.+)");
+            " \\((\\d+-\\d+-\\d+ \\d+:\\d+:\\d+)(\\.\\d+)\\)\\s+(\\w+)\\s+(\\w+)\\s+\\[\\d]\\s+(.+)");
     private static final DateFormat DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -73,13 +73,12 @@ public class CanDumpConverter {
             System.out.println("ignoring line: " + line);
             return;
         }
-        StringBuilder builder = new StringBuilder("(");
-        builder.append(DATEFORMAT.parse(matcher.group(1)).getTime() / 1000); // UNIX timestamp seconds
-        builder.append(matcher.group(2)).append(") "); // microseconds
-        builder.append(matcher.group(3)).append(' '); // CAN interface
-        builder.append(matcher.group(4)).append('#'); // CAN ID
-        builder.append(matcher.group(5).replaceAll("\\s", "")); // data bytes
-        writer.write(builder.toString());
+        String builder = "(" + DATEFORMAT.parse(matcher.group(1)).getTime() / 1000 + // UNIX timestamp seconds
+                matcher.group(2) + ") " + // microseconds
+                matcher.group(3) + ' ' + // CAN interface
+                matcher.group(4) + '#' + // CAN ID
+                matcher.group(5).replaceAll("\\s", ""); // data bytes
+        writer.write(builder);
         writer.newLine();
     }
 }

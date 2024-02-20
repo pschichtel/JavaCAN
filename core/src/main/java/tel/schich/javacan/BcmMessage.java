@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.util.BufferHelper;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -143,7 +142,7 @@ public class BcmMessage {
      * @param canId see {@link #getCanId()}
      * @param frames see {@link #getFrames()}
      */
-    public BcmMessage(@NonNull BcmOpcode opcode, @NonNull Set<BcmFlag> flags, int count, @Nullable Duration interval1, @Nullable Duration interval2, int canId, @NonNull List<CanFrame> frames) {
+    public BcmMessage(BcmOpcode opcode, Set<BcmFlag> flags, int count, @Nullable Duration interval1, @Nullable Duration interval2, int canId, List<CanFrame> frames) {
         boolean fdFrames = frames.stream().anyMatch(CanFrame::isFDFrame);
         if (fdFrames && !flags.contains(BcmFlag.CAN_FD_FRAME)) {
             flags = new HashSet<>(flags); // the set might not be mutable
@@ -179,7 +178,6 @@ public class BcmMessage {
      *
      * @return the opcode
      */
-    @NonNull
     public BcmOpcode getOpcode() {
         return BcmOpcode.fromNative(buffer.getInt(base + OFFSET_OPCODE));
     }
@@ -189,7 +187,6 @@ public class BcmMessage {
      *
      * @return the flags
      */
-    @NonNull
     public Set<BcmFlag> getFlags() {
         return BcmFlag.fromNative(buffer.getInt(base + OFFSET_FLAGS));
     }
@@ -219,7 +216,6 @@ public class BcmMessage {
      *
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
-    @NonNull
     public Duration getInterval1() {
         return getIntervalAt(OFFSET_IVAL1_TV_SEC, OFFSET_IVAL1_TV_USEC);
     }
@@ -238,12 +234,10 @@ public class BcmMessage {
      *
      * @return the duration or {@link Duration#ZERO} if it is not set
      */
-    @NonNull
     public Duration getInterval2() {
         return getIntervalAt(OFFSET_IVAL2_TV_SEC, OFFSET_IVAL2_TV_USEC);
     }
 
-    @NonNull
     private Duration getIntervalAt(int secOffset, int usecOffset) {
         long sec = getPlatformLong(buffer, base + secOffset);
         long usec = getPlatformLong(buffer, base + usecOffset);
@@ -278,7 +272,6 @@ public class BcmMessage {
      * @return the frame
      * @throws IllegalArgumentException if the message buffer contains no frame for that index
      */
-    @NonNull
     public CanFrame getFrame(int index) {
         int frameLength = frameLength(getFlags());
         return CanFrame.create(createFrameBuffer(index, frameLength));
@@ -289,7 +282,6 @@ public class BcmMessage {
      *
      * @return all frames of this message
      */
-    @NonNull
     public List<CanFrame> getFrames() {
         int nFrames = getFrameCount();
         if (nFrames == 0) {
@@ -309,13 +301,11 @@ public class BcmMessage {
      *
      * @return the backing buffer
      */
-    @NonNull
     public ByteBuffer getBuffer() {
         this.buffer.clear().position(base).limit(base + size);
         return this.buffer;
     }
 
-    @NonNull
     private ByteBuffer createFrameBuffer(int frameIndex, int frameLength) {
         ByteBuffer frameBuffer = buffer.duplicate().order(buffer.order());
         frameBuffer.position(base + OFFSET_FRAMES + frameIndex * frameLength)
@@ -392,9 +382,6 @@ public class BcmMessage {
      * @return a simple builder
      */
     public static Builder builder(BcmOpcode opcode) {
-        if (opcode == null) {
-            throw new IllegalArgumentException("opcode must not be null");
-        }
         return new Builder(opcode);
     }
 
@@ -402,7 +389,9 @@ public class BcmMessage {
         private final BcmOpcode opcode;
         private final Set<BcmFlag> flags = new HashSet<>();
         private int count;
+        @Nullable
         private Duration interval1;
+        @Nullable
         private Duration interval2;
         private int canId;
         private final List<CanFrame> frames = new ArrayList<>();

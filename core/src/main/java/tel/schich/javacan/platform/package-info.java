@@ -20,20 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+@NonNullByDefault
+package tel.schich.javacan.platform;
 
-import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
-
-public interface J1939Address {
-    long NO_NAME = 0L;
-    int NO_PGN = 0x40000;
-    byte NO_ADDR = (byte) 0xFF;
-    byte IDLE_ADDR = (byte) 0xFE;
-
-    LinuxNetworkDevice getDevice();
-    long getName();
-    int getParameterGroupNumber();
-    byte getAddress();
-
-    ImmutableJ1939Address copy();
-}
+import org.eclipse.jdt.annotation.NonNullByDefault;

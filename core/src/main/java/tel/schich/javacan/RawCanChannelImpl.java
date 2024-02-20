@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetBoundException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -35,14 +35,15 @@ import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
  */
 final class RawCanChannelImpl extends RawCanChannel {
 
-    private volatile NetworkDevice device;
+    @Nullable
+    private NetworkDevice device;
 
     RawCanChannelImpl(int sock) {
         super(sock);
     }
 
     @Override
-    public RawCanChannel bind(NetworkDevice device) throws IOException {
+    public synchronized RawCanChannel bind(NetworkDevice device) throws IOException {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
@@ -55,9 +56,8 @@ final class RawCanChannelImpl extends RawCanChannel {
         return this;
     }
 
-    @NonNull
     @Override
-    public NetworkDevice getDevice() {
+    public synchronized NetworkDevice getDevice() {
         if (!isBound()) {
             throw new NotYetBoundException();
         }
@@ -65,11 +65,10 @@ final class RawCanChannelImpl extends RawCanChannel {
     }
 
     @Override
-    public boolean isBound() {
+    public synchronized boolean isBound() {
         return this.device != null;
     }
 
-    @NonNull
     @Override
     public CanFrame read() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
@@ -77,7 +76,6 @@ final class RawCanChannelImpl extends RawCanChannel {
         return read(frameBuf);
     }
 
-    @NonNull
     @Override
     public CanFrame receive() throws IOException {
         int length = getOption(CanSocketOptions.FD_FRAMES) ? FD_MTU : MTU;
@@ -85,14 +83,12 @@ final class RawCanChannelImpl extends RawCanChannel {
         return receive(frameBuf);
     }
 
-    @NonNull
     @Override
     public CanFrame read(ByteBuffer buffer) throws IOException {
         readUnsafe(buffer);
         return CanFrame.create(buffer);
     }
 
-    @NonNull
     @Override
     public CanFrame receive(ByteBuffer buffer) throws IOException {
         receiveUnsafe(buffer);
@@ -113,7 +109,6 @@ final class RawCanChannelImpl extends RawCanChannel {
         return bytesRead;
     }
 
-    @NonNull
     @Override
     public RawCanChannel write(CanFrame frame) throws IOException {
         long written = writeUnsafe(frame.getBuffer());
@@ -122,7 +117,6 @@ final class RawCanChannelImpl extends RawCanChannel {
         return this;
     }
 
-    @NonNull
     @Override
     public RawCanChannel send(CanFrame frame) throws IOException {
         long written = sendUnsafe(frame.getBuffer());

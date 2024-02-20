@@ -25,7 +25,6 @@ package tel.schich.javacan.util;
 import java.time.Duration;
 import java.util.concurrent.ThreadFactory;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 final class PollingThread {
@@ -51,7 +50,6 @@ final class PollingThread {
         thread.join();
     }
 
-    @NonNull
     static PollingThread create(String name, Duration timeout, ThreadFactory factory, PollFunction foo, PollExceptionHandler exceptionHandler) {
         Poller p = new Poller(name, timeout, foo, exceptionHandler);
         Thread t = factory.newThread(p);

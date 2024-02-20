@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan.select;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.util.Objects;
 import java.util.Set;
 
@@ -49,7 +47,6 @@ final public class IOEvent<HandleType> {
      *
      * @return the registration
      */
-    @NonNull
     public SelectorRegistration<HandleType, ?> getRegistration() {
         return registration;
     }
@@ -59,7 +56,6 @@ final public class IOEvent<HandleType> {
      *
      * @return a set of operations
      */
-    @NonNull
     public Set<SelectorRegistration.Operation> getOperations() {
         return operations;
     }

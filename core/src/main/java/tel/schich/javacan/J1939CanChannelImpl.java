@@ -27,8 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
 import java.nio.channels.NotYetBoundException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 /**
@@ -37,16 +36,17 @@ import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 final class J1939CanChannelImpl extends J1939CanChannel {
     // TODO add flag constants
 
+    @Nullable
     private ImmutableJ1939Address boundAddress;
+    @Nullable
     private ImmutableJ1939Address connectedAddress;
 
     J1939CanChannelImpl(int sock) {
         super(sock);
     }
 
-    @NonNull
     @Override
-    public J1939CanChannel bind(@NonNull J1939Address address) throws IOException {
+    public J1939CanChannel bind(J1939Address address) throws IOException {
         if (isBound()) {
             throw new AlreadyBoundException();
         }
@@ -62,9 +62,8 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         return this;
     }
 
-    @NonNull
     @Override
-    public J1939CanChannel connect(@NonNull J1939Address address) throws IOException {
+    public J1939CanChannel connect(J1939Address address) throws IOException {
         ImmutableJ1939Address copy = address.copy();
         try {
             SocketCAN.connectJ1939Address(getSocket(), copy.getDevice().getIndex(), copy.getName(), copy.getParameterGroupNumber(), copy.getAddress());
@@ -75,7 +74,6 @@ final class J1939CanChannelImpl extends J1939CanChannel {
         return this;
     }
 
-    @NonNull
     @Override
     public NetworkDevice getDevice() {
         if (!isBound()) {
@@ -94,12 +92,12 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public long receive(@NonNull ByteBuffer buffer) throws IOException {
+    public long receive(ByteBuffer buffer) throws IOException {
         return receiveFromSocket(buffer, 0);
     }
 
     @Override
-    public long receive(@NonNull ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
+    public long receive(ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
         if (messageHeaderBuffer == null) {
             return receive(buffer);
         }
@@ -122,12 +120,12 @@ final class J1939CanChannelImpl extends J1939CanChannel {
     }
 
     @Override
-    public long send(@NonNull ByteBuffer buffer) throws IOException {
+    public long send(ByteBuffer buffer) throws IOException {
         return sendToSocket(buffer, 0);
     }
 
     @Override
-    public long send(@NonNull ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
+    public long send(ByteBuffer buffer, @Nullable J1939Address destination) throws IOException {
         if (destination == null) {
             return send(buffer);
         }

@@ -22,8 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 import java.nio.ByteBuffer;
 import java.time.Instant;
 
@@ -61,19 +59,16 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
         return this.sourceAddressBuffer;
     }
 
-    @NonNull
     @Override
     public ImmutableJ1939Address getSourceAddress() {
         return this.sourceAddressBuffer.copy();
     }
 
-    @NonNull
     @Override
     public Instant getTimestamp() {
         return Instant.ofEpochSecond(buffer.getLong(offset + TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + TIMESTAMP_NANOS_OFFSET));
     }
 
-    @NonNull
     public J1939ReceiveMessageHeaderBuffer setTimestamp(Instant timestamp) {
         buffer.putLong(offset + TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
         buffer.putLong(offset + TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
@@ -85,7 +80,6 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
         return buffer.get(offset + DST_ADDR_OFFSET);
     }
 
-    @NonNull
     public J1939ReceiveMessageHeaderBuffer setDestinationAddress(byte destinationAddress) {
         buffer.put(offset + DST_ADDR_OFFSET, destinationAddress);
         return this;
@@ -96,7 +90,6 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
         return buffer.getLong(offset + DST_NAME_OFFSET);
     }
 
-    @NonNull
     public J1939ReceiveMessageHeaderBuffer setDestinationName(long destinationName) {
         buffer.putLong(offset + DST_NAME_OFFSET, destinationName);
         return this;
@@ -107,13 +100,11 @@ public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeade
         return buffer.get(offset + PRIORITY_OFFSET);
     }
 
-    @NonNull
     public J1939ReceiveMessageHeaderBuffer setPriority(byte priority) {
         buffer.put(offset + PRIORITY_OFFSET, priority);
         return this;
     }
 
-    @NonNull
     @Override
     public ImmutableJ1939ReceiveMessageHeader copy() {
         return new ImmutableJ1939ReceiveMessageHeader(

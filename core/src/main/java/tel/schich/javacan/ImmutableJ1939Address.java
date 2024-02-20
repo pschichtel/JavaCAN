@@ -22,7 +22,6 @@
  */
 package tel.schich.javacan;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.util.Objects;
@@ -47,7 +46,6 @@ public final class ImmutableJ1939Address implements J1939Address {
         this(device, NO_NAME, NO_PGN, NO_ADDR);
     }
 
-    @NonNull
     @Override
     public LinuxNetworkDevice getDevice() {
         return device;
@@ -76,7 +74,6 @@ public final class ImmutableJ1939Address implements J1939Address {
         return name == that.name && parameterGroupNumber == that.parameterGroupNumber && address == that.address && Objects.equals(device, that.device);
     }
 
-    @NonNull
     @Override
     public ImmutableJ1939Address copy() {
         return this;

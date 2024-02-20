@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.NotYetBoundException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
@@ -50,7 +50,8 @@ public class BcmCanChannel extends AbstractCanChannel {
      * the buffer is large enough (~ 18 kB) for all use cases.
      */
     public static final int MTU = BcmMessage.HEADER_LENGTH + MAX_FRAMES_PER_MESSAGE * RawCanChannel.FD_MTU;
-    private volatile NetworkDevice device;
+    @Nullable
+    private NetworkDevice device;
 
     /**
      * Create a BCM channel.
@@ -61,10 +62,9 @@ public class BcmCanChannel extends AbstractCanChannel {
         super(sock);
     }
 
-    @NonNull
     @Override
-    public NetworkDevice getDevice() {
-        if (!isBound()) {
+    public synchronized NetworkDevice getDevice() {
+        if (!isBound() || this.device == null) {
             throw new NotYetBoundException();
         }
         return this.device;
@@ -75,7 +75,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * it is connected to the socket.
      */
     @Override
-    public boolean isBound() {
+    public synchronized boolean isBound() {
         return this.device != null;
     }
 
@@ -87,8 +87,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return this channel
      * @throws IOException if the device is no {@link LinuxNetworkDevice} or the operation faild
      */
-    @NonNull
-    public BcmCanChannel connect(NetworkDevice device) throws IOException {
+    public synchronized BcmCanChannel connect(NetworkDevice device) throws IOException {
         if (!(device instanceof LinuxNetworkDevice)) {
             throw new IllegalArgumentException("Unsupported network device given!");
         }
@@ -108,7 +107,6 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return the message
      * @throws IOException if the socket is not readable
      */
-    @NonNull
     public BcmMessage read() throws IOException {
         ByteBuffer frameBuf = JavaCAN.allocateOrdered(MTU);
         return read(frameBuf);
@@ -125,7 +123,6 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @throws IOException              if the socket is not readable
      * @throws BufferUnderflowException if the buffer capacity is to small to hold the message
      */
-    @NonNull
     public BcmMessage read(ByteBuffer buffer) throws IOException {
         buffer.order(ByteOrder.nativeOrder());
         readSocket(buffer);
@@ -141,7 +138,6 @@ public class BcmCanChannel extends AbstractCanChannel {
      * @return this channel
      * @throws IOException if the message was not completely written
      */
-    @NonNull
     public BcmCanChannel write(BcmMessage message) throws IOException {
         ByteBuffer buffer = message.getBuffer();
         int bytesToWrite = buffer.remaining();

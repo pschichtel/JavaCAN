@@ -27,21 +27,23 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyBoundException;
 import java.nio.channels.NotYetBoundException;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 final class IsotpCanChannelImpl extends IsotpCanChannel {
 
+    @Nullable
     private NetworkDevice device;
+    @Nullable
     private IsotpSocketAddress rx;
+    @Nullable
     private IsotpSocketAddress tx;
 
     public IsotpCanChannelImpl(int sock) {
         super(sock);
     }
 
-    @NonNull
     @Override
     public synchronized IsotpCanChannel bind(NetworkDevice device, IsotpSocketAddress rx, IsotpSocketAddress tx) throws IOException {
         if (isBound()) {
@@ -66,7 +68,6 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         return this.device != null;
     }
 
-    @NonNull
     @Override
     public synchronized NetworkDevice getDevice() {
         if (!isBound()) {
@@ -75,19 +76,17 @@ final class IsotpCanChannelImpl extends IsotpCanChannel {
         return this.device;
     }
 
-    @NonNull
     @Override
     public synchronized IsotpSocketAddress getRxAddress() {
-        if (!isBound()) {
+        if (!isBound() || this.rx == null) {
             throw new NotYetBoundException();
         }
         return this.rx;
     }
 
-    @NonNull
     @Override
     public synchronized IsotpSocketAddress getTxAddress() {
-        if (!isBound()) {
+        if (!isBound() || this.tx == null) {
             throw new NotYetBoundException();
         }
         return this.tx;
