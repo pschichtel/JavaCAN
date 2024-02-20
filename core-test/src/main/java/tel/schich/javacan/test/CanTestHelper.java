@@ -28,6 +28,7 @@ import tel.schich.javacan.NetworkDevice;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 
@@ -39,8 +40,8 @@ public class CanTestHelper {
             return NetworkDevice.lookup("vcan0");
         } catch (IOException e) {
             e.printStackTrace(System.err);
+            throw new UncheckedIOException(e);
         }
-        return null;
     }
 
     public static void sendFrameViaUtils(NetworkDevice device, CanFrame frame) throws IOException, InterruptedException {
