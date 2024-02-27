@@ -20,24 +20,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tel.schich.javacan;
+package tel.schich.javacan.test;
 
-import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
+import org.junit.jupiter.api.Test;
+import tel.schich.javacan.J1939Utils;
 
-public interface J1939Address {
-    long NO_NAME = 0L;
-    int NO_PGN = 0x40000;
-    byte NO_ADDR = (byte) 0xFF;
-    byte IDLE_ADDR = (byte) 0xFE;
+import static java.lang.Integer.toHexString;
+import static org.junit.jupiter.api.Assertions.*;
 
-    LinuxNetworkDevice getDevice();
-    long getName();
-    int getParameterGroupNumber();
-    byte getAddress();
+class J1939UtilsTest {
 
-    ImmutableJ1939Address copy();
+    @Test
+    void parameterGroupNumberFromRawAddress() {
+        assertEquals(toHexString(0xEFA1), toHexString(J1939Utils.parameterGroupNumberFromRawAddress(0x18EFA1EB)));
+    }
 
-    static ImmutableJ1939Address of(NetworkDevice device, long name, int parameterGroupNumber, byte address) {
-        return new ImmutableJ1939Address(device, name, parameterGroupNumber, address);
+    @Test
+    void sourceAddressFromRawAddress() {
+        assertEquals(toHexString((byte)0xEB), toHexString(J1939Utils.sourceAddressFromRawAddress(0x18EFA1EB)));
+    }
+
+    @Test
+    void priorityFromRawAddress() {
+        assertEquals(6, J1939Utils.priorityFromRawAddress(0x18EFA1EB));
     }
 }

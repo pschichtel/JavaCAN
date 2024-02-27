@@ -22,22 +22,19 @@
  */
 package tel.schich.javacan;
 
-import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
+public class J1939Utils {
+    private J1939Utils() {
+    }
 
-public interface J1939Address {
-    long NO_NAME = 0L;
-    int NO_PGN = 0x40000;
-    byte NO_ADDR = (byte) 0xFF;
-    byte IDLE_ADDR = (byte) 0xFE;
+    public static int parameterGroupNumberFromRawAddress(int canId) {
+        return (canId >>> 8) & 0b0011_1111_1111_1111_1111;
+    }
 
-    LinuxNetworkDevice getDevice();
-    long getName();
-    int getParameterGroupNumber();
-    byte getAddress();
+    public static byte sourceAddressFromRawAddress(int canId) {
+        return (byte)(canId & 0b1111_1111);
+    }
 
-    ImmutableJ1939Address copy();
-
-    static ImmutableJ1939Address of(NetworkDevice device, long name, int parameterGroupNumber, byte address) {
-        return new ImmutableJ1939Address(device, name, parameterGroupNumber, address);
+    public static byte priorityFromRawAddress(int canId) {
+        return (byte)((canId >>> 26) & 0b0111);
     }
 }
