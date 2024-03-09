@@ -16,6 +16,10 @@
             <artifactId>javacan-epoll</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
