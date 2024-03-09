@@ -24,12 +24,52 @@ package tel.schich.javacan;
 
 import java.time.Instant;
 
+/**
+ * Classes implementing this interface represent message headers supplied by the kernel when reading a J1939 message.
+ *
+ * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
+ */
 public interface J1939ReceiveMessageHeader {
-    ImmutableJ1939Address getSourceAddress();
+    /**
+     * The source address the messages has been received from.
+     *
+     * @return the source address
+     */
+    J1939Address getSourceAddress();
+
+    /**
+     * The timestamp the message was received at. This is only a useful value, if timestamps are enabled on the channel.
+     * The precision depends on the channel configuration, the runtime kernel and the hardware being used.
+     *
+     * @return the receive timestamp or the start of the unix epoch if no timestamp was available
+     */
     Instant getTimestamp();
+
+    /**
+     * The destination address of the message.
+     *
+     * @return the destination address
+     */
     byte getDestinationAddress();
+
+    /**
+     * The destination name of the message
+     *
+     * @return the destination name
+     */
     long getDestinationName();
+
+    /**
+     * The priority of the message.
+     *
+     * @return the priority value
+     */
     byte getPriority();
 
+    /**
+     * Copies the message headers into an immutable representation.
+     *
+     * @return An immutable copy of the headers
+     */
     ImmutableJ1939ReceiveMessageHeader copy();
 }

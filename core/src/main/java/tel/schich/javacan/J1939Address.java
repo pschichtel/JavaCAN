@@ -24,19 +24,61 @@ package tel.schich.javacan;
 
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
+/**
+ * Classes implementing this interface represent a J1939 address.
+ *
+ * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
+ */
 public interface J1939Address {
     long NO_NAME = 0L;
     int NO_PGN = 0x40000;
     byte NO_ADDR = (byte) 0xFF;
     byte IDLE_ADDR = (byte) 0xFE;
 
+    /**
+     * The device a message has been received on.
+     *
+     * @return the device
+     */
     LinuxNetworkDevice getDevice();
+
+    /**
+     * The J1939 name.
+     *
+     * @return the name
+     */
     long getName();
+
+    /**
+     * The J1939 PGN.
+     *
+     * @return the PGN
+     */
     int getParameterGroupNumber();
+
+    /**
+     * The J1939 address.
+     *
+     * @return the address
+     */
     byte getAddress();
 
+    /**
+     * Copies the address into an immutable representation.
+     *
+     * @return An immutable copy of this address
+     */
     ImmutableJ1939Address copy();
 
+    /**
+     * Creates a J1939 address from the given parameters.
+     *
+     * @param device the device of the address
+     * @param name the J1939 name
+     * @param parameterGroupNumber the J1939 PGN
+     * @param address the J1939 address
+     * @return an immutable representation of the address
+     */
     static ImmutableJ1939Address of(NetworkDevice device, long name, int parameterGroupNumber, byte address) {
         return new ImmutableJ1939Address(device, name, parameterGroupNumber, address);
     }

@@ -27,6 +27,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * A CAN channel that uses the J1939 protocol.
+ *
+ * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
+ */
 public abstract class J1939CanChannel extends AbstractCanChannel {
     public J1939CanChannel(int sock) {
         super(sock);

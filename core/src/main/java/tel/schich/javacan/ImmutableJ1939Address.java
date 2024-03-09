@@ -26,6 +26,9 @@ import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.util.Objects;
 
+/**
+ * This class represents an immutable J1939 address, not suitable for native operations.
+ */
 public final class ImmutableJ1939Address implements J1939Address {
     private final LinuxNetworkDevice device;
     private final long name;

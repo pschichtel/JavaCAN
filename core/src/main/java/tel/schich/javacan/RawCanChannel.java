@@ -32,6 +32,9 @@ import static tel.schich.javacan.CanFrame.HEADER_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_DATA_LENGTH;
 import static tel.schich.javacan.CanFrame.MAX_FD_DATA_LENGTH;
 
+/**
+ * A CAN channel that uses raw CAN frames.
+ */
 public abstract class RawCanChannel extends AbstractCanChannel {
     public RawCanChannel(int sock) {
         super(sock);

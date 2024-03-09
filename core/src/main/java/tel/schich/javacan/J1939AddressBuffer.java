@@ -26,22 +26,24 @@ import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.nio.ByteBuffer;
 
+/**
+ * This class represents a J1939 address that can be used for native operations.
+ */
 public final class J1939AddressBuffer implements J1939Address {
-    public static final int BYTES;
-
-    private static final int DEVICE_INDEX_OFFSET;
-    private static final int NAME_OFFSET;
-    private static final int PGN_OFFSET;
-    private static final int ADDR_OFFSET;
 
     static {
         JavaCAN.initialize();
-        BYTES = getStructSize();
-        DEVICE_INDEX_OFFSET = getStructDeviceIndexOffset();
-        NAME_OFFSET = getStructNameOffset();
-        PGN_OFFSET = getStructPgnOffset();
-        ADDR_OFFSET = getStructAddrOffset();
     }
+
+    /**
+     * The size of this data structure in memory.
+     */
+    public static final int BYTES = getStructSize();
+
+    private static final int DEVICE_INDEX_OFFSET = getStructDeviceIndexOffset();
+    private static final int NAME_OFFSET = getStructNameOffset();;
+    private static final int PGN_OFFSET = getStructPgnOffset();
+    private static final int ADDR_OFFSET = getStructAddrOffset();
 
     private final ByteBuffer buffer;
     private final int offset;

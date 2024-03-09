@@ -26,6 +26,9 @@ import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.time.Instant;
 
+/**
+ * This class represents immutable message headers included with RAW messages, not suitable for native operations.
+ */
 public final class ImmutableRawReceiveMessageHeader implements RawReceiveMessageHeader {
 
     private final LinuxNetworkDevice device;

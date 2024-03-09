@@ -25,6 +25,11 @@ package tel.schich.javacan;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
+/**
+ * This class represents a J1939 filter, which can be configured on the channel to filter restrict messages received to those of interest.
+ *
+ * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
+ */
 public final class J1939Filter {
     public static final int BYTES;
     private static final int NAME_OFFSET;

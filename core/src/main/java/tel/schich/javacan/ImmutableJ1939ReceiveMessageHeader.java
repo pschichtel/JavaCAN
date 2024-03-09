@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * This class represents the extended message headers included with J1939 messages.
+ * This class represents immutable message headers included with J1939 messages, not suitable for native operations.
  */
 public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMessageHeader {
     private final ImmutableJ1939Address sourceAddress;

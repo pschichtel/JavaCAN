@@ -32,6 +32,8 @@ import java.nio.ByteBuffer;
 /**
  * This class provides ISOTP specific socket options supported by CAN sockets. This class is similar to
  * {@link CanSocketOptions}.
+ *
+ * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
  */
 public class J1939CanSocketOptions {
 

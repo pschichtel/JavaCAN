@@ -22,18 +22,39 @@
  */
 package tel.schich.javacan;
 
+/**
+ * This class provides utility functions to work with J1939 messages
+ */
 public class J1939Utils {
     private J1939Utils() {
     }
 
+    /**
+     * Extracts the PGN from a raw EFF CAN ID.
+     *
+     * @param canId the raw EFF CAN ID
+     * @return the PGN
+     */
     public static int parameterGroupNumberFromRawAddress(int canId) {
         return (canId >>> 8) & 0b0011_1111_1111_1111_1111;
     }
 
+    /**
+     * Extracts the source address from a raw EFF CAN ID.
+     *
+     * @param canId the raw EFF CAN ID
+     * @return the source address
+     */
     public static byte sourceAddressFromRawAddress(int canId) {
         return (byte)(canId & 0b1111_1111);
     }
 
+    /**
+     * Extracts the priority from a raw EFF CAN ID.
+     *
+     * @param canId the raw EFF CAN ID
+     * @return the priority
+     */
     public static byte priorityFromRawAddress(int canId) {
         return (byte)((canId >>> 26) & 0b0111);
     }

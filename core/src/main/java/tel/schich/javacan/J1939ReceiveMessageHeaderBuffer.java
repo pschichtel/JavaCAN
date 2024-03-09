@@ -25,11 +25,19 @@ package tel.schich.javacan;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 
+/**
+ * This class represents a message header buffer that can be used for reading headers in receive operations.
+ */
 public final class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeader {
 
     static {
         JavaCAN.initialize();
     }
+
+    /**
+     * The size of this data structure in memory.
+     */
+    public static final int BYTES = getStructSize();
 
     private static final int SOURCE_ADDRESS_OFFSET = getStructSourceAddressOffset();
     private static final int TIMESTAMP_SECONDS_OFFSET = getStructTimestampSecondsOffset();
@@ -38,21 +46,35 @@ public final class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessag
     private static final int DST_NAME_OFFSET = getStructDstNameOffset();
     private static final int PRIORITY_OFFSET = getStructPriorityOffset();
 
-    public static final int BYTES = getStructSize();
-
     private final ByteBuffer buffer;
     private final int offset;
 
     private final J1939AddressBuffer sourceAddressBuffer;
 
+    /**
+     * This constructor internally allocates a buffer that exactly fits the size of this data structure (see {@link #BYTES}).
+     */
     public J1939ReceiveMessageHeaderBuffer() {
         this(JavaCAN.allocateOrdered(BYTES));
     }
 
+    /**
+     * This constructor allows supplying a pre-allocated buffer. The buffer position will be copied, so
+     * external operations on the buffer will not change the offset at which data will might be written.
+     *
+     * @param buffer the buffer to use
+     */
     public J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer) {
         this(buffer, buffer.position());
     }
 
+    /**
+     * This constructor allows supplying a pre-allocated buffer. The buffer position will be copied, so
+     * external operations on the buffer will not change the offset at which data will might be written.
+     *
+     * @param buffer the buffer to use
+     * @param offset the offset to read and write at
+     */
     public J1939ReceiveMessageHeaderBuffer(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
         this.offset = offset;
