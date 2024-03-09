@@ -23,10 +23,11 @@
 #include "common.h"
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <sys/socket.h>
+#include <asm-generic/socket.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stddef.h>
 
 #define GET_FILTERS_DEFAULT_AMOUNT 10
 
@@ -168,4 +169,74 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *
         return result;
     }
     return mask;
+}
+
+struct raw_message_header_buffer {
+    struct sockaddr_can source_address;
+    jint drop_count;
+    jlong timestamp_seconds;
+    jlong timestamp_nanos;
+};
+
+JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithRawHeaders(JNIEnv *env, jclass clazz, jint sock, jobject buffer, jint offset, jint len, jint flags, jobject headerBuffer, jint headerOffset) {
+    void *raw_buf = (*env)->GetDirectBufferAddress(env, buffer);
+    void *buf = raw_buf + offset;
+    char control[200];
+
+    void *raw_header_buf = (*env)->GetDirectBufferAddress(env, headerBuffer);
+    struct raw_message_header_buffer* header_buffer = (struct raw_message_header_buffer*) (raw_header_buf + headerOffset);
+    memset(header_buffer, 0, sizeof(*header_buffer));
+    header_buffer->source_address.can_family = AF_CAN;
+
+    struct iovec iov = {
+        .iov_base = buf,
+        .iov_len = (size_t) len,
+    };
+    struct msghdr header = {
+        .msg_name = &header_buffer->source_address,
+        .msg_namelen = sizeof(struct sockaddr_can),
+        .msg_control = control,
+        .msg_controllen = sizeof(control),
+        .msg_flags = 0,
+        .msg_iov = &iov,
+        .msg_iovlen = 1,
+    };
+
+    ssize_t bytes_received = recvmsg(sock, &header, flags);
+    if (bytes_received == -1) {
+        throw_native_exception(env, "Unable to recvmsg from the socket");
+        return bytes_received;
+    }
+
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&header); cmsg; cmsg = CMSG_NXTHDR(&header, cmsg)) {
+        if (cmsg->cmsg_level == SOL_SOCKET) {
+            if (cmsg->cmsg_type == SO_RXQ_OVFL) {
+                memcpy(&header_buffer->drop_count, CMSG_DATA(cmsg), sizeof(__u32));
+            } else {
+                parse_timestamp(cmsg, &header_buffer->timestamp_seconds, &header_buffer->timestamp_nanos);
+            }
+        }
+    }
+
+    return bytes_received;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructSize(JNIEnv *env, jclass clazz) {
+    return sizeof(struct raw_message_header_buffer);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructDeviceIndexOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, source_address.can_ifindex);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructDropCountOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, drop_count);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, timestamp_seconds);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, timestamp_nanos);
 }

@@ -85,6 +85,11 @@ final class RawCanChannelImpl extends RawCanChannel {
     }
 
     @Override
+    public CanFrame receive(@Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
+        return receive(allocateBuffer(), messageHeaderBuffer);
+    }
+
+    @Override
     public CanFrame read(ByteBuffer buffer) throws IOException {
         readUnsafe(buffer);
         return CanFrame.create(buffer);
@@ -93,6 +98,12 @@ final class RawCanChannelImpl extends RawCanChannel {
     @Override
     public CanFrame receive(ByteBuffer buffer) throws IOException {
         receiveUnsafe(buffer);
+        return CanFrame.create(buffer);
+    }
+
+    @Override
+    public CanFrame receive(ByteBuffer buffer, @Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
+        receiveUnsafe(buffer, messageHeaderBuffer);
         return CanFrame.create(buffer);
     }
 
@@ -108,6 +119,34 @@ final class RawCanChannelImpl extends RawCanChannel {
         long bytesRead = receiveFromSocket(buffer, 0);
         buffer.flip();
         return bytesRead;
+    }
+
+    @Override
+    public long receiveUnsafe(ByteBuffer buffer, @Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException {
+        if (messageHeaderBuffer == null) {
+            return receiveUnsafe(buffer);
+        }
+        ensureDirectBuffer(buffer);
+
+        try {
+            final int offset = buffer.position();
+            final ByteBuffer headerBuffer = messageHeaderBuffer.getBuffer();
+            final int headerOffset = messageHeaderBuffer.getOffset();
+            final long bytesReceived = SocketCAN.receiveWithRawHeaders(
+                getSocket(),
+                buffer,
+                offset,
+                buffer.remaining(),
+                0,
+                headerBuffer,
+                headerOffset
+            );
+            buffer.position((int) (offset + bytesReceived));
+            buffer.flip();
+            return bytesReceived;
+        } catch (LinuxNativeOperationException e) {
+            throw checkForClosedChannel(e);
+        }
     }
 
     @Override

@@ -313,6 +313,25 @@ public class CanSocketOptions {
         }
     });
 
+    /**
+     * Option to enable the SO_RXQ_OVFL drop counter.
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt man page</a>
+     * @see <a href="https://man7.org/linux/man-pages/man7/socket.7.html">socket man page</a>
+     */
+    public static final SocketOption<Boolean> SO_RXQ_OVFL = new CanSocketOption<>("SO_RXQ_OVFL", Boolean.class, new LinuxSocketOptionHandler<Boolean>() {
+        @Override
+        public void set(int sock, Boolean val, boolean validate) throws IOException {
+            SocketCAN.setReceiveQueueOverflow(sock, val);
+        }
+
+        @Override
+        public Boolean get(int sock) throws IOException {
+            return SocketCAN.getReceiveQueueOverflow(sock);
+        }
+    });
+
     public enum TimestampingFlag {
         TX_HARDWARE(1<<0),
         TX_SOFTWARE(1<<1),

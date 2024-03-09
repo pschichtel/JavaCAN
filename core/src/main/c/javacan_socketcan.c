@@ -22,6 +22,7 @@
  */
 #include "common.h"
 #include <sys/socket.h>
+#include <asm-generic/socket.h>
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>
@@ -247,6 +248,22 @@ JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_getTimestampNsOptio
     jint result = get_boolean_opt(sock, SOL_SOCKET, SO_TIMESTAMPNS);
     if (result == -1) {
         throw_native_exception(env, "Unable to get timestamp ns support");
+    }
+    return result != 0;
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_setReceiveQueueOverflow(JNIEnv *env, jclass clazz, jint sock, jboolean enable) {
+    jint result = set_boolean_opt(sock, SOL_SOCKET, SO_RXQ_OVFL, enable);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to set receive queue overflow support");
+    }
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL Java_tel_schich_javacan_SocketCAN_getReceiveQueueOverflow(JNIEnv *env, jclass clazz, jint sock) {
+    jint result = get_boolean_opt(sock, SOL_SOCKET, SO_RXQ_OVFL);
+    if (result == -1) {
+        throw_native_exception(env, "Unable to get receive queue overflow support");
     }
     return result != 0;
 }

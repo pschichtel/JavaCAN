@@ -44,6 +44,7 @@ import static tel.schich.javacan.J1939Address.NO_ADDR;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
+import static tel.schich.javacan.test.CanTestHelper.nowSeconds;
 
 class J1939CanSocketTest {
 
@@ -115,7 +116,7 @@ class J1939CanSocketTest {
                 headerBuffer.setTimestamp(Instant.ofEpochSecond(headerBuffer.getTimestamp().getEpochSecond(), 0));
                 ImmutableJ1939ReceiveMessageHeader expected = new ImmutableJ1939ReceiveMessageHeader(
                     source,
-                    Instant.ofEpochSecond(Instant.now().getEpochSecond(), 0),
+                    nowSeconds(),
                     destination.getAddress(),
                     destination.getName(),
                     (byte) 6

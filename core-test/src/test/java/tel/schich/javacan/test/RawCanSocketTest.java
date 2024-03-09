@@ -28,10 +28,12 @@ import tel.schich.javacan.CanFilter;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.JavaCAN;
 import tel.schich.javacan.RawCanChannel;
+import tel.schich.javacan.RawReceiveMessageHeaderBuffer;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 
 import static java.time.Duration.ofMillis;
@@ -40,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.*;
 import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
+import static tel.schich.javacan.test.CanTestHelper.nowSeconds;
 
 class RawCanSocketTest {
 
@@ -321,6 +324,28 @@ class RawCanSocketTest {
             socket.write(frame);
             received = socket.read(readBuffer);
             assertEquals(frame, received);
+        }
+    }
+
+    @Test
+    void testReceiveHeaders() throws Exception {
+        try (final RawCanChannel socket = CanChannels.newRawChannel()) {
+            socket.bind(CAN_INTERFACE);
+            socket.configureBlocking(true);
+            socket.setOption(RECV_OWN_MSGS, true);
+            socket.setOption(SO_RXQ_OVFL, true);
+            socket.setOption(SO_TIMESTAMP, true);
+
+            final CanFrame frame = CanFrame.create(0x7ED, FD_NO_FLAGS, new byte[] { 0x01 });
+            final ByteBuffer readBuffer = RawCanChannel.allocateSufficientMemory();
+            final RawReceiveMessageHeaderBuffer messageHeaderBuffer = new RawReceiveMessageHeaderBuffer();
+
+            socket.send(frame);
+            CanFrame received = socket.receive(readBuffer, messageHeaderBuffer);
+            assertEquals(frame, received);
+            assertEquals(CAN_INTERFACE, messageHeaderBuffer.getDevice());
+            assertEquals(0, messageHeaderBuffer.getDropCount());
+            assertEquals(Instant.now().getEpochSecond(), messageHeaderBuffer.getTimestamp().getEpochSecond());
         }
     }
 }

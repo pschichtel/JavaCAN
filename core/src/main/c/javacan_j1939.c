@@ -174,17 +174,17 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithJ1939Header
 
 
     struct iovec iov = {
-            .iov_base = buf,
-            .iov_len = (size_t) len,
+        .iov_base = buf,
+        .iov_len = (size_t) len,
     };
     struct msghdr header = {
-            .msg_name = &header_buffer->source_address,
-            .msg_namelen = sizeof(struct sockaddr_can),
-            .msg_control = control,
-            .msg_controllen = sizeof(control),
-            .msg_flags = 0,
-            .msg_iov = &iov,
-            .msg_iovlen = 1,
+        .msg_name = &header_buffer->source_address,
+        .msg_namelen = sizeof(struct sockaddr_can),
+        .msg_control = control,
+        .msg_controllen = sizeof(control),
+        .msg_flags = 0,
+        .msg_iov = &iov,
+        .msg_iovlen = 1,
     };
 
     ssize_t bytes_received = recvmsg(sock, &header, flags);

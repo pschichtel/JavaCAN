@@ -25,7 +25,11 @@ package tel.schich.javacan;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 
-public class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeader {
+public final class J1939ReceiveMessageHeaderBuffer implements J1939ReceiveMessageHeader {
+
+    static {
+        JavaCAN.initialize();
+    }
 
     private static final int SOURCE_ADDRESS_OFFSET = getStructSourceAddressOffset();
     private static final int TIMESTAMP_SECONDS_OFFSET = getStructTimestampSecondsOffset();

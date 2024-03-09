@@ -22,6 +22,8 @@
  */
 package tel.schich.javacan;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -74,6 +76,16 @@ public abstract class RawCanChannel extends AbstractCanChannel {
     public abstract CanFrame receive() throws IOException;
 
     /**
+     * Receives a CAM frame and related message headers from the channel by internally allocating a new direct {@link ByteBuffer}.
+     *
+     * @param messageHeaderBuffer the buffer to read message headers into.
+     * @return the CAN frame
+     * @throws IOException if the IO operations failed or invalid data was read.
+     * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">read man page</a>
+     */
+    public abstract CanFrame receive(@Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
+
+    /**
      * Reads a CAM frame from the channel using the supplied buffer.
      *
      * @param buffer the buffer to read into. The buffer's {@link ByteOrder} will be set to native, and it will be
@@ -94,6 +106,18 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
      */
     public abstract CanFrame receive(ByteBuffer buffer) throws IOException;
+
+    /**
+     * Receives a CAM frame and related message headers from the channel using the supplied buffer.
+     *
+     * @param buffer the buffer to receive into. The buffer's {@link ByteOrder} will be set to native, and it will be
+     *               flipped after the read has been completed.
+     * @param messageHeaderBuffer the buffer to read message headers into.
+     * @return the CAN frame
+     * @throws IOException if the IO operations failed, the supplied buffer was insufficient or invalid data was read.
+     * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">read man page</a>
+     */
+    public abstract CanFrame receive(ByteBuffer buffer, @Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
 
     /**
      * <p>
@@ -128,6 +152,24 @@ public abstract class RawCanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
      */
     public abstract long receiveUnsafe(ByteBuffer buffer) throws IOException;
+
+    /**
+     * <p>
+     * Receives raw bytes and message headers from the channel.
+     * </p>
+     * <p>
+     * This method does not apply any checks on the data that has been read or on the supplied buffer. This method
+     * is primarily intended for downstream libraries that implement their own parsing on the data from the socket.
+     * </p>
+     *
+     * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">read man page</a>
+     * @param buffer the buffer to receive into. The buffer's {@link ByteOrder} will be set to native, and it will be
+     *               flipped after the read has been completed.
+     * @param messageHeaderBuffer the buffer to read message headers into.
+     * @return the number of bytes received
+     * @throws IOException if the IO operations failed.
+     */
+    public abstract long receiveUnsafe(ByteBuffer buffer, @Nullable RawReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
 
     /**
      * Writes the given CAN frame.

@@ -25,36 +25,33 @@ package tel.schich.javacan;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.nio.ByteBuffer;
+import java.time.Instant;
 
-public final class J1939AddressBuffer implements J1939Address {
-    public static final int BYTES;
-
-    private static final int DEVICE_INDEX_OFFSET;
-    private static final int NAME_OFFSET;
-    private static final int PGN_OFFSET;
-    private static final int ADDR_OFFSET;
+public final class RawReceiveMessageHeaderBuffer implements RawReceiveMessageHeader {
 
     static {
         JavaCAN.initialize();
-        BYTES = getStructSize();
-        DEVICE_INDEX_OFFSET = getStructDeviceIndexOffset();
-        NAME_OFFSET = getStructNameOffset();
-        PGN_OFFSET = getStructPgnOffset();
-        ADDR_OFFSET = getStructAddrOffset();
     }
+
+    private static final int DEVICE_INDEX_OFFSET = getStructDeviceIndexOffset();
+    private static final int DROP_COUNT_OFFSET = getStructDropCountOffset();
+    private static final int TIMESTAMP_SECONDS_OFFSET = getStructTimestampSecondsOffset();
+    private static final int TIMESTAMP_NANOS_OFFSET = getStructTimestampNanosOffset();
+
+    public static final int BYTES = getStructSize();
 
     private final ByteBuffer buffer;
     private final int offset;
 
-    public J1939AddressBuffer() {
+    public RawReceiveMessageHeaderBuffer() {
         this(JavaCAN.allocateOrdered(BYTES));
     }
 
-    public J1939AddressBuffer(ByteBuffer buffer) {
+    public RawReceiveMessageHeaderBuffer(ByteBuffer buffer) {
         this(buffer, buffer.position());
     }
 
-    public J1939AddressBuffer(ByteBuffer buffer, int offset) {
+    public RawReceiveMessageHeaderBuffer(ByteBuffer buffer, int offset) {
         this.buffer = buffer;
         this.offset = offset;
     }
@@ -64,62 +61,48 @@ public final class J1939AddressBuffer implements J1939Address {
         return LinuxNetworkDevice.fromDeviceIndex(buffer.getInt(offset + DEVICE_INDEX_OFFSET));
     }
 
-    public J1939AddressBuffer setDevice(LinuxNetworkDevice device) {
+    public RawReceiveMessageHeaderBuffer setDevice(LinuxNetworkDevice device) {
         buffer.putInt(offset + DEVICE_INDEX_OFFSET, device.getIndex());
         return this;
     }
 
     @Override
-    public long getName() {
-        return buffer.getLong(offset + NAME_OFFSET);
+    public int getDropCount() {
+        return buffer.getInt(offset + DROP_COUNT_OFFSET);
     }
 
-    public J1939AddressBuffer setName(long name) {
-        buffer.putLong(offset + NAME_OFFSET, name);
+    public RawReceiveMessageHeaderBuffer setDropCount(int dropCount) {
+        buffer.putInt(offset + DROP_COUNT_OFFSET, dropCount);
         return this;
     }
 
     @Override
-    public int getParameterGroupNumber() {
-        return buffer.getInt(offset + PGN_OFFSET);
+    public Instant getTimestamp() {
+        return Instant.ofEpochSecond(buffer.getLong(offset + TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + TIMESTAMP_NANOS_OFFSET));
     }
 
-    public J1939AddressBuffer setParameterGroupNumber(int parameterGroupNumber) {
-        buffer.putInt(offset + PGN_OFFSET, parameterGroupNumber);
+    public RawReceiveMessageHeaderBuffer setTimestamp(Instant timestamp) {
+        buffer.putLong(offset + TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
+        buffer.putLong(offset + TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
         return this;
     }
 
     @Override
-    public byte getAddress() {
-        return buffer.get(offset + ADDR_OFFSET);
+    public ImmutableRawReceiveMessageHeader copy() {
+        return new ImmutableRawReceiveMessageHeader(getDevice(), getDropCount(), getTimestamp());
     }
 
-    public J1939AddressBuffer setAddress(byte address) {
-        buffer.put(offset + ADDR_OFFSET, address);
-        return this;
+    ByteBuffer getBuffer() {
+        return buffer;
     }
 
-    public J1939AddressBuffer set(J1939Address other) {
-        setDevice(other.getDevice());
-        setName(other.getName());
-        setParameterGroupNumber(other.getParameterGroupNumber());
-        setAddress(other.getAddress());
-        return this;
-    }
-
-    @Override
-    public ImmutableJ1939Address copy() {
-        return new ImmutableJ1939Address(
-            getDevice(),
-            getName(),
-            getParameterGroupNumber(),
-            getAddress()
-        );
+    int getOffset() {
+        return offset;
     }
 
     private static native int getStructSize();
     private static native int getStructDeviceIndexOffset();
-    private static native int getStructNameOffset();
-    private static native int getStructPgnOffset();
-    private static native int getStructAddrOffset();
+    private static native int getStructDropCountOffset();
+    private static native int getStructTimestampSecondsOffset();
+    private static native int getStructTimestampNanosOffset();
 }

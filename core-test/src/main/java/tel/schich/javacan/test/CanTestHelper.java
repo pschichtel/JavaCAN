@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.time.Instant;
 
 public class CanTestHelper {
     public static final LinuxNetworkDevice CAN_INTERFACE = (LinuxNetworkDevice) lookupDev();
@@ -93,5 +94,9 @@ public class CanTestHelper {
 
     public interface IORunnable {
         void run() throws Exception;
+    }
+
+    public static Instant nowSeconds() {
+        return Instant.ofEpochSecond(Instant.now().getEpochSecond(), 0);
     }
 }

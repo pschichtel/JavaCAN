@@ -160,4 +160,10 @@ class SocketCAN {
     public static native int setTimestampNsOption(int sock, boolean enable) throws LinuxNativeOperationException;
 
     public static native boolean getTimestampNsOption(int sock) throws LinuxNativeOperationException;
+
+    public static native long receiveWithRawHeaders(int sock, ByteBuffer buffer, int offset, int len, int flags, ByteBuffer headerBuffer, int headerOffset) throws LinuxNativeOperationException;
+
+    public static native int setReceiveQueueOverflow(int sock, boolean enable) throws LinuxNativeOperationException;
+
+    public static native boolean getReceiveQueueOverflow(int sock) throws LinuxNativeOperationException;
 }
