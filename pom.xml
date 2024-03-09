@@ -767,6 +767,7 @@
             <modules>
                 <module>core-arch-detect</module>
                 <module>epoll-arch-detect</module>
+                <module>tools</module>
             </modules>
         </profile>
         <profile>

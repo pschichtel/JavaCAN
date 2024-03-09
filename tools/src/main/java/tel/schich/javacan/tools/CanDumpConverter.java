@@ -34,7 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Converts a human readable CAN dump into a {@code canplayer} replayable format.
+ * Converts a human-readable CAN dump into a {@code canplayer} replayable format.
  * Such a dump may have be created from the output of {@code candump} with the parameter {@code -t A}
  * <p>
  * The input lines are transformed from<br>
