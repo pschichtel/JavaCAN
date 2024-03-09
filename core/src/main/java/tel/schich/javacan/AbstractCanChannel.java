@@ -223,6 +223,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">recv man page</a>
      * @param buffer the buffer to receive into
+     * @param flags flags to pass to the underlying recv syscall
      * @return The number of bytes receive from the socket
      * @throws IOException if the native call fails
      */
@@ -267,6 +268,7 @@ public abstract class AbstractCanChannel implements NativeChannel<UnixFileDescri
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the buffer to send from
+     * @param flags flags to pass to the underlying recv syscall
      * @return The number of bytes sent to the socket
      * @throws IOException if the native call fails
      */

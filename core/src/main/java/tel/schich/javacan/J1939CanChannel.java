@@ -94,6 +94,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">recvmsg man page</a>
      * @param buffer the destination buffer
+     * @param messageHeaderBuffer the buffer to read message headers into.
      * @return the amount of bytes that have been read
      * @throws IOException if the native calls fail
      */
@@ -118,6 +119,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the source buffer
+     * @param destination the destination address to the send the message to.
      * @return the amount of bytes that have been sent
      * @throws IOException if the native calls fail
      */
