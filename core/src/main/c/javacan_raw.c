@@ -23,7 +23,6 @@
 #include "common.h"
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <asm-generic/socket.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>

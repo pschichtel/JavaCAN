@@ -22,7 +22,6 @@
  */
 #include "common.h"
 #include <sys/socket.h>
-#include <asm-generic/socket.h>
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>
