@@ -27,6 +27,10 @@
 #include <fcntl.h>
 #include <sys/time.h>
 
+#ifndef SO_RXQ_OVFL
+#include <asm/socket.h>
+#endif
+
 short poll_single(int sock, short events, int timeout) {
     struct pollfd fds;
     fds.fd = sock;

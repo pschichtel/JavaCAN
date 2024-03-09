@@ -28,10 +28,6 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
-#ifndef SO_RXQ_OVFL
-#define SO_RXQ_OVFL 40
-#endif
-
 #define MICROS_PER_SECOND 1000000
 
 int bind_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx);
