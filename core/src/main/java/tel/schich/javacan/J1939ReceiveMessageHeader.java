@@ -29,21 +29,13 @@ import java.time.Instant;
  *
  * @see <a href="https://docs.kernel.org/networking/j1939.html">The Linux J1939 documentation</a>
  */
-public interface J1939ReceiveMessageHeader {
+public interface J1939ReceiveMessageHeader extends ReceiveMessageHeader {
     /**
      * The source address the messages has been received from.
      *
      * @return the source address
      */
     J1939Address getSourceAddress();
-
-    /**
-     * The timestamp the message was received at. This is only a useful value, if timestamps are enabled on the channel.
-     * The precision depends on the channel configuration, the runtime kernel and the hardware being used.
-     *
-     * @return the receive timestamp or the start of the unix epoch if no timestamp was available
-     */
-    Instant getTimestamp();
 
     /**
      * The destination address of the message.

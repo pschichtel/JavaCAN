@@ -99,4 +99,7 @@ public class CanTestHelper {
     public static Instant nowSeconds() {
         return Instant.ofEpochSecond(Instant.now().getEpochSecond(), 0);
     }
+    public static Instant zeroTime() {
+        return Instant.ofEpochSecond(0, 0);
+    }
 }

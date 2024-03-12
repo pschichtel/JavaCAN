@@ -42,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanFrame.*;
 import static tel.schich.javacan.CanSocketOptions.*;
 import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
-import static tel.schich.javacan.test.CanTestHelper.nowSeconds;
 
 class RawCanSocketTest {
 
@@ -345,7 +344,7 @@ class RawCanSocketTest {
             assertEquals(frame, received);
             assertEquals(CAN_INTERFACE, messageHeaderBuffer.getDevice());
             assertEquals(0, messageHeaderBuffer.getDropCount());
-            assertEquals(Instant.now().getEpochSecond(), messageHeaderBuffer.getTimestamp().getEpochSecond());
+            assertEquals(Instant.now().getEpochSecond(), messageHeaderBuffer.getSoftwareTimestamp().getEpochSecond());
         }
     }
 }

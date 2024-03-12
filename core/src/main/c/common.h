@@ -35,6 +35,6 @@ int connect_tp_address(int sock, uint32_t interface, uint32_t rx, uint32_t tx);
 int set_boolean_opt(int sock, int level, int opt, bool enable);
 int get_boolean_opt(int sock, int level, int opt);
 void throw_native_exception(JNIEnv *env, char *msg);
-void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos);
+void parse_timestamp(struct cmsghdr *cmsg, jlong* software_seconds, jlong* software_nanos, jlong* hardware_seconds, jlong* hardware_nanos);
 
 #endif

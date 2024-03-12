@@ -153,8 +153,10 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getJ1939SendPriority(JN
 
 struct j1939_message_header_buffer {
     struct sockaddr_can source_address;
-    jlong timestamp_seconds;
-    jlong timestamp_nanos;
+    jlong software_timestamp_seconds;
+    jlong software_timestamp_nanos;
+    jlong hardware_timestamp_seconds;
+    jlong hardware_timestamp_nanos;
     jbyte dst_addr;
     jlong dst_name;
     jbyte priority;
@@ -209,7 +211,13 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithJ1939Header
                     break;
             }
         } else {
-            parse_timestamp(cmsg, &header_buffer->timestamp_seconds, &header_buffer->timestamp_nanos);
+            parse_timestamp(
+                cmsg,
+                &header_buffer->software_timestamp_seconds,
+                &header_buffer->software_timestamp_nanos,
+                &header_buffer->hardware_timestamp_seconds,
+                &header_buffer->hardware_timestamp_nanos
+            );
         }
     }
 
@@ -316,12 +324,20 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_g
     return offsetof(struct j1939_message_header_buffer, source_address);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct j1939_message_header_buffer, timestamp_seconds);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructSoftwareTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, software_timestamp_seconds);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructTimestampNanosOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct j1939_message_header_buffer, timestamp_nanos);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructSoftwareTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, software_timestamp_nanos);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructHardwareTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, hardware_timestamp_seconds);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructHardwareTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct j1939_message_header_buffer, hardware_timestamp_nanos);
 }
 
 JNIEXPORT jint JNICALL Java_tel_schich_javacan_J1939ReceiveMessageHeaderBuffer_getStructDstAddrOffset(JNIEnv *env, jclass clazz) {

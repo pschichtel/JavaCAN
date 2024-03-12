@@ -174,8 +174,10 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_SocketCAN_getErrorFilter(JNIEnv *
 struct raw_message_header_buffer {
     struct sockaddr_can source_address;
     jint drop_count;
-    jlong timestamp_seconds;
-    jlong timestamp_nanos;
+    jlong software_timestamp_seconds;
+    jlong software_timestamp_nanos;
+    jlong hardware_timestamp_seconds;
+    jlong hardware_timestamp_nanos;
 };
 
 JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithRawHeaders(JNIEnv *env, jclass clazz, jint sock, jobject buffer, jint offset, jint len, jint flags, jobject headerBuffer, jint headerOffset) {
@@ -213,7 +215,13 @@ JNIEXPORT jlong JNICALL Java_tel_schich_javacan_SocketCAN_receiveWithRawHeaders(
             if (cmsg->cmsg_type == SO_RXQ_OVFL) {
                 memcpy(&header_buffer->drop_count, CMSG_DATA(cmsg), sizeof(__u32));
             } else {
-                parse_timestamp(cmsg, &header_buffer->timestamp_seconds, &header_buffer->timestamp_nanos);
+                parse_timestamp(
+                    cmsg,
+                    &header_buffer->software_timestamp_seconds,
+                    &header_buffer->software_timestamp_nanos,
+                    &header_buffer->hardware_timestamp_seconds,
+                    &header_buffer->hardware_timestamp_nanos
+                );
             }
         }
     }
@@ -233,10 +241,18 @@ JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_get
     return offsetof(struct raw_message_header_buffer, drop_count);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct raw_message_header_buffer, timestamp_seconds);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructSoftwareTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, software_timestamp_seconds);
 }
 
-JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructTimestampNanosOffset(JNIEnv *env, jclass clazz) {
-    return offsetof(struct raw_message_header_buffer, timestamp_nanos);
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructSoftwareTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, software_timestamp_nanos);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructHardwareTimestampSecondsOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, hardware_timestamp_seconds);
+}
+
+JNIEXPORT jint JNICALL Java_tel_schich_javacan_RawReceiveMessageHeaderBuffer_getStructHardwareTimestampNanosOffset(JNIEnv *env, jclass clazz) {
+    return offsetof(struct raw_message_header_buffer, hardware_timestamp_nanos);
 }

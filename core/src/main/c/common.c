@@ -77,7 +77,7 @@ void throw_native_exception(JNIEnv *env, char *msg) {
     throw_tel_schich_javacan_platform_linux_LinuxNativeOperationException_cstr(env, msg, errorNumber, strerror(errorNumber));
 }
 
-void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos) {
+void parse_timestamp(struct cmsghdr *cmsg, jlong* software_seconds, jlong* software_nanos, jlong* hardware_seconds, jlong* hardware_nanos) {
     struct timeval tv;
     struct timespec ts;
     struct scm_timestamping timestamping;
@@ -85,23 +85,20 @@ void parse_timestamp(struct cmsghdr *cmsg, jlong* seconds, jlong* nanos) {
         switch (cmsg->cmsg_type) {
             case SO_TIMESTAMP:
                 memcpy(&tv, CMSG_DATA(cmsg), sizeof(tv));
-                *seconds = tv.tv_sec;
-                *nanos = tv.tv_usec * 1000;
+                *software_seconds = tv.tv_sec;
+                *software_nanos = tv.tv_usec * 1000;
                 break;
             case SO_TIMESTAMPNS:
                 memcpy(&ts, CMSG_DATA(cmsg), sizeof(ts));
-                *seconds = ts.tv_sec;
-                *nanos = ts.tv_nsec;
+                *software_seconds = ts.tv_sec;
+                *software_nanos = ts.tv_nsec;
                 break;
             case SO_TIMESTAMPING:
                 memcpy(&timestamping, CMSG_DATA(cmsg), sizeof(timestamping));
-                if (timestamping.ts[2].tv_sec || timestamping.ts[2].tv_nsec) {
-                    *seconds = timestamping.ts[2].tv_sec;
-                    *nanos = timestamping.ts[2].tv_nsec;
-                } else if (timestamping.ts[0].tv_sec || timestamping.ts[0].tv_nsec) {
-                    *seconds = timestamping.ts[0].tv_sec;
-                    *nanos = timestamping.ts[0].tv_nsec;
-                }
+                *software_seconds = timestamping.ts[0].tv_sec;
+                *software_nanos = timestamping.ts[0].tv_nsec;
+                *hardware_seconds = timestamping.ts[2].tv_sec;
+                *hardware_nanos = timestamping.ts[2].tv_nsec;
                 break;
         }
     }

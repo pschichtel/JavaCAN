@@ -33,12 +33,14 @@ public final class ImmutableRawReceiveMessageHeader implements RawReceiveMessage
 
     private final LinuxNetworkDevice device;
     private final int dropCount;
-    private final Instant timestamp;
+    private final Instant softwareTimestamp;
+    private final Instant hardwareTimestamp;
 
-    public ImmutableRawReceiveMessageHeader(LinuxNetworkDevice device, int dropCount, Instant timestamp) {
+    public ImmutableRawReceiveMessageHeader(LinuxNetworkDevice device, int dropCount, Instant softwareTimestamp, Instant hardwareTimestamp) {
         this.device = device;
         this.dropCount = dropCount;
-        this.timestamp = timestamp;
+        this.softwareTimestamp = softwareTimestamp;
+        this.hardwareTimestamp = hardwareTimestamp;
     }
 
     @Override
@@ -52,8 +54,13 @@ public final class ImmutableRawReceiveMessageHeader implements RawReceiveMessage
     }
 
     @Override
-    public Instant getTimestamp() {
-        return timestamp;
+    public Instant getSoftwareTimestamp() {
+        return softwareTimestamp;
+    }
+
+    @Override
+    public Instant getHardwareTimestamp() {
+        return hardwareTimestamp;
     }
 
     @Override

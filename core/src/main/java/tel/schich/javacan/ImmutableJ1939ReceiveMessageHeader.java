@@ -30,16 +30,18 @@ import java.util.Objects;
  */
 public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMessageHeader {
     private final ImmutableJ1939Address sourceAddress;
-    private final Instant timestamp;
+    private final Instant softwareTimestamp;
+    private final Instant hardwareTimestamp;
     private final byte destinationAddress;
     private final long destinationName;
     private final byte priority;
 
     // TODO add support for SCM_J1939_ERRQUEUE
 
-    public ImmutableJ1939ReceiveMessageHeader(ImmutableJ1939Address sourceAddress, Instant timestamp, byte destinationAddress, long destinationName, byte priority) {
+    public ImmutableJ1939ReceiveMessageHeader(ImmutableJ1939Address sourceAddress, Instant softwareTimestamp, Instant hardwareTimestamp, byte destinationAddress, long destinationName, byte priority) {
         this.sourceAddress = sourceAddress;
-        this.timestamp = timestamp;
+        this.softwareTimestamp = softwareTimestamp;
+        this.hardwareTimestamp = hardwareTimestamp;
         this.destinationAddress = destinationAddress;
         this.destinationName = destinationName;
         this.priority = priority;
@@ -51,8 +53,13 @@ public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMes
     }
 
     @Override
-    public Instant getTimestamp() {
-        return timestamp;
+    public Instant getSoftwareTimestamp() {
+        return softwareTimestamp;
+    }
+
+    @Override
+    public Instant getHardwareTimestamp() {
+        return hardwareTimestamp;
     }
 
     @Override
@@ -80,22 +87,28 @@ public final class ImmutableJ1939ReceiveMessageHeader implements J1939ReceiveMes
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ImmutableJ1939ReceiveMessageHeader header = (ImmutableJ1939ReceiveMessageHeader) o;
-        return destinationAddress == header.destinationAddress && destinationName == header.destinationName && priority == header.priority && Objects.equals(sourceAddress, header.sourceAddress) && Objects.equals(timestamp, header.timestamp);
+        return destinationAddress == header.destinationAddress &&
+            destinationName == header.destinationName &&
+            priority == header.priority &&
+            Objects.equals(sourceAddress, header.sourceAddress) &&
+            Objects.equals(softwareTimestamp, header.softwareTimestamp) &&
+            Objects.equals(hardwareTimestamp, header.hardwareTimestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sourceAddress, timestamp, destinationAddress, destinationName, priority);
+        return Objects.hash(sourceAddress, softwareTimestamp, hardwareTimestamp, destinationAddress, destinationName, priority);
     }
 
     @Override
     public String toString() {
-        return "J1939ReceivedMessageHeader{" +
-                "sourceAddress=" + sourceAddress +
-                ", timestamp=" + timestamp +
-                ", destinationAddress=" + destinationAddress +
-                ", destinationName=" + destinationName +
-                ", priority=" + priority +
-                '}';
+        return "ImmutableJ1939ReceiveMessageHeader{" +
+            "sourceAddress=" + sourceAddress +
+            ", softwareTimestamp=" + softwareTimestamp +
+            ", hardwareTimestamp=" + hardwareTimestamp +
+            ", destinationAddress=" + destinationAddress +
+            ", destinationName=" + destinationName +
+            ", priority=" + priority +
+            '}';
     }
 }

@@ -35,8 +35,10 @@ public final class RawReceiveMessageHeaderBuffer implements RawReceiveMessageHea
 
     private static final int DEVICE_INDEX_OFFSET = getStructDeviceIndexOffset();
     private static final int DROP_COUNT_OFFSET = getStructDropCountOffset();
-    private static final int TIMESTAMP_SECONDS_OFFSET = getStructTimestampSecondsOffset();
-    private static final int TIMESTAMP_NANOS_OFFSET = getStructTimestampNanosOffset();
+    private static final int SOFTWARE_TIMESTAMP_SECONDS_OFFSET = getStructSoftwareTimestampSecondsOffset();
+    private static final int SOFTWARE_TIMESTAMP_NANOS_OFFSET = getStructSoftwareTimestampNanosOffset();
+    private static final int HARDWARE_TIMESTAMP_SECONDS_OFFSET = getStructHardwareTimestampSecondsOffset();
+    private static final int HARDWARE_TIMESTAMP_NANOS_OFFSET = getStructHardwareTimestampNanosOffset();
 
     public static final int BYTES = getStructSize();
 
@@ -77,19 +79,30 @@ public final class RawReceiveMessageHeaderBuffer implements RawReceiveMessageHea
     }
 
     @Override
-    public Instant getTimestamp() {
-        return Instant.ofEpochSecond(buffer.getLong(offset + TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + TIMESTAMP_NANOS_OFFSET));
+    public Instant getSoftwareTimestamp() {
+        return Instant.ofEpochSecond(buffer.getLong(offset + SOFTWARE_TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + SOFTWARE_TIMESTAMP_NANOS_OFFSET));
     }
 
-    public RawReceiveMessageHeaderBuffer setTimestamp(Instant timestamp) {
-        buffer.putLong(offset + TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
-        buffer.putLong(offset + TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
+    public RawReceiveMessageHeaderBuffer setSoftwareTimestamp(Instant timestamp) {
+        buffer.putLong(offset + SOFTWARE_TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
+        buffer.putLong(offset + SOFTWARE_TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
+        return this;
+    }
+
+    @Override
+    public Instant getHardwareTimestamp() {
+        return Instant.ofEpochSecond(buffer.getLong(offset + HARDWARE_TIMESTAMP_SECONDS_OFFSET), buffer.getLong(offset + HARDWARE_TIMESTAMP_NANOS_OFFSET));
+    }
+
+    public RawReceiveMessageHeaderBuffer setHardwareTimestamp(Instant timestamp) {
+        buffer.putLong(offset + HARDWARE_TIMESTAMP_SECONDS_OFFSET, timestamp.getEpochSecond());
+        buffer.putLong(offset + HARDWARE_TIMESTAMP_NANOS_OFFSET, timestamp.getNano());
         return this;
     }
 
     @Override
     public ImmutableRawReceiveMessageHeader copy() {
-        return new ImmutableRawReceiveMessageHeader(getDevice(), getDropCount(), getTimestamp());
+        return new ImmutableRawReceiveMessageHeader(getDevice(), getDropCount(), getSoftwareTimestamp(), getHardwareTimestamp());
     }
 
     ByteBuffer getBuffer() {
@@ -103,6 +116,8 @@ public final class RawReceiveMessageHeaderBuffer implements RawReceiveMessageHea
     private static native int getStructSize();
     private static native int getStructDeviceIndexOffset();
     private static native int getStructDropCountOffset();
-    private static native int getStructTimestampSecondsOffset();
-    private static native int getStructTimestampNanosOffset();
+    private static native int getStructSoftwareTimestampSecondsOffset();
+    private static native int getStructSoftwareTimestampNanosOffset();
+    private static native int getStructHardwareTimestampSecondsOffset();
+    private static native int getStructHardwareTimestampNanosOffset();
 }
