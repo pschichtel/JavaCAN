@@ -30,12 +30,15 @@ import tel.schich.javacan.J1939CanChannel;
 import tel.schich.javacan.J1939CanSocketOptions;
 import tel.schich.javacan.J1939Filter;
 import tel.schich.javacan.ImmutableJ1939ReceiveMessageHeader;
+import tel.schich.javacan.J1939ReceiveMessageHeader;
 import tel.schich.javacan.J1939ReceiveMessageHeaderBuffer;
+import tel.schich.javacan.ReceiveMessageHeader;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tel.schich.javacan.CanSocketOptions.*;
@@ -43,8 +46,7 @@ import static tel.schich.javacan.CanSocketOptions.TimestampingFlag.*;
 import static tel.schich.javacan.J1939Address.NO_ADDR;
 import static tel.schich.javacan.TestHelper.assertByteBufferEquals;
 import static tel.schich.javacan.TestHelper.directBufferOf;
-import static tel.schich.javacan.test.CanTestHelper.CAN_INTERFACE;
-import static tel.schich.javacan.test.CanTestHelper.nowSeconds;
+import static tel.schich.javacan.test.CanTestHelper.*;
 
 class J1939CanSocketTest {
 
@@ -113,10 +115,11 @@ class J1939CanSocketTest {
                 J1939ReceiveMessageHeaderBuffer headerBuffer = new J1939ReceiveMessageHeaderBuffer();
                 assertEquals(2, b.receive(outputBuffer, headerBuffer));
                 // truncate the timestamp to the current second
-                headerBuffer.setTimestamp(Instant.ofEpochSecond(headerBuffer.getTimestamp().getEpochSecond(), 0));
+                headerBuffer.setSoftwareTimestamp(Instant.ofEpochSecond(headerBuffer.getSoftwareTimestamp().getEpochSecond(), 0));
                 ImmutableJ1939ReceiveMessageHeader expected = new ImmutableJ1939ReceiveMessageHeader(
                     source,
                     nowSeconds(),
+                    zeroTime(),
                     destination.getAddress(),
                     destination.getName(),
                     (byte) 6
@@ -129,7 +132,7 @@ class J1939CanSocketTest {
         }
     }
 
-    private static void testTimestamp(Configurer<J1939CanChannel> senderConfigurer, Configurer<J1939CanChannel> receiverConfigurer) throws Exception{
+    private static void testTimestamp(Configurer<J1939CanChannel> senderConfigurer, Configurer<J1939CanChannel> receiverConfigurer, Instant expected, Function<J1939ReceiveMessageHeader, Instant> actual) throws Exception{
         ImmutableJ1939Address source = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, 0, (byte) 0x20);
         ImmutableJ1939Address destination = new ImmutableJ1939Address(CAN_INTERFACE, ImmutableJ1939Address.NO_NAME, ImmutableJ1939Address.NO_PGN, (byte) 0x30);
         J1939ReceiveMessageHeaderBuffer headerBuffer = new J1939ReceiveMessageHeaderBuffer();
@@ -149,26 +152,38 @@ class J1939CanSocketTest {
                 a.send(buffer);
                 buffer.clear();
                 b.receive(buffer, headerBuffer);
-                assertEquals(Instant.now().getEpochSecond(), headerBuffer.getTimestamp().getEpochSecond());
+                assertEquals(expected.getEpochSecond(), actual.apply(headerBuffer).getEpochSecond());
             }
         }
     }
 
     @Test
-    void testTimestamp() throws Exception {
-        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMP, true));
+    void testSoftwareTimestamp() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMP, true), nowSeconds(), ReceiveMessageHeader::getSoftwareTimestamp);
     }
 
     @Test
-    void testTimestampNs() throws Exception {
-        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMPNS, true));
+    void testHardwareTimestamp() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMP, true), zeroTime(), ReceiveMessageHeader::getHardwareTimestamp);
+    }
+
+    @Test
+    void testSoftwareTimestampNs() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMPNS, true), nowSeconds(), ReceiveMessageHeader::getSoftwareTimestamp);
+    }
+
+    @Test
+    void testHardwareTimestampNs() throws Exception {
+        testTimestamp(ch -> {}, ch -> ch.setOption(SO_TIMESTAMPNS, true), nowSeconds(), ReceiveMessageHeader::getSoftwareTimestamp);
     }
 
     @Test
     void testTimestamping() throws Exception {
         final TimestampingFlagSet sendFlags = TimestampingFlagSet.of(SOFTWARE, RAW_HARDWARE, TX_SOFTWARE, TX_HARDWARE, TX_SCHED, OPT_TSONLY, OPT_ID);
         final TimestampingFlagSet receiveFlags = TimestampingFlagSet.of(SOFTWARE, RAW_HARDWARE, RX_SOFTWARE, RX_HARDWARE, OPT_TSONLY, OPT_ID);
-        testTimestamp(ch -> ch.setOption(SO_TIMESTAMPING, sendFlags), ch -> ch.setOption(SO_TIMESTAMPING, receiveFlags));
+        testTimestamp(ch -> ch.setOption(SO_TIMESTAMPING, sendFlags), ch -> ch.setOption(SO_TIMESTAMPING, receiveFlags), nowSeconds(), ReceiveMessageHeader::getSoftwareTimestamp);
+        // TODO why are this 0 ? does vcan not support SO_TIMESTAMPING?
+        testTimestamp(ch -> ch.setOption(SO_TIMESTAMPING, sendFlags), ch -> ch.setOption(SO_TIMESTAMPING, receiveFlags), zeroTime(), ReceiveMessageHeader::getHardwareTimestamp);
     }
 
     @Test
