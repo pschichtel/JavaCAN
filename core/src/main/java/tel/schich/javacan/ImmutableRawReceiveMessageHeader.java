@@ -25,6 +25,7 @@ package tel.schich.javacan;
 import tel.schich.javacan.platform.linux.LinuxNetworkDevice;
 
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * This class represents immutable message headers included with RAW messages, not suitable for native operations.
@@ -66,5 +67,28 @@ public final class ImmutableRawReceiveMessageHeader implements RawReceiveMessage
     @Override
     public ImmutableRawReceiveMessageHeader copy() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ImmutableRawReceiveMessageHeader that = (ImmutableRawReceiveMessageHeader) o;
+        return dropCount == that.dropCount && Objects.equals(device, that.device) && Objects.equals(softwareTimestamp, that.softwareTimestamp) && Objects.equals(hardwareTimestamp, that.hardwareTimestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(device, dropCount, softwareTimestamp, hardwareTimestamp);
+    }
+
+    @Override
+    public String toString() {
+        return "ImmutableRawReceiveMessageHeader{" +
+            "device=" + device +
+            ", dropCount=" + dropCount +
+            ", softwareTimestamp=" + softwareTimestamp +
+            ", hardwareTimestamp=" + hardwareTimestamp +
+            '}';
     }
 }

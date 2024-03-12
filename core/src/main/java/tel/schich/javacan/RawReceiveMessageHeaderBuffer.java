@@ -105,6 +105,15 @@ public final class RawReceiveMessageHeaderBuffer implements RawReceiveMessageHea
         return new ImmutableRawReceiveMessageHeader(getDevice(), getDropCount(), getSoftwareTimestamp(), getHardwareTimestamp());
     }
 
+    @Override
+    public String toString() {
+        return "ImmutableRawReceiveMessageHeader{" +
+            "device=" + getDevice() +
+            ", dropCount=" + getDropCount() +
+            ", softwareTimestamp=" + getSoftwareTimestamp() +
+            ", hardwareTimestamp=" + getHardwareTimestamp() +
+            '}';
+    }
     ByteBuffer getBuffer() {
         return buffer;
     }
