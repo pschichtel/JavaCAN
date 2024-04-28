@@ -10,8 +10,7 @@ on:
 jobs:
   build:
 
-    runs-on: github-actions-pschichtel-javacan
-    container: quay.io/podman/stable
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
