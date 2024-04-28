@@ -11,6 +11,7 @@ jobs:
   build:
 
     runs-on: github-actions-pschichtel-javacan
+    container: alpine
 
     steps:
     - uses: actions/checkout@v4
