@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: github-actions-pschichtel
+    runs-on: github-actions-pschichtel-javacan
 
     steps:
     - uses: actions/checkout@v4
