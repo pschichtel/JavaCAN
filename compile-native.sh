@@ -46,10 +46,10 @@ else
     if [ -n "${RUN_CONTAINER_COMMAND:-}" ]
     then
         ${RUN_CONTAINER_COMMAND} "$dockcross_image"
-    elif [ -n "$(which podman)" ]
+    elif [ -n "$(command -v podman)" ]
     then
         podman run --rm "$dockcross_image" > "$proxy"
-    elif [ -n "$(which docker)" ]
+    elif [ -n "$(command -v docker)" ]
     then
         docker run --rm "$dockcross_image" > "$proxy"
     else
