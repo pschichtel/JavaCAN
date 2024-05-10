@@ -220,7 +220,6 @@ class J1939CanSocketTest {
         J1939Address bindAddr = new ImmutableJ1939Address(CAN_INTERFACE);
         J1939Address destAddr = new ImmutableJ1939Address(LinuxNetworkDevice.fromDeviceIndex(CAN_INTERFACE.getIndex() + 1));
 
-
         LinuxNativeOperationException e = assertThrows(LinuxNativeOperationException.class, () -> {
             try (final J1939CanChannel channel = CanChannels.newJ1939Channel()) {
                 channel.bind(bindAddr);
