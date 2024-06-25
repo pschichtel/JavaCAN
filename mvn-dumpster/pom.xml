@@ -361,7 +361,7 @@
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>exec-maven-plugin</artifactId>
                             <configuration>
-                                <workingDirectory>${project.basedir}</workingDirectory>
+                                <workingDirectory>..</workingDirectory>
                                 <executable>${javacan.compile-script}</executable>
                             </configuration>
                             <executions>
@@ -472,7 +472,7 @@
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>exec-maven-plugin</artifactId>
                             <configuration>
-                                <workingDirectory>${project.basedir}</workingDirectory>
+                                <workingDirectory>..</workingDirectory>
                                 <executable>${javacan.compile-script}</executable>
                             </configuration>
                             <executions>
@@ -791,7 +791,7 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <configuration>
-                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <workingDirectory>..</workingDirectory>
                             <executable>${javacan.compile-script}</executable>
                         </configuration>
                         <executions>

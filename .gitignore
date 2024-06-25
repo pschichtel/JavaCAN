@@ -9,3 +9,5 @@ target/
 /.cproject
 /.project
 .settings/
+build/
+.gradle/
