@@ -16,11 +16,13 @@ val compileNativeAll by tasks.registering(DefaultTask::class) {
 for (arch in architectures) {
     val compileNative = tasks.register("compileNativeFor${arch.capitalized()}", DockcrossRunTask::class) {
         group = nativeGroup
+        inputs.dir(project.layout.projectDirectory.dir("src/include"))
+        inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
 
         dependsOn(tasks.compileJava)
 
         val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
-        mountSource = project.rootProject.layout.projectDirectory
+        mountSource = project.rootProject.layout.projectDirectory.asFile
         javaHome = toolchainHome
         dockcrossTag = "20240418-88c04a4"
         architecture = arch

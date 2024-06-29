@@ -6,13 +6,11 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -90,9 +88,8 @@ class DockerRunner(binary: String = "docker") : DockerLikeRunner(binary)
 data class PodmanRunner(val binary: String = "podman") : DockerLikeRunner(binary)
 
 abstract class DockcrossRunTask : DefaultTask() {
-    @get:PathSensitive(PathSensitivity.NONE)
-    @get:InputFiles
-    val mountSource: DirectoryProperty = project.objects.directoryProperty()
+    @get:Input
+    val mountSource: Property<File> = project.objects.property()
 
     @get:Input
     val containerName: Property<String> = project.objects.property()
@@ -118,7 +115,7 @@ abstract class DockcrossRunTask : DefaultTask() {
     private var runner: ContainerRunner = PodmanRunner()
 
     init {
-        mountSource.convention(project.layout.projectDirectory)
+        mountSource.convention(project.layout.projectDirectory.asFile)
         dockcrossTag.convention("latest")
         dockcrossRepository.convention("docker.io/dockcross/linux-{arch}")
         architecture.convention("x64")
@@ -143,7 +140,7 @@ abstract class DockcrossRunTask : DefaultTask() {
                 containerName = containerName.orNull?.ifEmpty { null },
                 command = command,
                 runAs = null,
-                mountSource = mountSource.get().asFile.toPath(),
+                mountSource = mountSource.get().toPath(),
                 workdir = output.get().asFile.toPath(),
                 toolchainHome = toolchainHome
             )
