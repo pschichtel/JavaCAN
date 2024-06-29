@@ -2,6 +2,7 @@ rootProject.name = "javacan"
 
 pluginManagement {
     includeBuild("conventions")
+    includeBuild("jni-cross")
 }
 
 plugins {

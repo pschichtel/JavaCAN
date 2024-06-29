@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 #include <errno.h>
-#include <javacan-epoll/jni-c-to-java.h>
+#include <epoll/jni-c-to-java.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
