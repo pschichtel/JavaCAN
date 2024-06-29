@@ -1,8 +1,8 @@
 set(CMAKE_C_STANDARD 99)
 
+option(PROJECT_VERSION "The version of the maven project" "unspecified")
 option(IS_RELEASE "Whether this is a release build" OFF)
 option(LINK_STATICALLY "Whether this is a release build" OFF)
-option(PROJECT_VERSION "The version of the maven project")
 
 find_package(Java 1.8 REQUIRED)
 
