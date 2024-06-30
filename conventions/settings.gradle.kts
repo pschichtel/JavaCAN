@@ -1,3 +1,5 @@
+includeBuild("../dockcross")
+
 pluginManagement {
     repositories {
         mavenCentral()

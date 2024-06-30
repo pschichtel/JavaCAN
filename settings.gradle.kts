@@ -2,7 +2,6 @@ rootProject.name = "javacan"
 
 pluginManagement {
     includeBuild("conventions")
-    includeBuild("dockcross")
 }
 
 plugins {
