@@ -10,10 +10,8 @@ plugins {
 
 include("core")
 include("core-arch-detect")
-include("core-test")
 
 include("epoll")
 include("epoll-arch-detect")
-include("epoll-test")
 
 include("tools")

@@ -12,7 +12,7 @@ val archDetectConfiguration by configurations.registering {
 }
 
 dependencies {
-    "tel.schich:jni-access-generator:1.1.2".let {
+    "tel.schich:jni-access-generator:1.1.2".also {
         annotationProcessor(it)
         compileOnly(it)
     }
@@ -166,4 +166,7 @@ val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
     runner(NonContainerRunner)
 }
 
-tasks.test { dependsOn(compileNativeForHost) }
+tasks.test {
+    dependsOn(compileNativeForHost)
+    useJUnitPlatform()
+}

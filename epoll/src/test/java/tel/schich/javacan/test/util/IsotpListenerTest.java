@@ -46,7 +46,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tel.schich.javacan.IsotpAddress.*;
 
 class IsotpListenerTest {
@@ -89,7 +88,7 @@ class IsotpListenerTest {
 
                     try {
                         lock.lock();
-                        assertTrue(condition.await(20, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 20 seconds of ping-pong");
+                        Assertions.assertTrue(condition.await(20, TimeUnit.SECONDS), "The backing CAN socket should be fast enough to reach 4096 bytes within 20 seconds of ping-pong");
                     } finally {
                         lock.unlock();
                     }

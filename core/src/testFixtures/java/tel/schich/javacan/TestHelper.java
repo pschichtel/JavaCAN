@@ -22,7 +22,7 @@
  */
 package tel.schich.javacan;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
 import java.nio.ByteBuffer;
@@ -53,6 +53,6 @@ public class TestHelper {
         expectedArrayBacked.put(expected);
         actualArrayBacked.put(actual);
 
-        Assert.assertArrayEquals(expectedArrayBacked.array(), actualArrayBacked.array());
+        Assertions.assertArrayEquals(expectedArrayBacked.array(), actualArrayBacked.array());
     }
 }
