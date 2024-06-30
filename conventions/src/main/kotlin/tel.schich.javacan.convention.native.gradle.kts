@@ -11,16 +11,10 @@ val archDetectConfiguration by configurations.registering {
     isCanBeConsumed = true
 }
 
-dependencies {
-    "tel.schich:jni-access-generator:1.1.2".also {
-        annotationProcessor(it)
-        compileOnly(it)
-    }
-}
-
-tasks.withType<JavaCompile>().configureEach {
+val jniGluePath = project.layout.buildDirectory.get().dir("jni/${project.name}")
+tasks.compileJava.configure {
     options.compilerArgs.addAll(listOf("-Agenerate.jni.headers=true"))
-    options.headerOutputDirectory = project.layout.buildDirectory.get().dir("jni").dir(project.name)
+    options.headerOutputDirectory = jniGluePath
 }
 
 enum class NativeLinkMode {
@@ -89,14 +83,15 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
 
     inputs.dir(project.rootProject.layout.projectDirectory.dir("core/src/include"))
     inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
+    inputs.dir(jniGluePath)
 
     dependsOn(tasks.compileJava)
 
     val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
     javaHome = toolchainHome
-    output = outputTo
+    output = outputTo.dir("native")
 
-    val relativePathToProject = outputTo.asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
+    val relativePathToProject = output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
     val projectVersionOption = "-DPROJECT_VERSION=${project.version}"
     val releaseOption = "-DIS_RELEASE=${if (buildReleaseBinaries) "1" else "0"}"
     val linkStaticallyOption = "-DLINK_STATICALLY=${if (linkMode == NativeLinkMode.STATIC) "1" else "0"}"
@@ -104,6 +99,16 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
         listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
         listOf("make", "-j${project.gradle.startParameter.maxWorkerCount}"),
     )
+}
+
+fun Jar.baseConfigure(compileTask: TaskProvider<DockcrossRunTask>, buildOutputDir: Directory) {
+    group = nativeGroup
+
+    dependsOn(compileTask)
+
+    from(buildOutputDir) {
+        include("native/*.so")
+    }
 }
 
 for (target in targets) {
@@ -121,7 +126,7 @@ for (target in targets) {
     val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
 
     val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
-        baseConfigure(linkMode, buildOutputDir.get().dir("native"))
+        baseConfigure(linkMode, buildOutputDir.get())
 
         mountSource = project.rootProject.layout.projectDirectory.asFile
         dockcrossRepository = repo
@@ -131,13 +136,7 @@ for (target in targets) {
     }
 
     val packageNative = tasks.register("packageNativeFor$taskSuffix", Jar::class) {
-        group = nativeGroup
-
-        dependsOn(compileNative)
-
-        from(buildOutputDir) {
-            include("native/*.so")
-        }
+        baseConfigure(compileNative, buildOutputDir.get())
 
         archiveClassifier = classifier
     }
@@ -161,12 +160,33 @@ for (target in targets) {
     }
 }
 
+val nativeForHostOutputDir: Directory = project.layout.buildDirectory.dir("dockcross/host").get()
 val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
-    baseConfigure(NativeLinkMode.DYNAMIC, project.layout.buildDirectory.dir("dockcross/host").get())
+    baseConfigure(NativeLinkMode.DYNAMIC, nativeForHostOutputDir)
     runner(NonContainerRunner)
 }
 
-tasks.test {
+val packageNativeForHost by tasks.registering(Jar::class) {
+    baseConfigure(compileNativeForHost, nativeForHostOutputDir)
+    group = nativeGroup
+
     dependsOn(compileNativeForHost)
+
+    archiveClassifier = "host"
+}
+
+tasks.test {
     useJUnitPlatform()
+}
+
+dependencies {
+    "tel.schich:jni-access-generator:1.1.2".also {
+        annotationProcessor(it)
+        compileOnly(it)
+    }
+
+    files(packageNativeForHost).also {
+        testImplementation(it)
+        testFixturesApi(it)
+    }
 }

@@ -24,3 +24,13 @@ val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
             this@registering.dependsOn(it)
         }
 }
+
+val testAll by tasks.registering(DefaultTask::class) {
+    group = "verification"
+
+    project.subprojects
+        .flatMap { it.tasks .withType<Test>() }
+        .forEach {
+            this@registering.dependsOn(it)
+        }
+}

@@ -4,6 +4,7 @@ project(javacan-core C)
 include(../common.cmake)
 
 add_library(javacan-core SHARED
+        build/jni/core/jni-c-to-java.c
         src/main/c/common.c
         src/main/c/common.h
         src/main/c/javacan_bcm.c
