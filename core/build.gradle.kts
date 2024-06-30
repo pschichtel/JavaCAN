@@ -45,7 +45,15 @@ val compileNativeAllExceptAndroid by tasks.registering(DefaultTask::class) {
 
 val isRelease = !project.version.toString().endsWith("-SNAPSHOT")
 
-for ((dockcrossImage, classifier, linkMode) in targets) {
+fun Project.dockcrossProp(prop: String, classifier: String, or: () -> String) = findProperty("dockcross.$prop.${classifier}")?.toString() ?: or()
+
+for (target in targets) {
+    val classifier = target.classifier
+    val dockcrossVersion = "20240418-88c04a4"
+    val dockcrossImage = project.dockcrossProp(prop = "image", classifier) { "docker.io/dockcross/${target.image}:$dockcrossVersion" }
+    val (repo, tag) = dockcrossImage.split(":", limit = 2)
+    val linkMode = project.dockcrossProp(prop = "link-mode", classifier) { target.mode.name }.uppercase().let(NativeLinkMode::valueOf)
+
     val buildOutputDir = project.layout.buildDirectory.dir("dockcross/$classifier")
     val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
 
@@ -59,7 +67,8 @@ for ((dockcrossImage, classifier, linkMode) in targets) {
         val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
         mountSource = project.rootProject.layout.projectDirectory.asFile
         javaHome = toolchainHome
-        dockcrossTag = "20240418-88c04a4"
+        dockcrossRepository = repo
+        dockcrossTag = tag
         image = dockcrossImage
         output = buildOutputDir.get().dir("native")
 
