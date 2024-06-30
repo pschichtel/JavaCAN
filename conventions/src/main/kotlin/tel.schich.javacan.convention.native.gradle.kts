@@ -1,4 +1,5 @@
 import org.gradle.configurationcache.extensions.capitalized
+import tel.schich.dockcross.execute.NonContainerRunner
 import tel.schich.dockcross.tasks.DockcrossRunTask
 
 plugins {
@@ -83,6 +84,28 @@ val buildReleaseBinaries = project.findProperty("javacan.build-release-binaries"
 
 fun Project.dockcrossProp(prop: String, classifier: String) = findProperty("dockcross.$prop.${classifier}")?.toString()
 
+fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory) {
+    group = nativeGroup
+
+    inputs.dir(project.rootProject.layout.projectDirectory.dir("core/src/include"))
+    inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
+
+    dependsOn(tasks.compileJava)
+
+    val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
+    javaHome = toolchainHome
+    output = outputTo
+
+    val relativePathToProject = outputTo.asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
+    val projectVersionOption = "-DPROJECT_VERSION=${project.version}"
+    val releaseOption = "-DIS_RELEASE=${if (buildReleaseBinaries) "1" else "0"}"
+    val linkStaticallyOption = "-DLINK_STATICALLY=${if (linkMode == NativeLinkMode.STATIC) "1" else "0"}"
+    script = listOf(
+        listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
+        listOf("make", "-j${project.gradle.startParameter.maxWorkerCount}"),
+    )
+}
+
 for (target in targets) {
     val classifier = target.classifier
     val dockcrossVersion = "20240418-88c04a4"
@@ -98,29 +121,13 @@ for (target in targets) {
     val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
 
     val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
-        group = nativeGroup
-        inputs.dir(project.rootProject.layout.projectDirectory.dir("core/src/include"))
-        inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
+        baseConfigure(linkMode, buildOutputDir.get().dir("native"))
 
-        dependsOn(tasks.compileJava)
-
-        val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
         mountSource = project.rootProject.layout.projectDirectory.asFile
-        javaHome = toolchainHome
         dockcrossRepository = repo
         dockcrossTag = tag
         image = dockcrossImage
         containerName = "dockcross-${project.name}-$classifier"
-        output = buildOutputDir.get().dir("native")
-
-        val relativePathToProject = output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
-        val projectVersionOption = "-DPROJECT_VERSION=${project.version}"
-        val releaseOption = "-DIS_RELEASE=${if (buildReleaseBinaries) "1" else "0"}"
-        val linkStaticallyOption = "-DLINK_STATICALLY=${if (linkMode == NativeLinkMode.STATIC) "1" else "0"}"
-        script = listOf(
-            listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
-            listOf("make", "-j${project.gradle.startParameter.maxWorkerCount}"),
-        )
     }
 
     val packageNative = tasks.register("packageNativeFor$taskSuffix", Jar::class) {
@@ -153,3 +160,10 @@ for (target in targets) {
         artifacts.add(archDetectConfiguration.name, packageNative)
     }
 }
+
+val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
+    baseConfigure(NativeLinkMode.DYNAMIC, project.layout.buildDirectory.dir("dockcross/host").get())
+    runner(NonContainerRunner)
+}
+
+tasks.test { dependsOn(compileNativeForHost) }
