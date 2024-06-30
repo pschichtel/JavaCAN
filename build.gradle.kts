@@ -13,3 +13,14 @@ nexusPublishing {
         sonatype()
     }
 }
+
+val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
+    group = "publishing"
+
+    project.subprojects
+        .flatMap { it.tasks }
+        .filter { it.name == "publishToMavenLocal" }
+        .forEach {
+            this@registering.dependsOn(it)
+        }
+}

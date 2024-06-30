@@ -6,6 +6,7 @@ plugins {
 
 publishing.publications.register(project.name, MavenPublication::class) {
     artifactId = "javacan-${project.name}"
+    from(components["java"])
 
     pom {
         name = "JavaCAN"
