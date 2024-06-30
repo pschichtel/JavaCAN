@@ -6,6 +6,10 @@ plugins {
     id("tel.schich.dockcross")
 }
 
+val archDetectConfiguration by configurations.registering {
+    isCanBeConsumed = true
+}
+
 dependencies {
     "tel.schich:jni-access-generator:1.1.2".let {
         annotationProcessor(it)
@@ -27,20 +31,21 @@ data class BuildTarget(
     val image: String,
     val classifier: String,
     val mode: NativeLinkMode = NativeLinkMode.DYNAMIC,
+    val archDetect: Boolean = false,
 )
 
 val nativeGroup = "native"
 val targets = listOf(
-    BuildTarget(image = "linux-x64", classifier = "x86_64"),
-    BuildTarget(image = "linux-x86", classifier = "x86_32"),
+    BuildTarget(image = "linux-x64", classifier = "x86_64", archDetect = true),
+    BuildTarget(image = "linux-x86", classifier = "x86_32", archDetect = true),
     BuildTarget(image = "linux-armv5", classifier = "armv5"),
-    BuildTarget(image = "linux-armv6", classifier = "armv6"),
-    BuildTarget(image = "linux-armv7", classifier = "armv7"),
-    BuildTarget(image = "linux-armv7a", classifier = "armv7a"),
-    BuildTarget(image = "linux-armv7l-musl", classifier = "armv7l", mode = NativeLinkMode.STATIC),
-    BuildTarget(image = "linux-arm64", classifier = "aarch64"),
-    BuildTarget(image = "linux-riscv32", classifier = "riscv32"),
-    BuildTarget(image = "linux-riscv64", classifier = "riscv64"),
+    BuildTarget(image = "linux-armv6", classifier = "armv6", archDetect = true),
+    BuildTarget(image = "linux-armv7", classifier = "armv7", archDetect = true),
+    BuildTarget(image = "linux-armv7a", classifier = "armv7a", archDetect = true),
+    BuildTarget(image = "linux-armv7l-musl", classifier = "armv7l", mode = NativeLinkMode.STATIC, archDetect = true),
+    BuildTarget(image = "linux-arm64", classifier = "aarch64", archDetect = true),
+    BuildTarget(image = "linux-riscv32", classifier = "riscv32", archDetect = true),
+    BuildTarget(image = "linux-riscv64", classifier = "riscv64", archDetect = true),
     BuildTarget(image = "android-arm", classifier = "android-arm"),
     BuildTarget(image = "android-arm64", classifier = "android-arm64"),
     BuildTarget(image = "android-x86_64", classifier = "android-x86_64"),
@@ -118,5 +123,9 @@ for (target in targets) {
         compileNativeAllExceptAndroid.configure {
             dependsOn(packageNative)
         }
+    }
+
+    if (target.archDetect) {
+        artifacts.add(archDetectConfiguration.name, packageNative)
     }
 }

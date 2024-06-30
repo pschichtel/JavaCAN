@@ -1,8 +1,8 @@
 plugins {
-    id("tel.schich.javacan.convention.base")
+    id("tel.schich.javacan.convention.arch-detect")
 }
 
 dependencies {
     api(project(":core"))
-    // pull native stuff
+    configurations["nativeLibs"](project(mapOf("path" to ":core", "configuration" to "archDetectConfiguration")))
 }

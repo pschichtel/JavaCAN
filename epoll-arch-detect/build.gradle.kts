@@ -1,8 +1,8 @@
 plugins {
-    id("tel.schich.javacan.convention.base")
+    id("tel.schich.javacan.convention.arch-detect")
 }
 
 dependencies {
     api(project(":epoll"))
-    // pull native stuff
+    configurations["nativeLibs"](project(mapOf("path" to ":epoll", "configuration" to "archDetectConfiguration")))
 }
