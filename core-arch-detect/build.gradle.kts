@@ -2,7 +2,9 @@ plugins {
     id("tel.schich.javacan.convention.arch-detect")
 }
 
+val nativeLibs = configurations.named("nativeLibs")
+
 dependencies {
     api(project(":core"))
-    configurations["nativeLibs"](project(mapOf("path" to ":core", "configuration" to "archDetectConfiguration")))
+    nativeLibs(project(mapOf("path" to ":core", "configuration" to "archDetectConfiguration")))
 }
