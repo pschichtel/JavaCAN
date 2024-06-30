@@ -18,3 +18,7 @@ tasks.jar.configure {
         }
     }
 }
+
+tasks.withType<Test>().configureEach {
+    enabled = false
+}

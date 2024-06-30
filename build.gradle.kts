@@ -19,6 +19,7 @@ val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
 
     project.subprojects
         .flatMap { it.tasks }
+        .filter { it.enabled }
         .filter { it.name == "publishToMavenLocal" }
         .forEach {
             this@registering.dependsOn(it)
@@ -30,6 +31,7 @@ val testAll by tasks.registering(DefaultTask::class) {
 
     project.subprojects
         .flatMap { it.tasks .withType<Test>() }
+        .filter { it.enabled }
         .forEach {
             this@registering.dependsOn(it)
         }

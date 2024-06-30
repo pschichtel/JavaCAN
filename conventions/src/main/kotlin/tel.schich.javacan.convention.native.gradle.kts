@@ -168,10 +168,6 @@ val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
 
 val packageNativeForHost by tasks.registering(Jar::class) {
     baseConfigure(compileNativeForHost, nativeForHostOutputDir)
-    group = nativeGroup
-
-    dependsOn(compileNativeForHost)
-
     archiveClassifier = "host"
 }
 
