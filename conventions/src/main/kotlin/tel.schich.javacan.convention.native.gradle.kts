@@ -106,6 +106,7 @@ for (target in targets) {
         dockcrossRepository = repo
         dockcrossTag = tag
         image = dockcrossImage
+        containerName = "dockcross-${project.name}-$classifier"
         output = buildOutputDir.get().dir("native")
 
         val relativePathToProject = output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
