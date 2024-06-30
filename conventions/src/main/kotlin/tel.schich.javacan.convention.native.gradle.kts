@@ -75,7 +75,11 @@ val compileNativeAllExceptAndroid by tasks.registering(DefaultTask::class) {
     group = nativeGroup
 }
 
-val isRelease = !project.version.toString().endsWith("-SNAPSHOT")
+val buildReleaseBinaries = project.findProperty("javacan.build-release-binaries")
+    ?.toString()
+    ?.ifEmpty { null }
+    ?.toBooleanStrictOrNull()
+    ?: !project.version.toString().endsWith("-SNAPSHOT")
 
 fun Project.dockcrossProp(prop: String, classifier: String) = findProperty("dockcross.$prop.${classifier}")?.toString()
 
@@ -111,7 +115,7 @@ for (target in targets) {
 
         val relativePathToProject = output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
         val projectVersionOption = "-DPROJECT_VERSION=${project.version}"
-        val releaseOption = "-DIS_RELEASE=${if (isRelease) "1" else "0"}"
+        val releaseOption = "-DIS_RELEASE=${if (buildReleaseBinaries) "1" else "0"}"
         val linkStaticallyOption = "-DLINK_STATICALLY=${if (linkMode == NativeLinkMode.STATIC) "1" else "0"}"
         script = listOf(
             listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
