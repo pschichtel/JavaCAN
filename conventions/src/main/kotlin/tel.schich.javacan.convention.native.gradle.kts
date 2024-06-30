@@ -1,7 +1,8 @@
 import org.gradle.configurationcache.extensions.capitalized
+import tel.schich.dockcross.tasks.DockcrossRunTask
 
 plugins {
-    id("tel.schich.javacan.convention.base")
+    id("tel.schich.javacan.convention.published")
     id("tel.schich.dockcross")
 }
 
@@ -14,8 +15,7 @@ dependencies {
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Agenerate.jni.headers=true"))
-    options.headerOutputDirectory = project.layout.buildDirectory.dir("jni")
-        .map { it.dir(project.name) }
+    options.headerOutputDirectory = project.layout.buildDirectory.get().dir("jni").dir(project.name)
 }
 
 enum class NativeLinkMode {
@@ -69,7 +69,7 @@ for (target in targets) {
     val buildOutputDir = project.layout.buildDirectory.dir("dockcross/$classifier")
     val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
 
-    val compileNative = tasks.register("compileNativeFor$taskSuffix", tel.schich.dockcross.tasks.DockcrossRunTask::class) {
+    val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
         group = nativeGroup
         inputs.dir(project.rootProject.layout.projectDirectory.dir("core/src/include"))
         inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
@@ -103,8 +103,11 @@ for (target in targets) {
             include("native/*.so")
         }
 
-
         archiveClassifier = classifier
+    }
+
+    publishing.publications.withType<MavenPublication>().configureEach {
+        artifact(packageNative)
     }
 
     compileNativeAll.configure {
