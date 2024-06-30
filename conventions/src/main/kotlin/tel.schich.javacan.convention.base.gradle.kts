@@ -3,6 +3,10 @@ plugins {
     `java-test-fixtures`
 }
 
+val javaComponent = components["java"] as AdhocComponentWithVariants
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+
 java {
     toolchain {
         vendor = JvmVendorSpec.ADOPTIUM
@@ -29,14 +33,9 @@ dependencies {
 
     testImplementation("ch.qos.logback:logback-classic:1.3.14")
 
-    val junitMinor = "10.2"
-    val junitVersion = "5.$junitMinor"
-//    val junitRunnerVersion = "1.$junitMinor"
-    "org.junit.jupiter:junit-jupiter-engine:$junitVersion".also {
+    "org.junit.jupiter:junit-jupiter-engine:5.10.2".also {
         testFixturesImplementation(it)
         testImplementation(it)
     }
-//    testImplementation("org.junit.platform:junit-platform-launcher:$junitRunnerVersion")
-//    testImplementation("org.junit.platform:junit-platform-runner:$junitRunnerVersion")
 }
 
