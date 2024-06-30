@@ -28,29 +28,44 @@ enum class NativeLinkMode {
 }
 
 data class BuildTarget(
-    val image: String,
+    val image: String?,
     val classifier: String,
-    val mode: NativeLinkMode = NativeLinkMode.DYNAMIC,
-    val archDetect: Boolean = false,
+    val mode: NativeLinkMode,
+    val archDetect: Boolean,
 )
 
 val nativeGroup = "native"
-val targets = listOf(
-    BuildTarget(image = "linux-x64", classifier = "x86_64", archDetect = true),
-    BuildTarget(image = "linux-x86", classifier = "x86_32", archDetect = true),
-    BuildTarget(image = "linux-armv5", classifier = "armv5"),
-    BuildTarget(image = "linux-armv6", classifier = "armv6", archDetect = true),
-    BuildTarget(image = "linux-armv7", classifier = "armv7", archDetect = true),
-    BuildTarget(image = "linux-armv7a", classifier = "armv7a", archDetect = true),
-    BuildTarget(image = "linux-armv7l-musl", classifier = "armv7l", mode = NativeLinkMode.STATIC, archDetect = true),
-    BuildTarget(image = "linux-arm64", classifier = "aarch64", archDetect = true),
-    BuildTarget(image = "linux-riscv32", classifier = "riscv32", archDetect = true),
-    BuildTarget(image = "linux-riscv64", classifier = "riscv64", archDetect = true),
-    BuildTarget(image = "android-arm", classifier = "android-arm"),
-    BuildTarget(image = "android-arm64", classifier = "android-arm64"),
-    BuildTarget(image = "android-x86_64", classifier = "android-x86_64"),
-    BuildTarget(image = "android-x86", classifier = "android-x86_32"),
-)
+val targets = buildList {
+    fun MutableList<BuildTarget>.add(
+        image: String,
+        classifier: String,
+        mode: NativeLinkMode = NativeLinkMode.DYNAMIC,
+        archDetect: Boolean = false,
+    ) = add(BuildTarget(image, classifier, mode, archDetect))
+
+    add(image = "linux-x64", classifier = "x86_64", archDetect = true)
+    add(image = "linux-x86", classifier = "x86_32", archDetect = true)
+    add(image = "linux-armv5", classifier = "armv5")
+    add(image = "linux-armv6", classifier = "armv6", archDetect = true)
+    add(image = "linux-armv7", classifier = "armv7", archDetect = true)
+    add(image = "linux-armv7a", classifier = "armv7a", archDetect = true)
+    add(image = "linux-armv7l-musl", classifier = "armv7l", mode = NativeLinkMode.STATIC, archDetect = true)
+    add(image = "linux-arm64", classifier = "aarch64", archDetect = true)
+    add(image = "linux-riscv32", classifier = "riscv32", archDetect = true)
+    add(image = "linux-riscv64", classifier = "riscv64", archDetect = true)
+    add(image = "android-arm", classifier = "android-arm")
+    add(image = "android-arm64", classifier = "android-arm64")
+    add(image = "android-x86_64", classifier = "android-x86_64")
+    add(image = "android-x86", classifier = "android-x86_32")
+
+    project.findProperty("javacan.extra-archs")
+        ?.toString()
+        ?.ifEmpty { null }
+        ?.split(",")
+        ?.forEach {
+            add(BuildTarget(image = null, classifier = it, mode = NativeLinkMode.DYNAMIC, archDetect = false))
+        }
+}
 
 val compileNativeAll by tasks.registering(DefaultTask::class) {
     group = nativeGroup
@@ -62,14 +77,18 @@ val compileNativeAllExceptAndroid by tasks.registering(DefaultTask::class) {
 
 val isRelease = !project.version.toString().endsWith("-SNAPSHOT")
 
-fun Project.dockcrossProp(prop: String, classifier: String, or: () -> String) = findProperty("dockcross.$prop.${classifier}")?.toString() ?: or()
+fun Project.dockcrossProp(prop: String, classifier: String) = findProperty("dockcross.$prop.${classifier}")?.toString()
 
 for (target in targets) {
     val classifier = target.classifier
     val dockcrossVersion = "20240418-88c04a4"
-    val dockcrossImage = project.dockcrossProp(prop = "image", classifier) { "docker.io/dockcross/${target.image}:$dockcrossVersion" }
+    val dockcrossImage = project.dockcrossProp(prop = "image", classifier)
+        ?: target.image?.let{ "docker.io/dockcross/$it:$dockcrossVersion" }
+        ?: error("No image configured for target: $target")
+
     val (repo, tag) = dockcrossImage.split(":", limit = 2)
-    val linkMode = project.dockcrossProp(prop = "link-mode", classifier) { target.mode.name }.uppercase().let(NativeLinkMode::valueOf)
+    val linkMode = (project.dockcrossProp(prop = "link-mode", classifier) ?: target.mode.name)
+        .uppercase().let(NativeLinkMode::valueOf)
 
     val buildOutputDir = project.layout.buildDirectory.dir("dockcross/$classifier")
     val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
