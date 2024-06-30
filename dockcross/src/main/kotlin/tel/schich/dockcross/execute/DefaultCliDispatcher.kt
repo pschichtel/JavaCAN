@@ -1,4 +1,4 @@
-package tel.schich.dockcross.tasks
+package tel.schich.dockcross.execute
 
 import org.gradle.process.ExecOperations
 import java.nio.file.Path
