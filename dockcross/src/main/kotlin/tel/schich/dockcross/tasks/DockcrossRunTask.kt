@@ -10,10 +10,12 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
+import org.gradle.process.ExecOperations
 import java.io.File
 import java.nio.file.Paths
+import javax.inject.Inject
 
-abstract class DockcrossRunTask : DefaultTask() {
+abstract class DockcrossRunTask @Inject constructor(private val execOps: ExecOperations) : DefaultTask() {
     @get:Input
     val mountSource: Property<File> = project.objects.property()
 
@@ -52,7 +54,7 @@ abstract class DockcrossRunTask : DefaultTask() {
     @TaskAction
     fun run() {
         output.get().asFile.mkdirs()
-        val dispatcher = DefaultCliDispatcher()
+        val dispatcher = DefaultCliDispatcher(execOps)
         val toolchainHome = javaHome.orNull?.asFile?.toPath()
             ?: System.getenv("JAVA_HOME")?.ifEmpty { null }?.let { Paths.get(it) }
 

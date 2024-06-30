@@ -1,15 +1,15 @@
 package tel.schich.dockcross.tasks
 
+import org.gradle.process.ExecOperations
 import java.nio.file.Path
 
-class DefaultCliDispatcher() : CliDispatcher {
+class DefaultCliDispatcher(private val execOps: ExecOperations) : CliDispatcher {
     override fun execute(workdir: Path, command: List<String>) {
-        val process = ProcessBuilder(command)
-            .inheritIO()
-            .directory(workdir.toFile())
-            .start()
-        val result = process.waitFor()
-        if (result != 0) {
+        val result = execOps.exec {
+            commandLine(command)
+            workingDir(workdir)
+        }
+        if (result.exitValue != 0) {
             error("Command failed: $result")
         }
     }
