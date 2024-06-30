@@ -6,6 +6,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
@@ -23,6 +24,7 @@ abstract class DockcrossRunTask @Inject constructor(private val execOps: ExecOpe
     @get:Input
     val mountSource: Property<File> = project.objects.property()
 
+    @Optional
     @get:Input
     val containerName: Property<String> = project.objects.property()
 
@@ -38,6 +40,7 @@ abstract class DockcrossRunTask @Inject constructor(private val execOps: ExecOpe
     @get:Input
     val script: ListProperty<List<String>> = project.objects.listProperty()
 
+    @Optional
     @get:InputDirectory
     val javaHome: DirectoryProperty = project.objects.directoryProperty()
 
@@ -52,7 +55,10 @@ abstract class DockcrossRunTask @Inject constructor(private val execOps: ExecOpe
         dockcrossRepository.convention("docker.io/dockcross/{image}")
         image.convention("linux-x64")
         output.convention(project.layout.buildDirectory)
-        containerName.convention("")
+    }
+
+    fun runner(runner: ContainerRunner) {
+        this.runner = runner
     }
 
     @TaskAction

@@ -43,6 +43,6 @@ abstract class DockerLikeRunner(private val mainCommand: String) : ContainerRunn
             addAll(request.command)
         }
         println("Command: ${command.joinToString(" ")}")
-        cli.execute(Paths.get("."), command)
+        cli.execute(Paths.get("."), command, emptyMap())
     }
 }
