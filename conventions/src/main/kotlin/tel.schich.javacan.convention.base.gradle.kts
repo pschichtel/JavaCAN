@@ -1,6 +1,9 @@
+import com.diffplug.gradle.spotless.SpotlessTask
+
 plugins {
     `java-library`
     `java-test-fixtures`
+    id("com.diffplug.spotless")
 }
 
 val javaComponent = components["java"] as AdhocComponentWithVariants
@@ -11,6 +14,12 @@ java {
     toolchain {
         vendor = JvmVendorSpec.ADOPTIUM
         languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+spotless {
+    java {
+        licenseHeaderFile(project.rootProject.layout.projectDirectory.file("MIT-header.txt"), "(package|import)")
     }
 }
 
