@@ -1,6 +1,5 @@
 .idea/
-cmake/*
-!cmake/CMakeLists.txt
+cmake-build-*/
 *.iml
 target/
 *.log
