@@ -1,0 +1,3 @@
+[submodule "dockcross"]
+	path = dockcross
+	url = ../dockcross-gradle-plugin.git

@@ -87,8 +87,7 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
 
     dependsOn(tasks.compileJava)
 
-    val toolchainHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
-    javaHome = toolchainHome
+    javaHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
     output = outputTo.dir("native")
 
     val relativePathToProject = output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath()).toString()
@@ -163,6 +162,7 @@ for (target in targets) {
 val nativeForHostOutputDir: Directory = project.layout.buildDirectory.dir("dockcross/host").get()
 val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
     baseConfigure(NativeLinkMode.DYNAMIC, nativeForHostOutputDir)
+    image = "host"
     runner(NonContainerRunner)
 }
 
