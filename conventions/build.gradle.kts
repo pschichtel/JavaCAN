@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    api("tel.schich.dockcross:dockcross")
+    api(plugin("tel.schich.dockcross", version = "0.1.0"))
 }
 
 fun plugin(id: String, version: String) = "$id:$id.gradle.plugin:$version"
