@@ -4,6 +4,8 @@ plugins {
     `maven-publish`
 }
 
+val ci = System.getenv("CI") != null
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -42,7 +44,9 @@ publishing {
     }
 }
 
-signing {
-    useGpgCmd()
-    sign(publishing.publications)
+if (!ci) {
+    signing {
+        useGpgCmd()
+        sign(publishing.publications)
+    }
 }

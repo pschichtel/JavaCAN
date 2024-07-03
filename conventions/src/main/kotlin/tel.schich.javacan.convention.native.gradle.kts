@@ -1,4 +1,5 @@
 import org.gradle.configurationcache.extensions.capitalized
+import tel.schich.dockcross.execute.DockerRunner
 import tel.schich.dockcross.execute.NonContainerRunner
 import tel.schich.dockcross.tasks.DockcrossRunTask
 
@@ -6,6 +7,8 @@ plugins {
     id("tel.schich.javacan.convention.published")
     id("tel.schich.dockcross")
 }
+
+val ci = System.getenv("CI") != null
 
 val archDetectConfiguration by configurations.registering {
     isCanBeConsumed = true
@@ -98,6 +101,10 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
         listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
         listOf("make", "-j${project.gradle.startParameter.maxWorkerCount}"),
     )
+
+    if (ci) {
+        runner(DockerRunner())
+    }
 }
 
 fun Jar.baseConfigure(compileTask: TaskProvider<DockcrossRunTask>, buildOutputDir: Directory) {
@@ -132,7 +139,16 @@ for (target in targets) {
         dockcrossTag = tag
         image = dockcrossImage
         containerName = "dockcross-${project.name}-$classifier"
+
+        if (ci) {
+            doLast {
+                exec {
+                    commandLine("docker", "image", "rm", "$repo:$tag")
+                }
+            }
+        }
     }
+
 
     val packageNative = tasks.register("packageNativeFor$taskSuffix", Jar::class) {
         baseConfigure(compileNative, buildOutputDir.get())
