@@ -49,3 +49,16 @@ val testAll by tasks.registering(DefaultTask::class) {
             this@registering.dependsOn(it)
         }
 }
+
+val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
+    group = "publishing"
+    val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
+
+    val publishTasks = subprojects
+        .flatMap { it.tasks.withType<PublishToMavenRepository>() }
+        .filter { it.repository.name == "sonatype" }
+    dependsOn(publishTasks)
+    if (!isSnapshot) {
+        dependsOn(tasks.closeAndReleaseStagingRepositories)
+    }
+}
