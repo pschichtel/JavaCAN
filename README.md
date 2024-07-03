@@ -124,15 +124,12 @@ In case you have issues, have a look at the [troubleshooting document](TROUBLESH
 For local compilation:
 
 * GCC (or compatible)
-* Some version of Java (Gradle will download the correct one if necessary)
-* a libc
-* Bash
+* Java >= 11
 
 For cross compilation:
 
 * Podman or docker and permissions to run containers
-* Some version of Java (Gradle will download the correct one if necessary)
-* Bash
+* Java >= 11
 
 For tests:
 
@@ -140,16 +137,14 @@ For tests:
 * The can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
 * A CAN interface named "vcan0"
-* Some version of Java (Gradle will download the correct one if necessary)
-* a libc (unless compiled statically)
+* Java >= 11
 
 For usage:
 
 * A fairly recent Linux kernel with CAN support
 * For ISOTP channels, the can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
-* Java 8 or newer installed
+* Java >= 8
 * A few kilobytes of disk space to extract the native components
-* a libc (unless compiled statically)
 
 
 ### Building
