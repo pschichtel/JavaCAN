@@ -123,27 +123,24 @@ In case you have issues, have a look at the [troubleshooting document](TROUBLESH
 
 For local compilation:
 
-* Maven 3.3.1 or newer
 * GCC (or compatible)
-* Java 8 (Maven will enforce this)
+* Some version of Java (Gradle will download the correct one if necessary)
 * a libc
 * Bash
 
 For cross compilation:
 
-* Maven 3.3.1 or newer
-* Podman or docker and permissions to run containers (alternatively provide the `RUN_CONTAINER_COMMAND` env with a command that takes an image name)
-* Java 8 (Maven will enforce this)
+* Podman or docker and permissions to run containers
+* Some version of Java (Gradle will download the correct one if necessary)
 * Bash
 
 For tests:
 
-* Maven 3.3.1 or newer
 * A fairly recent Linux kernel with CAN support
 * The can-isotp kernel module loaded (Kernel 5.10 with `CONFIG_CAN_ISOTP` enabled or the [out-of-tree module](https://github.com/hartkopp/can-isotp))
 * [can-utils](https://github.com/linux-can/can-utils) installed in the `PATH`
 * A CAN interface named "vcan0"
-* Java 8 or newer installed
+* Some version of Java (Gradle will download the correct one if necessary)
 * a libc (unless compiled statically)
 
 For usage:
@@ -157,36 +154,19 @@ For usage:
 
 ### Building
 
-By default, the project only builds the native components (`single-architecture` maven profile) for the host system architecture:
+All architectures can be built in parallel with using the `compileNativeAll` task:
 
 ```bash
-mvn clean package
+./gradlew compileNativeAll
 ```
 
-This default build configuration will also execute the test suite.
+Alternatively there exist `packageNativeFor*` tasks for all the bundled architectures. A special task is packageNativeForHost, which will use
+the compiler toolchain on your machine instead of dockcross. This is primarily intended for unit tests, but can also be used to build on systems
+that are not supported by dockcross.
 
-Specifying the `javacan.architecture` option enables cross-compilation of the native components to the given architecture. If an architecture is specified that is not currently supported by the build,
-then the property `dockcross.image` must also be provided to provide the necessary dockcross image for the architecture.
-This can be used to build architectures that are not currently included in JavaCAN releases. The test suite will not be executed by default when cross-compiling, since the host system might not
-be able to execute the resulting binaries. If test execution on the host system is possible, enabling the `test` profile will include all tests into the build.
-By default, the libraries are linked dynamically, by setting the `dockcross.link-mode` property to `static` it can be switched to static linking, however not every dockcross image
-supports static linking (musl libc based images usually do).
+All architectures allow their dockcross image to be overridden by properties like `dockcross.image.<architecture>`. The linking
+mode (`dynamic` or `static`) can also be overridden by properties like `dockcross.link.<architecture>`.
 
-In order to build all architectures that are currently part of releases, the `all-architectures` maven profile must be activated:
-
-```bash
-mvn clean package -Pall-architectures
-```
-
-The `all-architectures` profile will execute the test suite using the `x86_64` libraries, however tests are not included by default. To override this the property `javacan.test.architecture` can be
-set to any other architecture that is part of the build.
-
-To build android-specific architectures add the `android` profile.
-
-If the architecture you are building *on* is not part of the build, then tests will always fail. To prevent this you have to disable the `test` maven profile:
-
-```bash
-mvn clean package -P!test
-```
-
-Each architecture in the `all-architectures` profile can have its dockcross image and linking mode overridden by setting the `dockcross.image.<arch>` and/or `dockcross.link-mode.<arch>` properties.
+Using the property `javacan.extra-archs` additional architectures can be defined as a comma-separated list. The values will be used as the
+jar classifier. These additional architectures will also require manually setting configuring the dockcross image and linking mode using the
+previously mentioned properties.
