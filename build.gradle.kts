@@ -4,6 +4,8 @@ plugins {
     id("pl.allegro.tech.build.axion-release") version "1.16.1" // this is the last version that supports Java 8
 }
 
+description = "JavaCAN is a binding to Linux' socketcan subsystem that feels native to Java developers."
+
 scmVersion {
     tag {
         prefix = "javacan-"

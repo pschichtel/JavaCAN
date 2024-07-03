@@ -8,3 +8,10 @@ dependencies {
     api(project(":epoll"))
     nativeLibs(project(mapOf("path" to ":epoll", "configuration" to "archDetectConfiguration")))
 }
+
+publishing.publications.withType<MavenPublication>().configureEach {
+    pom {
+        description = "${rootProject.description} The ${project.name} module bundles all architectures and allows runtime architecture detection."
+    }
+}
+    
