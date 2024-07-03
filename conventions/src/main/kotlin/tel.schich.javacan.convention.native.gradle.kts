@@ -140,13 +140,13 @@ for (target in targets) {
         image = dockcrossImage
         containerName = "dockcross-${project.name}-$classifier"
 
-        if (ci) {
-            doLast {
-                exec {
-                    commandLine("docker", "image", "rm", "$repo:$tag")
-                }
-            }
-        }
+//        if (ci) {
+//            doLast {
+//                exec {
+//                    commandLine("docker", "image", "rm", "$repo:$tag")
+//                }
+//            }
+//        }
     }
 
 
