@@ -101,10 +101,6 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
         listOf("cmake", relativePathToProject, projectVersionOption, releaseOption, linkStaticallyOption),
         listOf("make", "-j${project.gradle.startParameter.maxWorkerCount}"),
     )
-
-    if (ci) {
-        runner(DockerRunner())
-    }
 }
 
 fun Jar.baseConfigure(compileTask: TaskProvider<DockcrossRunTask>, buildOutputDir: Directory) {
@@ -141,6 +137,7 @@ for (target in targets) {
         containerName = "dockcross-${project.name}-$classifier"
 
         if (ci) {
+            runner(DockerRunner())
             doLast {
                 exec {
                     commandLine("docker", "image", "rm", "$repo:$tag")
