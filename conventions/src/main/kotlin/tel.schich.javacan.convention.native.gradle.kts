@@ -87,6 +87,7 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
     inputs.dir(project.rootProject.layout.projectDirectory.dir("core/src/include"))
     inputs.dir(project.layout.projectDirectory.dir("src/main/c"))
     inputs.dir(jniGluePath)
+    mountSource = project.rootProject.layout.projectDirectory.asFile
 
     dependsOn(tasks.compileJava)
 
@@ -130,7 +131,6 @@ for (target in targets) {
     val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
         baseConfigure(linkMode, buildOutputDir.get())
 
-        mountSource = project.rootProject.layout.projectDirectory.asFile
         dockcrossRepository = repo
         dockcrossTag = tag
         image = dockcrossImage
