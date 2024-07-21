@@ -126,7 +126,7 @@ for (target in targets) {
         .uppercase().let(NativeLinkMode::valueOf)
 
     val buildOutputDir = project.layout.buildDirectory.dir("dockcross/$classifier")
-    val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.capitalized() }
+    val taskSuffix = classifier.split("[_-]".toRegex()).joinToString(separator = "") { it.lowercase().replaceFirstChar(Char::uppercase) }
 
     val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
         baseConfigure(linkMode, buildOutputDir.get())
