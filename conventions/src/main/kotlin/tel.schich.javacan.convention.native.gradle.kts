@@ -116,7 +116,7 @@ fun Jar.baseConfigure(compileTask: TaskProvider<DockcrossRunTask>, buildOutputDi
 
 for (target in targets) {
     val classifier = target.classifier
-    val dockcrossVersion = "20240418-88c04a4"
+    val dockcrossVersion = "20240727-3995c0c"
     val dockcrossImage = project.dockcrossProp(prop = "image", classifier)
         ?: target.image?.let{ "docker.io/dockcross/$it:$dockcrossVersion" }
         ?: error("No image configured for target: $target")
