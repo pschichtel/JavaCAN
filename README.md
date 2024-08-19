@@ -7,6 +7,10 @@ similar to Java's Selector API.
 
 Implementing Java's SelectableChannel API is not possible with EPoll and SocketCAN due to various hardcoded assumptions in the JDK.
 
+## Is this project actively maintained?
+
+Yes! While feature development tends to happen in bursts around specific topics, issues and pull requests will always be answered. Dependencies will be updated occasionally. Releases are made mostly based on demand. The master branch is generally in a releasable state, if you need something released, just ask for it.
+
 ## What works?
 
 * Creating and binding CAN_RAW, CAN_BCM, CAN_ISOTP and CAN_J1939 sockets
