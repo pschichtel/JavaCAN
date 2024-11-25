@@ -189,7 +189,7 @@ tasks.test {
 }
 
 dependencies {
-    "tel.schich:jni-access-generator:1.1.2".also {
+    "tel.schich:jni-access-generator:1.1.7".also {
         annotationProcessor(it)
         compileOnly(it)
     }
