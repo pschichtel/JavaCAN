@@ -33,7 +33,7 @@ dependencies {
 
     testImplementation("ch.qos.logback:logback-classic:1.3.14")
 
-    "org.junit.jupiter:junit-jupiter-engine:5.10.2".also {
+    "org.junit.jupiter:junit-jupiter-engine:5.11.3".also {
         testFixturesImplementation(it)
         testImplementation(it)
     }
