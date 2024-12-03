@@ -139,7 +139,7 @@ for (target in targets) {
         if (ci) {
             runner(DockerRunner())
             doLast {
-                exec {
+                providers.exec {
                     commandLine("docker", "image", "rm", "$repo:$tag")
                 }
             }
