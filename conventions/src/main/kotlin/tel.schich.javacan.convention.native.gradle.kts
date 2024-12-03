@@ -141,7 +141,7 @@ for (target in targets) {
             doLast {
                 providers.exec {
                     commandLine("docker", "image", "rm", "$repo:$tag")
-                }
+                }.result.get()
             }
         }
     }
