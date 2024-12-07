@@ -31,7 +31,7 @@ dependencies {
     compileOnly("org.eclipse.jdt:org.eclipse.jdt.annotation:2.3.100")
     implementation("org.slf4j:slf4j-api:2.0.16")
 
-    testImplementation("ch.qos.logback:logback-classic:1.3.14")
+    testImplementation("ch.qos.logback:logback-classic:1.5.12")
 
     "org.junit.jupiter:junit-jupiter-engine:5.11.3".also {
         testFixturesImplementation(it)
