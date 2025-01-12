@@ -1,4 +1,3 @@
-import org.gradle.configurationcache.extensions.capitalized
 import tel.schich.dockcross.execute.DockerRunner
 import tel.schich.dockcross.execute.NonContainerRunner
 import tel.schich.dockcross.tasks.DockcrossRunTask
@@ -12,9 +11,10 @@ val ci = System.getenv("CI") != null
 
 val archDetectConfiguration by configurations.registering {
     isCanBeConsumed = true
+    isCanBeResolved = false
 }
 
-val jniGluePath = project.layout.buildDirectory.get().dir("jni/${project.name}")
+val jniGluePath: Directory = project.layout.buildDirectory.get().dir("jni/${project.name}")
 tasks.compileJava.configure {
     options.compilerArgs.addAll(listOf("-Agenerate.jni.headers=true"))
     options.headerOutputDirectory = jniGluePath
