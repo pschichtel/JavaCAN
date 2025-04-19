@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 
 /**
  * This simple {@link MessageHandler} proxy implementation copies the
- * shared read only buffer passed in by the event loop into a new buffer that is also writable.
+ * shared read-only buffer passed in by the event loop into a new buffer that is also writable.
  * Copying the buffer should be avoided if possible, but in some cases it is necessary, this proxy makes
  * sure the consumer can't accidentally forget to copy it.
  */

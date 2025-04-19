@@ -47,7 +47,7 @@ public interface SelectorRegistration<HandleType, ChannelType extends Channel> e
     IOSelector<HandleType> getSelector();
 
     /**
-     * The channel that was registered,
+     * The channel which was registered.
      *
      * @return the channel
      */

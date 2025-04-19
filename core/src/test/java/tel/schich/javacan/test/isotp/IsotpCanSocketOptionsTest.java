@@ -115,7 +115,7 @@ public class IsotpCanSocketOptionsTest {
                 buf.rewind();
                 buf.get(out);
 
-                assertEquals(bytesWritten, bytesRead, "Written amount of bytes should be readable");
+                assertEquals(bytesWritten, bytesRead, "Written number of bytes should be readable");
                 assertArrayEquals(in, out, "What goes in must come out!");
             }
         }

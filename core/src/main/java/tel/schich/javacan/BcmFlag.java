@@ -27,7 +27,7 @@ import java.util.Set;
 
 /**
  * The BcmFlag enum represent the Broadcast Manager message flags. When sending a message to the
- * broadcast manager the ‘flags’ element influence the behavior.
+ * broadcast manager, the ‘flags’ element influences the behavior.
  *
  * @see <a href="https://www.kernel.org/doc/html/latest/networking/can.html#broadcast-manager-message-flags">
  *     Kernel CAN documentation: BCM message flags</a>

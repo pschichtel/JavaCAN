@@ -33,7 +33,7 @@ import tel.schich.javacan.IsotpCanChannel;
 @FunctionalInterface
 public interface MessageHandler {
     /**
-     * Handles a received message. The given {@link java.nio.ByteBuffer} is read-only and its position and limit is set
+     * Handles a received message. The given {@link java.nio.ByteBuffer} is read-only and its position and limit is set,
      * so the message can be read from it.
      *
      * @param ch the channel that received the message

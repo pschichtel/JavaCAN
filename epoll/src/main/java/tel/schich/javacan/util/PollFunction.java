@@ -25,7 +25,7 @@ package tel.schich.javacan.util;
 import java.time.Duration;
 
 /**
- * This interface abstracts the actually polling out of the {@link tel.schich.javacan.util.PollingThread}.
+ * This interface abstracts the actual polling out of the {@link tel.schich.javacan.util.PollingThread}.
  * An implementation should simply call {@link java.nio.channels.Selector#select(long)} or
  * {@link java.util.concurrent.BlockingQueue#poll(long, java.util.concurrent.TimeUnit)}, as long as it can be passed
  * a timeout in milliseconds.

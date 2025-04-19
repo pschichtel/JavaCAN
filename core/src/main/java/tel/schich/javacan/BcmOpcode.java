@@ -34,12 +34,12 @@ package tel.schich.javacan;
  */
 public enum BcmOpcode {
     /**
-     * Create (cyclic) transmission task.
+     * Create a (cyclic) transmission task.
      */
     TX_SETUP(1),
 
     /**
-     * Remove (cyclic) transmission task.
+     * Remove a (cyclic) transmission task.
      */
     TX_DELETE(2),
 

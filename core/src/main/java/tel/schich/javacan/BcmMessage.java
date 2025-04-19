@@ -46,7 +46,7 @@ import static tel.schich.javacan.util.BufferHelper.putPlatformLong;
  */
 public class BcmMessage {
     /**
-     * The platform dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
+     * The platform-dependent byte count for {@code struct bcm_msg_head} from {@code linux/can/bcm.h}
      */
     public static final int HEADER_LENGTH;
     /**
@@ -110,7 +110,7 @@ public class BcmMessage {
 
     /**
      * Create a BCM message from the given {@link ByteBuffer} expecting a valid BCM message at the
-     * buffer's position and a correct amount of remaining bytes.
+     * buffer's position and a correct number of remaining bytes.
      *
      * @param buffer the backing buffer for the message
      */
@@ -206,7 +206,7 @@ public class BcmMessage {
      * <ul>
      * <li><strong>When used with {@link BcmOpcode#TX_SETUP}</strong>:<br>
      * The broadcast manager sends {@link #getCount()} messages with this interval, then continues to
-     * send at {@link #getInterval2()}. If only one timer is needed set
+     * send at {@link #getInterval2()}. If only one timer is needed, set
      * {@link BcmMessage.Builder#count(int) count} to {@code 0} and {@link BcmMessage.Builder#interval1(Duration)} to {@code null}.</li>
      * <li><strong>When used with {@link BcmOpcode#RX_SETUP}</strong>:<br>
      * Send {@link BcmOpcode#RX_TIMEOUT} when a received message is not received again within the given

@@ -258,7 +258,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
     /**
      * Closes the event loop by shutting it down and then
      *
-     * @throws IOException if any underlying operations has IO failures
+     * @throws IOException if any underlying operation has IO failures
      */
     @Override
     public final void close() throws IOException {

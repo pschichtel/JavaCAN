@@ -114,7 +114,7 @@ public abstract class BufferHelper {
      * @param buffer the buffer to write to
      * @param offset the memory location
      * @param value the value to write
-     * @return the amount of bytes written
+     * @return the number of bytes written
      */
     public static int putPlatformLong(ByteBuffer buffer, int offset, long value) {
         return PLATFORM_LONG_ACCESSOR.write(buffer, offset, value);

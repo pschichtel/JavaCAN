@@ -200,7 +200,7 @@ public class CanFrame {
      *
      * @param dest the destination buffer
      * @param offset the offset in the destination buffer
-     * @param length the amount of bytes to write to the destination
+     * @param length the number of bytes to write to the destination
      */
     public void getData(byte[] dest, int offset, int length) {
         this.buffer.position(getDataOffset());
@@ -347,7 +347,7 @@ public class CanFrame {
      * @param flags the CAN FD flags, ignored for non-FD frames
      * @param data the data
      * @param offset the offset within data
-     * @param length amount of bytes to use from data
+     * @param length number of bytes to use from data
      * @return the newly created frame
      */
     public static CanFrame create(int id, byte flags, byte[] data, int offset, int length) {
@@ -377,7 +377,7 @@ public class CanFrame {
      * @param flags the CAN FD flags, ignored for non-FD frames
      * @param data the data
      * @param offset the offset within data
-     * @param length amount of bytes to use from data
+     * @param length number of bytes to use from data
      * @return the newly created frame
      */
     public static CanFrame createExtended(int id, byte flags, byte[] data, int offset, int length) {
@@ -403,7 +403,7 @@ public class CanFrame {
      * @param flags the CAN FD flags, ignored for non-FD frames
      * @param data the data
      * @param offset the offset within data
-     * @param length amount of bytes to use from data
+     * @param length number of bytes to use from data
      * @return the newly created frame
      */
     public static CanFrame createRaw(int id, byte flags, byte[] data, int offset, int length) {

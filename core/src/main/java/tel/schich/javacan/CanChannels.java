@@ -27,7 +27,6 @@ import java.io.IOException;
 /**
  * This utility class provides helper methods to easily create new channels similar to those in
  * {@link java.nio.file.Files} and {@link java.nio.channels.Channels}.
- * implementation.
  */
 public class CanChannels {
 

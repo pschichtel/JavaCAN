@@ -50,6 +50,7 @@ public class BcmCanChannel extends AbstractCanChannel {
      * the buffer is large enough (~ 18 kB) for all use cases.
      */
     public static final int MTU = BcmMessage.HEADER_LENGTH + MAX_FRAMES_PER_MESSAGE * RawCanChannel.FD_MTU;
+
     @Nullable
     private NetworkDevice device;
 

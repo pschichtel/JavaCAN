@@ -43,7 +43,7 @@ import static java.util.Collections.newSetFromMap;
 /**
  * <p>
  * This is an implementation of the {@link IOSelector} API relying on Linux' epoll API to poll for
- * IO events from an arbitrary amount of file descriptors. The implementation is inspired by Java's
+ * IO events from an arbitrary number of file descriptors. The implementation is inspired by Java's
  * own epoll-based {@link java.nio.channels.Selector} implementation.
  * </p>
  * <p>
@@ -200,6 +200,11 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         return newOps;
     }
 
+    /**
+     * Returns a set of all registrations associated with this epoll selector.
+     *
+     * @return the set of registrations
+     */
     public Set<SelectorRegistration<UnixFileDescriptor, ?>> getRegistrations() {
         return new HashSet<>(registrations);
     }

@@ -96,7 +96,7 @@ public class IsotpListener extends EventLoop<UnixFileDescriptor, IsotpCanChannel
      * Removes the given {@link tel.schich.javacan.IsotpCanChannel} from this listener.
      *
      * @param ch the channel to remove
-     * @throws IOException if the underlying selector is unable cancel the registration
+     * @throws IOException if the underlying selector is unable to cancel the registration
      */
     public void removeChannel(IsotpCanChannel ch) throws IOException {
         synchronized (handlerLock) {

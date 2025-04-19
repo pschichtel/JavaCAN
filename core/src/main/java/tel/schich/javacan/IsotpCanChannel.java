@@ -81,7 +81,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/read.2.html">read man page</a>
      * @param buffer the destination buffer
-     * @return the amount of bytes that have been read
+     * @return the number of bytes that have been read
      * @throws IOException if the native calls fail
      */
     public abstract int read(ByteBuffer buffer) throws IOException;
@@ -93,7 +93,7 @@ public abstract class IsotpCanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/write.2.html">write man page</a>
      * @param buffer the source buffer
-     * @return the amount of bytes that have been written
+     * @return the number of bytes that have been written
      * @throws IOException if the native calls fail
      */
     public abstract int write(ByteBuffer buffer) throws IOException;

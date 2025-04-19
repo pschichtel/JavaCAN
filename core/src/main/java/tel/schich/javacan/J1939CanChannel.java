@@ -82,7 +82,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/recv.2.html">read man page</a>
      * @param buffer the destination buffer
-     * @return the amount of bytes that have been received
+     * @return the number of bytes that have been received
      * @throws IOException if the native calls fail
      */
     public abstract long receive(ByteBuffer buffer) throws IOException;
@@ -95,7 +95,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">recvmsg man page</a>
      * @param buffer the destination buffer
      * @param messageHeaderBuffer the buffer to read message headers into.
-     * @return the amount of bytes that have been read
+     * @return the number of bytes that have been read
      * @throws IOException if the native calls fail
      */
     public abstract long receive(ByteBuffer buffer, @Nullable J1939ReceiveMessageHeaderBuffer messageHeaderBuffer) throws IOException;
@@ -107,7 +107,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      *
      * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the source buffer
-     * @return the amount of bytes that have been sent
+     * @return the number of bytes that have been sent
      * @throws IOException if the native calls fail
      */
     public abstract long send(ByteBuffer buffer) throws IOException;
@@ -120,7 +120,7 @@ public abstract class J1939CanChannel extends AbstractCanChannel {
      * @see <a href="https://man7.org/linux/man-pages/man2/send.2.html">send man page</a>
      * @param buffer the source buffer
      * @param destination the destination address to the send the message to.
-     * @return the amount of bytes that have been sent
+     * @return the number of bytes that have been sent
      * @throws IOException if the native calls fail
      */
     public abstract long send(ByteBuffer buffer, @Nullable J1939Address destination) throws IOException;

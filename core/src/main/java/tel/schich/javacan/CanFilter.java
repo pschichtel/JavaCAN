@@ -60,7 +60,7 @@ public class CanFilter {
     private final int mask;
 
     /**
-     * Creates a filter to exactly matches the given ID.
+     * Creates a filter to exactly match the given ID.
      *
      * @param id the CAN ID to match
      */
@@ -89,7 +89,7 @@ public class CanFilter {
     }
 
     /**
-     * Gets the mask to used to match the CAN ID.
+     * Gets the mask to be used to match the CAN ID.
      *
      * @return the mask
      */
