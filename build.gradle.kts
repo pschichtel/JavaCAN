@@ -1,9 +1,10 @@
+import io.github.zenhelix.gradle.plugin.task.PublishBundleMavenCentralTask
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionCreator
 
 plugins {
     `maven-publish`
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("pl.allegro.tech.build.axion-release") version "1.18.16"
+    alias(libs.plugins.axion)
+    alias(libs.plugins.mavenCentralPublish) apply false
 }
 
 description = "JavaCAN is a binding to Linux' socketcan subsystem that feels native to Java developers."
@@ -24,12 +25,6 @@ val gitVersion: String = scmVersion.version
 allprojects {
     group = "tel.schich"
     version = gitVersion
-}
-
-nexusPublishing {
-    this.repositories {
-        sonatype()
-    }
 }
 
 val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
@@ -59,11 +54,20 @@ val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
     group = "publishing"
     val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
 
-    val publishTasks = subprojects
-        .flatMap { it.tasks.withType<PublishToMavenRepository>() }
-        .filter { it.repository.name == "sonatype" }
-    dependsOn(publishTasks)
-    if (!isSnapshot) {
-        dependsOn(tasks.closeAndReleaseStagingRepositories)
+    if (isSnapshot) {
+        logger.lifecycle("Snapshot deployment!")
+        for (project in allprojects) {
+            val tasks = project.tasks
+                .withType<PublishToMavenRepository>()
+                .matching { it.repository.name == "mavenCentralSnapshots" }
+            dependsOn(tasks)
+        }
+    } else {
+        logger.lifecycle("Release deployment!")
+        for (project in allprojects) {
+            val tasks = project.tasks
+                .withType<PublishBundleMavenCentralTask>()
+            dependsOn(tasks)
+        }
     }
 }

@@ -189,10 +189,8 @@ tasks.test {
 }
 
 dependencies {
-    "tel.schich:jni-access-generator:1.1.8".also {
-        annotationProcessor(it)
-        compileOnly(it)
-    }
+    annotationProcessor(libs.jniAccessGenerator)
+    compileOnly(libs.jniAccessGenerator)
 
     files(packageNativeForHost).also {
         testImplementation(it)
