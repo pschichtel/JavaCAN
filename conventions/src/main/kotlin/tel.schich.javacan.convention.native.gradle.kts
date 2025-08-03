@@ -31,7 +31,7 @@ data class BuildTarget(
     val archDetect: Boolean,
 )
 
-val dockcrossVersion = "20250109-7bf589c"
+val dockcrossVersion = "20250731-86f66d2"
 val nativeGroup = "native"
 val targets = buildList {
     fun MutableList<BuildTarget>.add(
