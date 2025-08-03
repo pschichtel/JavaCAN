@@ -269,7 +269,9 @@ public class IsotpOptions {
         RX_EXT_ADDR(0x0200, "different rx extended addressing"),
         WAIT_TX_DONE(0x0400, "wait for tx completion"),
         SF_BROADCAST(0x0800, "1-to-N functional addressing"),
-        CF_BROADCAST(0x1000, "1-to-N transmission w/o FC");
+        CF_BROADCAST(0x1000, "1-to-N transmission w/o FC"),
+        DYN_FC_PARMS(0x2000, "dynamic FC parameters BS/STmin"),
+        ;
 
         private final int bit;
         private final String description;
