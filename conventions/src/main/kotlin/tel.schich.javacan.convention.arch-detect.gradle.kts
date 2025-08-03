@@ -1,7 +1,3 @@
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.provideDelegate
-import org.gradle.kotlin.dsl.registering
-
 plugins {
     id("tel.schich.javacan.convention.published")
 }

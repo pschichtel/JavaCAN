@@ -2,11 +2,11 @@ plugins {
     id("tel.schich.javacan.convention.arch-detect")
 }
 
-val nativeLibs = configurations.named("nativeLibs")
+val nativeLibs by configurations.getting
 
 dependencies {
     api(project(":epoll"))
-    nativeLibs(project(mapOf("path" to ":epoll", "configuration" to "archDetectConfiguration")))
+    nativeLibs(project(mapOf("path" to ":epoll", "configuration" to ARCH_DETECT_CONFIGURATION_NAME)))
 }
 
 publishing.publications.withType<MavenPublication>().configureEach {

@@ -9,9 +9,8 @@ plugins {
 
 val ci = System.getenv("CI") != null
 
-val archDetectConfiguration by configurations.registering {
+val archDetectConfiguration = configurations.register(ARCH_DETECT_CONFIGURATION_NAME) {
     isCanBeConsumed = true
-    isCanBeResolved = false
 }
 
 val jniGluePath: Directory = project.layout.buildDirectory.get().dir("jni/${project.name}")
