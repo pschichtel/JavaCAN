@@ -1,5 +1,5 @@
 [versions]
-axion = "1.19.0"
+axion = "1.20.1"
 dockcross = "0.4.2"
 mavenCentralPublish = "0.8.0"
 jdtAnnotations = "2.3.100"
