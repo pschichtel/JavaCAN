@@ -9,8 +9,13 @@ javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeE
 
 java {
     toolchain {
-        vendor = JvmVendorSpec.ADOPTIUM
         languageVersion = JavaLanguageVersion.of(8)
+    }
+
+    testing {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
     }
 }
 
