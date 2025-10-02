@@ -176,6 +176,7 @@ val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
     baseConfigure(NativeLinkMode.DYNAMIC, nativeForHostOutputDir)
     image = "host"
     runner(NonContainerRunner)
+    unsafeWritableMountSource = true
 }
 
 val packageNativeForHost by tasks.registering(Jar::class) {
