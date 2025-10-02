@@ -4,8 +4,6 @@ option(PROJECT_VERSION "The version of the maven project" "unspecified")
 option(IS_RELEASE "Whether this is a release build" OFF)
 option(LINK_STATICALLY "Whether this is a release build" OFF)
 
-find_package(Java 1.8 REQUIRED)
-
 include_directories(
         src/include
         "$ENV{JAVA_HOME}/include"
