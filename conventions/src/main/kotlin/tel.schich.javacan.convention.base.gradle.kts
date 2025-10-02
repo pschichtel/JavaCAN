@@ -19,6 +19,10 @@ java {
     }
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(
         listOf(

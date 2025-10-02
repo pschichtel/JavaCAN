@@ -184,10 +184,6 @@ val packageNativeForHost by tasks.registering(Jar::class) {
     archiveClassifier = "host"
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 dependencies {
     annotationProcessor(libs.jniAccessGenerator)
     compileOnly(libs.jniAccessGenerator)
