@@ -8,15 +8,15 @@
         },
     ],
     customManagers: [
-        {
-            "fileMatch": ["^conventions/src/main/kotlin/tel\\.schich\\.javacan\\.convention\\.native\\.gradle\\.kts$"],
-            matchStrings: [
-                "dockcrossVersion\\s*=\\s*\"(?<currentValue>[^\"]+)\"",
-            ],
-            // this is hardcoded to linux-x64, but the tag would normally be aligned anyway
-            depNameTemplate: "docker.io/dockcross/linux-x64",
-            datasourceTemplate: "docker",
-            versioningTemplate: "loose",
-        },
+        // {
+        //     "fileMatch": ["^conventions/src/main/kotlin/tel\\.schich\\.javacan\\.convention\\.native\\.gradle\\.kts$"],
+        //     matchStrings: [
+        //         "dockcrossVersion\\s*=\\s*\"(?<currentValue>[^\"]+)\"",
+        //     ],
+        //     // this is hardcoded to linux-x64, but the tag would normally be aligned anyway
+        //     depNameTemplate: "docker.io/dockcross/linux-x64",
+        //     datasourceTemplate: "docker",
+        //     versioningTemplate: "loose",
+        // },
     ]
 }
