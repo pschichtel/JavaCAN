@@ -7,6 +7,10 @@ plugins {
     alias(libs.plugins.mavenCentralPublish) apply false
 }
 
+tasks.wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+}
+
 description = "JavaCAN is a binding to Linux' socketcan subsystem that feels native to Java developers."
 
 scmVersion {
