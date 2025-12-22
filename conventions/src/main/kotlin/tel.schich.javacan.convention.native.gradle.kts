@@ -7,9 +7,7 @@ plugins {
     id("tel.schich.dockcross")
 }
 
-val ci = System.getenv("CI") != null
-
-val archDetectConfiguration = configurations.register(ARCH_DETECT_CONFIGURATION_NAME) {
+val archDetectConfiguration = configurations.register(Constants.ARCH_DETECT_CONFIG) {
     isCanBeConsumed = true
 }
 
@@ -135,7 +133,7 @@ for (target in targets) {
         image = dockcrossImage
         containerName = "dockcross-${project.name}-$classifier"
 
-        if (ci) {
+        if (Constants.CI) {
             runner(DockerRunner())
             doLast {
                 providers.exec {

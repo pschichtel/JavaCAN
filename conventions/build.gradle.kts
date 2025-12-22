@@ -9,7 +9,6 @@ repositories {
 
 dependencies {
     api(plugin(libs.plugins.dockcross))
-    implementation(plugin(libs.plugins.mavenCentralPublish))
 }
 
 fun plugin(plugin: Provider<PluginDependency>) =

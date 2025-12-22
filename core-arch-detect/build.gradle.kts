@@ -6,7 +6,7 @@ val nativeLibs by configurations.getting
 
 dependencies {
     api(project(":core"))
-    nativeLibs(project(mapOf("path" to ":core", "configuration" to ARCH_DETECT_CONFIGURATION_NAME)))
+    nativeLibs(project(mapOf("path" to ":core", "configuration" to Constants.ARCH_DETECT_CONFIG)))
 }
 
 publishing.publications.withType<MavenPublication>().configureEach {

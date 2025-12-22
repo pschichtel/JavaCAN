@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `java-test-fixtures`
+    id("tel.schich.javacan.convention.root")
 }
 
 val javaComponent = components["java"] as AdhocComponentWithVariants

@@ -1,50 +1,24 @@
-import io.github.zenhelix.gradle.plugin.extension.PublishingType
-
 plugins {
     id("tel.schich.javacan.convention.base")
     signing
     `maven-publish`
-    id("io.github.zenhelix.maven-central-publish")
 }
-
-val ci = System.getenv("CI") != null
 
 java {
     withSourcesJar()
     withJavadocJar()
 }
 
-private fun Project.getSecret(name: String): Provider<String> = provider {
-    val env = System.getenv(name)
-        ?.ifBlank { null }
-    if (env != null) {
-        return@provider env
-    }
-
-    val propName = name.split("_")
-        .map { it.lowercase() }
-        .joinToString(separator = "") { word ->
-            word.replaceFirstChar { it.uppercase() }
-        }
-        .replaceFirstChar { it.lowercase() }
-
-    property(propName) as String
-}
-
-mavenCentralPortal {
-    credentials {
-        username = project.getSecret("MAVEN_CENTRAL_PORTAL_USERNAME")
-        password = project.getSecret("MAVEN_CENTRAL_PORTAL_PASSWORD")
-    }
-    publishingType = PublishingType.AUTOMATIC
-}
-
 publishing {
     repositories {
         maven {
-            name = "mavenCentralSnapshots"
+            name = Constants.SNAPSHOTS_REPO
             url = uri("https://central.sonatype.com/repository/maven-snapshots/")
             credentials(PasswordCredentials::class)
+        }
+        maven {
+            name = Constants.RELEASES_REPO
+            url = layout.buildDirectory.dir("repo").get().asFile.toURI()
         }
     }
 
@@ -91,7 +65,7 @@ when {
             sign(publishing.publications)
         }
     }
-    !ci -> {
+    !Constants.CI -> {
         logger.lifecycle("Not running in CI, using the gpg command!")
         signing {
             useGpgCmd()
