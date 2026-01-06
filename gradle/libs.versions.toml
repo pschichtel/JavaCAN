@@ -4,7 +4,7 @@ dockcross = "0.4.2"
 jdtAnnotations = "2.4.100"
 slf4j = "2.0.17"
 logback = "1.3.15"
-junitJupiter = "6.0.1"
+junitJupiter = "6.0.2"
 jniAccessGenerator = "1.2.2"
 mavenDeployer = "0.5.2"
 
