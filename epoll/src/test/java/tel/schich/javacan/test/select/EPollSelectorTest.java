@@ -138,4 +138,11 @@ public class EPollSelectorTest {
 
         return registration;
     }
+
+    @Test
+    public void repeatedCloseShouldDoNothing() throws IOException {
+        EPollSelector selector = EPollSelector.open();
+        selector.close();
+        selector.close();
+    }
 }

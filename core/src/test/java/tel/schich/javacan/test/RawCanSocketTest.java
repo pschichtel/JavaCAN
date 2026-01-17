@@ -31,6 +31,7 @@ import tel.schich.javacan.RawCanChannel;
 import tel.schich.javacan.RawReceiveMessageHeaderBuffer;
 import tel.schich.javacan.platform.linux.LinuxNativeOperationException;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
@@ -346,5 +347,12 @@ class RawCanSocketTest {
             assertEquals(0, messageHeaderBuffer.getDropCount());
             assertEquals(Instant.now().getEpochSecond(), messageHeaderBuffer.getSoftwareTimestamp().getEpochSecond());
         }
+    }
+
+    @Test
+    public void repeatedCloseShouldDoNothing() throws IOException {
+        final RawCanChannel socket = CanChannels.newRawChannel();
+        socket.close();
+        socket.close();
     }
 }
