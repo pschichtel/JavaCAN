@@ -43,6 +43,7 @@ dependencies {
 
     testImplementation(libs.logbackClassic)
 
+    testRuntimeOnly(libs.junitPlatformLauncher)
     testFixturesImplementation(libs.junitJupiter)
     testImplementation(libs.junitJupiter)
 }

@@ -12,6 +12,7 @@ mavenDeployer = "0.5.2"
 jdtAnnotations = { module = "org.eclipse.jdt:org.eclipse.jdt.annotation", version.ref = "jdtAnnotations" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitJupiter" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiter" }
 jniAccessGenerator = { module = "tel.schich:jni-access-generator", version.ref = "jniAccessGenerator" }
 
