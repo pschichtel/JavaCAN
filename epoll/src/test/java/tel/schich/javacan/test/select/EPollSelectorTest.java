@@ -129,12 +129,12 @@ public class EPollSelectorTest {
 
     private static SelectorRegistration<UnixFileDescriptor, RawCanChannel> configureAndRegisterChannel(IOSelector<UnixFileDescriptor> selector) throws IOException {
         final RawCanChannel ch = CanChannels.newRawChannel(CAN_INTERFACE);
-        LOGGER.debug("Created channel: " + ch);
+        LOGGER.debug("Created channel: {}", ch);
 
         ch.configureBlocking(false);
         ch.setOption(CanSocketOptions.LOOPBACK, true);
         SelectorRegistration<UnixFileDescriptor, RawCanChannel> registration = selector.register(ch, SelectorRegistration.Operation.READ);
-        LOGGER.debug("Selection key: " + registration);
+        LOGGER.debug("Selection key: {}", registration);
 
         return registration;
     }

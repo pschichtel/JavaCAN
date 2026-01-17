@@ -222,7 +222,7 @@ public abstract class EventLoop<HandleType, ChannelType extends Channel> impleme
      * @return true if the event loop should continue, false for the event loop to exit
      */
     protected boolean handleException(Thread thread, Throwable t, boolean terminal) {
-        LOGGER.error("Polling thread failed: " + thread.getName(), t);
+        LOGGER.error("Polling thread failed: {}", thread.getName(), t);
         LOGGER.warn("Terminating other threads.");
 
         try {

@@ -274,10 +274,10 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
                         readBuffer.clear();
                         handler.handle(raw, raw.read(readBuffer));
                     } else {
-                        LOGGER.warn("Handler not found for channel: " + ch);
+                        LOGGER.warn("Handler not found for channel: {}", ch);
                     }
                 } else {
-                    LOGGER.warn("Unsupported channel: " + ch);
+                    LOGGER.warn("Unsupported channel: {}", ch);
                 }
             }
         }
