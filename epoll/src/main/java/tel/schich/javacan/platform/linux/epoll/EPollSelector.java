@@ -37,6 +37,7 @@ import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.IllegalSelectorException;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.newSetFromMap;
 
@@ -61,7 +62,7 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
     private static final long SELECT_NO_BLOCKING = 0;
     private static final long SELECT_BLOCK_INDEFINITELY = -1;
 
-    private volatile boolean open = true;
+    private final AtomicBoolean open = new AtomicBoolean(true);
 
     private final int epollfd;
     private final long eventsPointer;
@@ -78,41 +79,51 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
 
     public EPollSelector(int maxEvents) throws LinuxNativeOperationException {
         this.epollfd = EPoll.create();
-        this.maxEvents = maxEvents;
-        this.eventsPointer = EPoll.newEvents(maxEvents);
+        try {
+            this.maxEvents = maxEvents;
+            this.eventsPointer = EPoll.newEvents(maxEvents);
 
-        this.eventfd = EPoll.createEventfd(false);
-        EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN);
+            try {
+                this.eventfd = EPoll.createEventfd(false);
+                try {
+                    EPoll.addFileDescriptor(epollfd, eventfd, EPoll.EPOLLIN);
+                } catch (Throwable t) {
+                    closeSuppressing(t, eventfd);
+                    throw t;
+                }
 
-        this.registrations = newSetFromMap(new IdentityHashMap<>());
-        this.fdToKey = new HashMap<>();
+                this.registrations = newSetFromMap(new IdentityHashMap<>());
+                this.fdToKey = new HashMap<>();
+            } catch (Throwable t) {
+                EPoll.freeEvents(eventsPointer);
+                throw t;
+            }
+        } catch (Throwable t) {
+            closeSuppressing(t, epollfd);
+            throw t;
+        }
     }
 
     public void close() throws IOException {
-        open = false;
-
-        EPoll.freeEvents(eventsPointer);
-        IOException e = null;
-        try {
-            EPoll.close(epollfd);
-        } catch (LinuxNativeOperationException epollfdClose) {
-            e = epollfdClose;
-        }
-        try {
-            EPoll.close(eventfd);
-        } catch (LinuxNativeOperationException eventfdClose) {
-            if (e != null) {
-                eventfdClose.addSuppressed(e);
+        if (open.compareAndSet(true, false)) {
+            EPoll.freeEvents(eventsPointer);
+            Throwable epollfdCloseError = closeCatching(epollfd);
+            Throwable eventfdCloseError = closeCatching(eventfd);
+            if (epollfdCloseError != null || eventfdCloseError != null) {
+                final IOException ioException = new IOException("Exceptions occurred while closing the selector.");
+                if (epollfdCloseError != null) {
+                    ioException.addSuppressed(epollfdCloseError);
+                }
+                if (eventfdCloseError != null) {
+                    ioException.addSuppressed(eventfdCloseError);
+                }
+                throw ioException;
             }
-            e = eventfdClose;
-        }
-        if (e != null) {
-            throw e;
         }
     }
 
     public boolean isOpen() {
-        return open;
+        return open.get();
     }
 
     private void ensureOpen() {
@@ -292,5 +303,22 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
 
     public static EPollSelector open(int maxEvents) throws IOException {
         return new EPollSelector(maxEvents);
+    }
+
+    private static void closeSuppressing(Throwable t, int fd) {
+        Throwable suppressed = closeCatching(fd);
+        if (suppressed != null) {
+            t.addSuppressed(suppressed);
+        }
+    }
+
+    @Nullable
+    private static Throwable closeCatching(int fd) {
+        try {
+            EPoll.close(fd);
+        } catch (Throwable suppressed) {
+            return suppressed;
+        }
+        return null;
     }
 }
