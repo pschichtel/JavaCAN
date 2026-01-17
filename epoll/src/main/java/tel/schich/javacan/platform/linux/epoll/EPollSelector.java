@@ -95,8 +95,8 @@ final public class EPollSelector implements IOSelector<UnixFileDescriptor> {
         IOException e = null;
         try {
             EPoll.close(epollfd);
-        } catch (LinuxNativeOperationException ex) {
-            e = ex;
+        } catch (LinuxNativeOperationException epollfdClose) {
+            e = epollfdClose;
         }
         try {
             EPoll.close(eventfd);
