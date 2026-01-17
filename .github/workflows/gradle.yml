@@ -2,7 +2,8 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ master ]
+      branches: [ '*' ]
+      tags: [ '*' ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -24,7 +25,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build
-        run: ./gradlew --no-configuration-cache --no-parallel mavenCentralDeploy
+        run: ./gradlew --no-configuration-cache --no-parallel githubActions
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_mavenCentralSnapshotsUsername: ${{ secrets.SONATYPE_USERNAME }}

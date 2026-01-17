@@ -114,3 +114,21 @@ val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
         }
     }
 }
+
+val githubActions by tasks.registering(DefaultTask::class) {
+    group = "publishing"
+    val deployRefPattern = """^refs/(?:tags/javacan-\d+.\d+.\d+|heads/master)$""".toRegex()
+    val ref = System.getenv("GITHUB_REF")?.ifBlank { null }?.trim()
+
+    if (ref != null && deployRefPattern.matches(ref)) {
+        logger.lifecycle("Job in $ref will deploy!")
+        dependsOn(mavenCentralDeploy)
+    } else {
+        logger.lifecycle("Job will only build!")
+        for (project in allprojects) {
+            project.tasks.findByName("assemble")?.let {
+                dependsOn(it)
+            }
+        }
+    }
+}
