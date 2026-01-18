@@ -31,23 +31,6 @@ private fun Project.getSecret(name: String): Provider<String> = provider {
     property(propName) as String
 }
 
-deploy {
-    // dirs to upload, they will all be packaged into one bundle
-    dirs = provider {
-        allprojects
-            .map { it.layout.buildDirectory.dir("repo").get().asFile }
-            .filter { it.exists() }
-            .toList()
-    }
-    username = project.getSecret("MAVEN_CENTRAL_PORTAL_USERNAME")
-    password = project.getSecret("MAVEN_CENTRAL_PORTAL_PASSWORD")
-    publishingType = if (Constants.CI) {
-        PublishingType.WAIT_FOR_PUBLISHED
-    } else {
-        PublishingType.USER_MANAGED
-    }
-}
-
 scmVersion {
     tag {
         prefix = "javacan-"
@@ -65,6 +48,32 @@ allprojects {
     group = "tel.schich"
     version = gitVersion
 }
+
+deploy {
+    // dirs to upload, they will all be packaged into one bundle
+    dirs = provider {
+        allprojects
+            .map { it.layout.buildDirectory.dir("repo").get().asFile }
+            .filter { it.exists() }
+            .toList()
+    }
+    username = project.getSecret("MAVEN_CENTRAL_PORTAL_USERNAME")
+    password = project.getSecret("MAVEN_CENTRAL_PORTAL_PASSWORD")
+    publishingType = if (Constants.CI) {
+        PublishingType.WAIT_FOR_PUBLISHED
+    } else {
+        PublishingType.USER_MANAGED
+    }
+}
+
+tasks.deploy {
+    for (project in allprojects) {
+        val publishTasks = project.tasks
+            .withType<PublishToMavenRepository>()
+        mustRunAfter(publishTasks)
+    }
+}
+
 val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
 
 val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
@@ -117,7 +126,7 @@ val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
 
 val githubActions by tasks.registering(DefaultTask::class) {
     group = "publishing"
-    val deployRefPattern = """^refs/(?:tags/javacan-\d+.\d+.\d+|heads/master)$""".toRegex()
+    val deployRefPattern = """^refs/(?:tags/javacan-\d+\.\d+\.\d+|heads/master)$""".toRegex()
     val ref = System.getenv("GITHUB_REF")?.ifBlank { null }?.trim()
 
     if (ref != null && deployRefPattern.matches(ref)) {
