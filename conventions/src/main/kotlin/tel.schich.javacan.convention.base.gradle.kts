@@ -10,18 +10,18 @@ javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeE
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(8)
-    }
-
-    testing {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(25)
-        }
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.compileJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
