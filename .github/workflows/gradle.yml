@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
       - name: Build
         run: ./gradlew --no-configuration-cache --no-parallel githubActions
         env:
