@@ -1,5 +1,5 @@
 [versions]
-axion = "1.21.1"
+axion = "1.21.2"
 dockcross = "0.4.3"
 jdtAnnotations = "2.4.100"
 slf4j = "2.0.18"
