@@ -1,6 +1,6 @@
 [versions]
 axion = "1.21.3"
-dockcross = "0.4.3"
+dockcross = "0.4.4"
 jdtAnnotations = "2.4.100"
 slf4j = "2.0.18"
 logback = "1.3.15"
