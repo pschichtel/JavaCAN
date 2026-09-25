@@ -48,6 +48,7 @@ import tel.schich.javacan.select.IOSelector;
 import tel.schich.javacan.select.SelectorRegistration;
 
 import static java.time.Duration.ofMinutes;
+import static tel.schich.javacan.CanSocketOptions.FD_FRAMES;
 import static tel.schich.javacan.CanSocketOptions.FILTER;
 import static tel.schich.javacan.CanSocketOptions.LOOPBACK;
 
@@ -73,6 +74,7 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
     private final Object filterLock = new Object();
 
     private volatile boolean loopback = true;
+    private volatile boolean fdFrames = false;
 
     public CanBroker(ThreadFactory threadFactory, IOSelector<UnixFileDescriptor> selector) {
         this(threadFactory, selector, DEFAULT_TIMEOUT);
@@ -132,6 +134,26 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
      */
     public boolean isLoopback() {
         return loopback;
+    }
+
+    /**
+     * Sets whether all known devices accept and send CAN FD frames.
+     *
+     * @param enable whether to enable CAN FD frames
+     * @throws IOException if the native call fails
+     */
+    public synchronized void setFdFrames(boolean enable) throws IOException {
+        this.fdFrames = enable;
+        this.updateOption(FD_FRAMES, enable);
+    }
+
+    /**
+     * Checks if the devices of this broker accept and send CAN FD frames.
+     *
+     * @return true if the devices accept and send CAN FD frames
+     */
+    public boolean isFdFrames() {
+        return fdFrames;
     }
 
     /**
@@ -228,6 +250,7 @@ public class CanBroker extends EventLoop<UnixFileDescriptor, RawCanChannel> {
             ch.configureBlocking(false);
             ch.setOption(FILTER, filterArray);
             ch.setOption(LOOPBACK, loopback);
+            ch.setOption(FD_FRAMES, fdFrames);
             register(ch, EnumSet.of(SelectorRegistration.Operation.READ));
             this.handlerMap.put(ch, handler);
             this.channelMap.put(device, ch);
