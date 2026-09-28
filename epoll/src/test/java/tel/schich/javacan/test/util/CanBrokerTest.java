@@ -96,4 +96,59 @@ class CanBrokerTest {
         assertNotNull(actual, "CAN frame should have been captured!");
         assertEquals(expected, actual, "What goes in should come out!");
     }
+
+    @Test
+    void testFdFrames() throws Exception {
+        final int id = 0x7E1;
+        byte[] data = {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22};
+        CanFrame expected = CanFrame.create(id, CanFrame.FD_FLAG_FD_FRAME, data);
+        CanFilter filter = new CanFilter(id);
+
+        CanBroker brokerA = new CanBroker(FACTORY, EPollSelector.open());
+        CanBroker brokerB = new CanBroker(FACTORY, EPollSelector.open());
+
+        brokerA.setFdFrames(true);
+        brokerB.setFdFrames(true);
+        brokerA.addFilter(filter);
+        brokerB.addFilter(filter);
+
+        CompletableFuture<CanFrame> f = new CompletableFuture<>();
+        brokerA.addDevice(CanTestHelper.CAN_INTERFACE, (dev, frame) -> {
+            f.complete(frame);
+            try {
+                brokerA.removeDevice(CanTestHelper.CAN_INTERFACE);
+            } catch (IOException e) {
+                fail("Removing the device from brokerA should not fail: " + e.getLocalizedMessage());
+            }
+        });
+
+        brokerB.addDevice(CanTestHelper.CAN_INTERFACE, (d, frame) -> LOGGER.debug(String.valueOf(frame)));
+        brokerB.send(expected);
+
+        CanFrame actual = f.get(2, SECONDS);
+        assertNotNull(actual, "CAN FD frame should have been captured!");
+        assertTrue(actual.isFDFrame(), "Captured frame should be an FD frame");
+        assertEquals(expected, actual, "What goes in should come out!");
+    }
+
+    @Test
+    void testExternalFdFrame() throws Exception {
+        final int id = 0x7E2;
+        byte[] data = {0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22};
+        CanFrame expected = CanFrame.create(id, CanFrame.FD_FLAG_FD_FRAME, data);
+        CompletableFuture<CanFrame> f = new CompletableFuture<>();
+
+        CanBroker can = new CanBroker(FACTORY, EPollSelector.open());
+        can.setFdFrames(true);
+        can.addFilter(new CanFilter(id));
+        can.addDevice(CanTestHelper.CAN_INTERFACE, (ch, frame) -> f.complete(frame));
+
+        CanTestHelper.sendFrameViaUtils(CanTestHelper.CAN_INTERFACE, expected);
+
+        CanFrame actual = f.get(2, SECONDS);
+
+        assertNotNull(actual, "CAN FD frame should have been captured!");
+        assertTrue(actual.isFDFrame(), "Captured frame should be an FD frame");
+        assertEquals(expected, actual, "What goes in should come out!");
+    }
 }
