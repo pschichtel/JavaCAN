@@ -29,7 +29,7 @@ data class BuildTarget(
     val archDetect: Boolean,
 )
 
-val dockcrossVersion = "20250109-7bf589c"
+val dockcrossVersion = "20260928-b67e766"
 val nativeGroup = "native"
 val targets = buildList {
     fun MutableList<BuildTarget>.add(
@@ -46,7 +46,7 @@ val targets = buildList {
     add(image = "linux-armv7", classifier = "armv7", archDetect = true)
     add(image = "linux-armv7a", classifier = "armv7a", archDetect = true)
     add(image = "linux-armv7l-musl", classifier = "armv7l", mode = NativeLinkMode.STATIC, archDetect = true)
-    add(image = "linux-arm64", classifier = "aarch64", archDetect = true)
+    add(image = "linux-arm64-full", classifier = "aarch64", archDetect = true)
     add(image = "linux-riscv32", classifier = "riscv32", archDetect = true)
     add(image = "linux-riscv64", classifier = "riscv64", archDetect = true)
     add(image = "android-arm", classifier = "android-arm")
