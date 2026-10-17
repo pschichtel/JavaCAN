@@ -63,12 +63,14 @@ val targets = buildList {
         }
 }
 
-val compileNativeAll by tasks.registering(DefaultTask::class) {
+val compileNativeAll = tasks.register("compileNativeAll") {
     group = nativeGroup
+    description = "Builds native components for all targets"
 }
 
-val compileNativeAllExceptAndroid by tasks.registering(DefaultTask::class) {
+val compileNativeAllExceptAndroid = tasks.register("compileNativeAllExceptAndroid") {
     group = nativeGroup
+    description = "Builds native components for all non-Android targets"
 }
 
 val buildReleaseBinaries = project.findProperty("javacan.build-release-binaries")
@@ -170,14 +172,16 @@ for (target in targets) {
 }
 
 val nativeForHostOutputDir: Directory = project.layout.buildDirectory.dir("dockcross/host").get()
-val compileNativeForHost by tasks.registering(DockcrossRunTask::class) {
+val compileNativeForHost = tasks.register<DockcrossRunTask>("compileNativeForHost") {
+    description = "Builds native components for the host architecture"
     baseConfigure(NativeLinkMode.DYNAMIC, nativeForHostOutputDir)
     image = "host"
     runner(NonContainerRunner)
     unsafeWritableMountSource = true
 }
 
-val packageNativeForHost by tasks.registering(Jar::class) {
+val packageNativeForHost = tasks.register<Jar>("packageNativeForHost") {
+    description = "Packages the native components for the host"
     baseConfigure(compileNativeForHost, nativeForHostOutputDir)
     archiveClassifier = "host"
 }

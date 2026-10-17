@@ -76,31 +76,34 @@ tasks.deploy {
 
 val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
 
-val publishAllToMavenLocal by tasks.registering(DefaultTask::class) {
+val publishAllToMavenLocal = tasks.register("publishAllToMavenLocal") {
     group = "publishing"
+    description = "Publishes all subprojects to the local maven repo"
 
     project.subprojects
         .flatMap { it.tasks }
         .filter { it.enabled }
         .filter { it.name == "publishToMavenLocal" }
         .forEach {
-            this@registering.dependsOn(it)
+            this@register.dependsOn(it)
         }
 }
 
-val testAll by tasks.registering(DefaultTask::class) {
+val testAll = tasks.register("testAll") {
     group = "verification"
+    description = "Runs all subprojects tests"
 
     project.subprojects
         .flatMap { it.tasks .withType<Test>() }
         .filter { it.enabled }
         .forEach {
-            this@registering.dependsOn(it)
+            this@register.dependsOn(it)
         }
 }
 
-val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
+val mavenCentralDeploy = tasks.register("mavenCentralDeploy") {
     group = "publishing"
+    description = "Deploys the artifacts to the maven central portal"
 
     val repo = if (isSnapshot) {
         Constants.SNAPSHOTS_REPO
@@ -124,8 +127,10 @@ val mavenCentralDeploy by tasks.registering(DefaultTask::class) {
     }
 }
 
-val githubActions by tasks.registering(DefaultTask::class) {
+val githubActions = tasks.register("githubActions") {
     group = "publishing"
+    description = "Builds and possibly publishes artifacts in a GitHub workflow"
+
     val deployRefPattern = """^refs/(?:tags/javacan-\d+\.\d+\.\d+|heads/master)$""".toRegex()
     val ref = System.getenv("GITHUB_REF")?.ifBlank { null }?.trim()
 

@@ -2,7 +2,7 @@ plugins {
     id("tel.schich.javacan.convention.published")
 }
 
-val nativeLibs by configurations.registering
+val nativeLibs = configurations.register("nativeLibs")
 
 tasks.jar.configure {
     dependsOn(nativeLibs)
