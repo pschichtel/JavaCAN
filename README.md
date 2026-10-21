@@ -22,10 +22,10 @@ Yes! While feature development tends to happen in bursts around specific topics,
 ## What is missing?
 
 * Support for other CAN protocols (e.g. CAN_MCNET)
-* [CAN XL](https://www.bosch-semiconductors.com/media/ip_modules/pdf_2/can_xl_1/canxl_intro_20210225.pdf)
+* [CAN XL](https://www.bosch-semiconductors.com/media/ip_modules/pdf_2/can_xl_1/20230717_can_xl_overview.pdf)
 * A [netty](https://netty.io) integration (see [#20](https://github.com/pschichtel/JavaCAN/issues/20))
 * BSD Support
-* io_uring Support
+* [io_uring](https://en.wikipedia.org/wiki/Io_uring) Support
 
 Pull requests are welcome!
 
@@ -33,8 +33,7 @@ Pull requests are welcome!
 
 * [obd4s](https://github.com/pschichtel/obd4s): A Scala library for OBD-II communication with vehicles.
 * [VirtualECU](https://github.com/pschichtel/VirtualECU): An ECU simulator to test OBD-II clients against.
-* [Apache PLC4X](https://plc4x.apache.org/users/transports/socketcan.html): Apache PLC4X brings support for various PLC systems. JavaCAN serves as the transport layer for [CANopen](https://plc4x.apache.org/users/protocols/canopen.html) and other CAN related protocols.
-
+* [Apache PLC4X](https://plc4x.apache.org): Apache PLC4X brings support for various PLC systems. JavaCAN serves as the transport layer for [CANopen](https://plc4x.apache.org/plc4x/latest/users/protocols/canopen.html) and other CAN related protocols.
 ## Supported Operating Systems
 
 This project is a wrapper around SocketCAN, which is a Linux kernel module that implements CAN communication. As such, only Linux can be supported. For this reason, the custom Selector will also only
@@ -114,7 +113,7 @@ information for a reliable architecture detection. Programs using JavaCAN usuall
 For applications like test tools that don't really care about program size and don't need to support every possible architecture, starting with JavaCAN 3.3 `*-arch-detect` modules are provided.
 These modules bundle all prebuilt architectures and provide a function to automatically load the correct variant based on the `os.arch` system property.
 
-For example for the `javacan-core` module you would instead depend on the `javacan-core-arch-detect` module and then, somewhere early in your program, invoke `JavaCANAutoDetect.initialize()`.
+For example, for the `javacan-core` module you would instead depend on the `javacan-core-arch-detect` module and then, somewhere early in your program, invoke `JavaCANAutoDetect.initialize()`.
 This will configure the necessary system property based on the architecture detection and eagerly initialize JavaCAN. 
 
 ## Troubleshooting
@@ -130,7 +129,7 @@ For local compilation:
 * GCC (or compatible)
 * Java >= 11
 
-For cross compilation:
+For cross-compilation:
 
 * Podman or docker and permissions to run containers
 * Java >= 11
@@ -159,7 +158,7 @@ All architectures can be built in parallel with using the `compileNativeAll` tas
 ./gradlew compileNativeAll
 ```
 
-Alternatively there exist `packageNativeFor*` tasks for all the bundled architectures. A special task is packageNativeForHost, which will use
+Alternatively, there exist `packageNativeFor*` tasks for all the bundled architectures. A special task is packageNativeForHost, which will use
 the compiler toolchain on your machine instead of dockcross. This is primarily intended for unit tests, but can also be used to build on systems
 that are not supported by dockcross.
 
