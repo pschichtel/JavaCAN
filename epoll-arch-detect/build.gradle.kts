@@ -2,7 +2,7 @@ plugins {
     id("tel.schich.javacan.convention.arch-detect")
 }
 
-val nativeLibs by configurations.getting
+val nativeLibs = configurations["nativeLibs"]
 
 dependencies {
     api(project(":epoll"))
